@@ -1,31 +1,40 @@
-using Identity.Infrastructure.Data.DTOs.Request;
-using Identity.Infrastructure.Data.DTOs.Response;
+using Identity.Infrastructure.DTOs.Request;
+using Identity.Infrastructure.DTOs.Response;
 using Identity.Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using MyLifeApp.Application.Interfaces;
+using System.Diagnostics;
 
 [Route("api/v1/authentication")]
 [ApiController]
 public class AuthenticationController : Controller
 {
     public readonly IUserRepository _userRepository;
+    public readonly IProfileRepository _profileRepository;
 
-    public AuthenticationController(IUserRepository userRepository)
+    public AuthenticationController(IUserRepository userRepository, IProfileRepository profileRepository)
     {
         _userRepository = userRepository;
+        _profileRepository = profileRepository;
     }
 
     [HttpPost("register")]
-    [ProducesResponseType(201, Type = typeof(BaseResponse))]
-    [ProducesResponseType(400, Type = typeof(BaseResponse))]
+    [ProducesResponseType(201, Type = typeof(RegisterUserResponse))]
+    [ProducesResponseType(400, Type = typeof(RegisterUserResponse))]
     public async Task<IActionResult> Register([FromBody] RegisterUserRequest user)
     {
         if (ModelState.IsValid)
         {
-            BaseResponse response = await _userRepository.Register(user);
+            RegisterUserResponse response = await _userRepository.Register(user);
+            bool profile = _profileRepository.RegisterProfile(response.Id);
 
             if (response.IsSuccess)
             {
-                return Ok(response);
+                // Profile must be created
+                if (profile)
+                    return Ok(response);
+
+                Debug.WriteLine(profile);
             }
 
             return BadRequest(response);
