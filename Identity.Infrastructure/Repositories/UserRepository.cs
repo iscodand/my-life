@@ -1,5 +1,5 @@
-﻿using Identity.Infrastructure.Data.DTOs.Request;
-using Identity.Infrastructure.Data.DTOs.Response;
+﻿using Identity.Infrastructure.DTOs.Request;
+using Identity.Infrastructure.DTOs.Response;
 using Identity.Infrastructure.Interfaces;
 using Identity.Infrastructure.Models;
 using Microsoft.AspNetCore.Identity;
@@ -24,7 +24,7 @@ namespace Identity.Infrastructure.Repositories
             _configuration = configuration;
         }
 
-        public async Task<BaseResponse> Register(RegisterUserRequest userRequest)
+        public async Task<RegisterUserResponse> Register(RegisterUserRequest userRequest)
         {
             User user = new()
             {
@@ -37,7 +37,7 @@ namespace Identity.Infrastructure.Repositories
 
             if (!result.Succeeded)
             {
-                return new BaseResponse()
+                return new RegisterUserResponse()
                 {
                     Message = "Error while creating user",
                     IsSuccess = false,
@@ -45,8 +45,9 @@ namespace Identity.Infrastructure.Repositories
                 };
             }
 
-            return new BaseResponse()
+            return new RegisterUserResponse()
             {
+                Id = user.Id,
                 Message = "User successfuly created",
                 IsSuccess = true,
             };
