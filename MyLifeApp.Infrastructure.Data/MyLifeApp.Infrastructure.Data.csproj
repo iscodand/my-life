@@ -8,11 +8,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Identity.Infrastructure\Identity.Infrastructure.csproj" />
+    <ProjectReference Include="..\MyLifeApp.Application\MyLifeApp.Application.csproj" />
     <ProjectReference Include="..\MyLifeApp.Domain\MyLifeApp.Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Repositories\" />
   </ItemGroup>
 
 </Project>
