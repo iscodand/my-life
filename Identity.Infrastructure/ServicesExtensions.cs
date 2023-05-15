@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace Identity.Infrastructure
 {
-    internal class ServicesExtensions
+    public class ServicesExtensions
     {
+        // TO-DO: Add services extensions for Identity.Infra
     }
 }
