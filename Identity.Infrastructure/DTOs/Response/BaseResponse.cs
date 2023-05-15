@@ -1,4 +1,4 @@
-﻿namespace Identity.Infrastructure.Data.DTOs.Response
+﻿namespace Identity.Infrastructure.DTOs.Response
 {
     public class BaseResponse
     {
