@@ -2,7 +2,7 @@
 {
 
     // Verify implementation of a Base Interface for Repositories
-    public interface IBaseRepositoryAsync<T> where T : class
+    public interface IBaseRepository<T> where T : class
     {
     }
 }

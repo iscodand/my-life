@@ -10,5 +10,7 @@ namespace MyLifeApp.Application.Interfaces
         public Task<DetailPostResponse> GetPostById(int postId);
         public Task<BaseResponse> CreatePost(CreatePostRequest postRequest);
         public Task<BaseResponse> UpdatePost(UpdatePostRequest postRequest);
+        public Task<BaseResponse> CommentPost(CommentPostRequest postRequest);
+        public Task<BaseResponse> LikePost();
     }
 }
