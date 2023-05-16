@@ -77,5 +77,45 @@ namespace MyLife.Api.Controllers
             }
             return StatusCode(500);
         }
+
+        [Authorize]
+        [HttpPost("follow/{username}")]
+        [ProducesResponseType(200, Type = typeof(BaseResponse))]
+        [ProducesResponseType(400, Type = typeof(BaseResponse))]
+        public async Task<IActionResult> FollowProfile(string username)
+        {
+            if (ModelState.IsValid)
+            {
+                BaseResponse response = await _profileRepository.FollowProfile(username);
+
+                if (response.IsSuccess)
+                {
+                    return Ok(response);
+                }
+
+                return BadRequest(response);
+            }
+            return StatusCode(500);
+        }
+
+        [Authorize]
+        [HttpPost("unfollow/{username}")]
+        [ProducesResponseType(200, Type = typeof(BaseResponse))]
+        [ProducesResponseType(400, Type = typeof(BaseResponse))]
+        public async Task<IActionResult> UnfollowProfile(string username)
+        {
+            if (ModelState.IsValid)
+            {
+                BaseResponse response = await _profileRepository.UnfollowProfile(username);
+
+                if (response.IsSuccess)
+                {
+                    return Ok(response);
+                }
+
+                return BadRequest(response);
+            }
+            return StatusCode(500);
+        }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using MyLifeApp.Application.Dtos.Requests.Profile;
-using MyLifeApp.Application.Dtos.Responses;
 using MyLifeApp.Application.Dtos.Responses.Profile;
+using MyLifeApp.Application.Dtos.Responses;
 
 namespace MyLifeApp.Application.Interfaces
 {
@@ -16,7 +16,9 @@ namespace MyLifeApp.Application.Interfaces
         public bool RegisterProfile(string userId);
         public Task<DetailProfileResponse> GetAuthenticatedProfile();
         public Task<DetailProfileResponse> GetProfileByUsername(string profileUsername);
+        public Task<GetTotalFollowersResponse> GetTotalFollowersByUsername(string profileUsername);
         public Task<BaseResponse> UpdateProfile(UpdateProfileRequest profileRequest);
-        public Task<BaseResponse> FollowUnfollowProfile(FollowProfileRequest profileRequest);
+        public Task<BaseResponse> FollowProfile(string username);
+        public Task<BaseResponse> UnfollowProfile(string username);
     }
 }
