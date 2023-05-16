@@ -5,17 +5,17 @@ VisualStudioVersion = 17.5.33516.290
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyLife.Api", "MyLife.Api\MyLife.Api.csproj", "{06132082-C3E4-4A75-8766-38B529035EF2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Identity.Infrastructure", "Identity.Infrastructure\Identity.Infrastructure.csproj", "{CD8C49C7-0E61-456D-BE77-E4142F723DD9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Identity.Infrastructure", "Identity.Infrastructure\Identity.Infrastructure.csproj", "{CD8C49C7-0E61-456D-BE77-E4142F723DD9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyLifeApp.Infrastructure.Ioc", "MyLifeApp.Infrastructure.Ioc\MyLifeApp.Infrastructure.Ioc.csproj", "{1982E647-D1A5-41B2-B6F6-720993AA0D28}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyLifeApp.Infrastructure.Ioc", "MyLifeApp.Infrastructure.Ioc\MyLifeApp.Infrastructure.Ioc.csproj", "{1982E647-D1A5-41B2-B6F6-720993AA0D28}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyLifeApp.Infrastructure.Data", "MyLifeApp.Infrastructure.Data\MyLifeApp.Infrastructure.Data.csproj", "{772DE222-F234-4F42-BD2B-B98241A233E3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyLifeApp.Infrastructure.Data", "MyLifeApp.Infrastructure.Data\MyLifeApp.Infrastructure.Data.csproj", "{772DE222-F234-4F42-BD2B-B98241A233E3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyLifeApp.Domain", "MyLifeApp.Domain\MyLifeApp.Domain.csproj", "{E758AE86-2C7A-4164-BC39-91EFB3C3C704}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyLifeApp.Domain", "MyLifeApp.Domain\MyLifeApp.Domain.csproj", "{E758AE86-2C7A-4164-BC39-91EFB3C3C704}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyLifeApp.Application", "MyLifeApp.Application\MyLifeApp.Application.csproj", "{BFF83783-4E5C-4C83-B270-22F2DFC305D5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyLifeApp.Application", "MyLifeApp.Application\MyLifeApp.Application.csproj", "{BFF83783-4E5C-4C83-B270-22F2DFC305D5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyLifeApp.Api.Test", "MyLifeApp.Api.Test\MyLifeApp.Api.Test.csproj", "{5C9C8EB9-FF9F-4584-A076-3482CB0A103B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyLifeApp.Api.Test", "MyLifeApp.Api.Test\MyLifeApp.Api.Test.csproj", "{5C9C8EB9-FF9F-4584-A076-3482CB0A103B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
