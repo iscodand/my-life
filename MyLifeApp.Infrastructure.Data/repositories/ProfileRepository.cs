@@ -1,13 +1,14 @@
 ﻿using AutoMapper;
 using Identity.Infrastructure.Models;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MyLifeApp.Application.Dtos.Requests.Profile;
 using MyLifeApp.Application.Dtos.Responses;
 using MyLifeApp.Application.Dtos.Responses.Profile;
+using MyLifeApp.Application.Dtos.Responses.Profile.Followers;
 using MyLifeApp.Application.Interfaces;
+using MyLifeApp.Domain.Entities;
 using MyLifeApp.Infrastructure.Data.Context;
 using System.Diagnostics;
 using System.Security.Claims;
@@ -30,6 +31,13 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             _userManager = userManager;
             _mapper = mapper;
             _context = context;
+        }
+
+        private async Task<User> GetAuthenticatedUser()
+        {
+            ClaimsPrincipal userClaims = _httpContext.HttpContext!.User;
+            User? authenticatedUser = await _userManager.GetUserAsync(userClaims);
+            return authenticatedUser!;
         }
 
         // TO-DO
@@ -56,13 +64,12 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
 
         public async Task<DetailProfileResponse> GetAuthenticatedProfile()
         {
-            ClaimsPrincipal userClaims = _httpContext.HttpContext!.User;
-            User? authenticatedUser = await _userManager.GetUserAsync(userClaims);
+            User authenticatedUser = await GetAuthenticatedUser();
             Domain.Entities.Profile? profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == authenticatedUser!.Id);
-            
+
             return new DetailProfileResponse()
             {
-                Id = profile.Id,
+                Id = profile!.Id,
                 Name = profile.User.Name,
                 Username = profile.User.UserName,
                 Bio = profile.Bio,
@@ -122,12 +129,100 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             };
         }
 
-        public Task<BaseResponse> FollowProfile(FollowProfileRequest profileRequest)
+        private async Task<bool> AlreadyFollowProfile(User authenticatedUser, Domain.Entities.Profile followerProfile)
         {
-            throw new NotImplementedException();
+            Domain.Entities.Profile? authenticatedUserProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == authenticatedUser.Id);
+            List<ProfileFollower> authenticatedUserFollowers = _context.ProfileFollowers.Where(pf => pf.ProfileId == authenticatedUserProfile!.Id).ToList();
+            bool alreadyFollow = authenticatedUserFollowers.Any(uf => uf.FollowerId == followerProfile.Id);
+            return alreadyFollow;
         }
 
-        public Task<BaseResponse> FollowUnfollowProfile(FollowProfileRequest profileRequest)
+        // TO-DO
+        // => add ProfileAnalytics followers counter support
+        // => add ProfileAnalytics following counter support
+        // => refactor
+        public async Task<BaseResponse> FollowProfile(string username)
+        {
+            User authenticatedUser = await GetAuthenticatedUser();
+            Domain.Entities.Profile? authenticatedUserProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == authenticatedUser.Id);
+
+            Domain.Entities.Profile? followerProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.User.UserName == username);
+            if (followerProfile == null)
+            {
+                return new BaseResponse()
+                {
+                    Message = "User not found.",
+                    IsSuccess = false
+                };
+            }
+
+            bool alreadyFollow = await AlreadyFollowProfile(authenticatedUser, followerProfile);
+
+            if (!alreadyFollow)
+            {
+                ProfileFollower profileFollower = new()
+                {
+                    Profile = authenticatedUserProfile!,
+                    Follower = followerProfile
+                };
+
+                await _context.ProfileFollowers.AddAsync(profileFollower);
+                await _context.SaveChangesAsync();
+
+                return new BaseResponse()
+                {
+                    Message = "Follow successfuly.",
+                    IsSuccess = true
+                };
+            }
+
+            return new BaseResponse()
+            {
+                Message = "You already follow this profile.",
+                IsSuccess = false
+            };
+        }
+
+        public async Task<BaseResponse> UnfollowProfile(string username)
+        {
+            User authenticatedUser = await GetAuthenticatedUser();
+            Domain.Entities.Profile? authenticatedUserProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == authenticatedUser.Id);
+
+            Domain.Entities.Profile? followerProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.User.UserName == username);
+            if (followerProfile == null)
+            {
+                return new BaseResponse()
+                {
+                    Message = "User not found.",
+                    IsSuccess = false
+                };
+            }
+
+            bool alreadyFollow = await AlreadyFollowProfile(authenticatedUser, followerProfile);
+
+            if (alreadyFollow)
+            {
+                ProfileFollower? profileFollower = await _context.ProfileFollowers.FirstOrDefaultAsync(
+                    pf => pf.Profile == authenticatedUserProfile
+                    && pf.Follower == followerProfile);
+                _context.ProfileFollowers.Remove(profileFollower!);
+                await _context.SaveChangesAsync();
+
+                return new BaseResponse()
+                {
+                    Message = "Unfollow successfuly.",
+                    IsSuccess = true
+                };
+            }
+
+            return new BaseResponse()
+            {
+                Message = "You must to be a follower of this profile to unfollow.",
+                IsSuccess = false
+            };
+        }
+
+        public Task<GetTotalFollowersResponse> GetTotalFollowersByUsername(string profileUsername)
         {
             throw new NotImplementedException();
         }
