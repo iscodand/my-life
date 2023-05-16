@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using MyLifeApp.Application.Dtos.Requests.Profile;
 using MyLifeApp.Application.Dtos.Responses;
 using MyLifeApp.Application.Dtos.Responses.Profile;
-using MyLifeApp.Application.Dtos.Responses.Profile.Followers;
 using MyLifeApp.Application.Interfaces;
 using MyLifeApp.Domain.Entities;
 using MyLifeApp.Infrastructure.Data.Context;
