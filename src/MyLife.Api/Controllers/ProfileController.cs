@@ -46,7 +46,7 @@ namespace MyLife.Api.Controllers
         {
             if (ModelState.IsValid)
             {
-                DetailProfileResponse response = await _profileRepository.GetProfileByUsername(profileUsername);
+                DetailProfileResponse response = await _profileRepository.GetProfile(profileUsername);
 
                 if (response.IsSuccess)
                 {
@@ -78,15 +78,53 @@ namespace MyLife.Api.Controllers
             return StatusCode(500);
         }
 
-        [Authorize]
-        [HttpPost("follow/{username}")]
-        [ProducesResponseType(200, Type = typeof(BaseResponse))]
-        [ProducesResponseType(400, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> FollowProfile(string username)
+        [HttpGet("{profileUsername}/following")]
+        [ProducesResponseType(200, Type = typeof(DetailProfileResponse))]
+        [ProducesResponseType(404, Type = typeof(BaseResponse))]
+        public async Task<IActionResult> GetProfileFollowings(string profileUsername)
         {
             if (ModelState.IsValid)
             {
-                BaseResponse response = await _profileRepository.FollowProfile(username);
+                GetFollowingsResponse response = await _profileRepository.GetProfileFollowings(profileUsername);
+
+                if (response.IsSuccess)
+                {
+                    return Ok(response);
+                }
+
+                return BadRequest(response);
+            }
+            return StatusCode(500);
+        }
+
+        [HttpGet("{profileUsername}/followers")]
+        [ProducesResponseType(200, Type = typeof(DetailProfileResponse))]
+        [ProducesResponseType(404, Type = typeof(BaseResponse))]
+        public async Task<IActionResult> GetProfileFollowers(string profileUsername)
+        {
+            if (ModelState.IsValid)
+            {
+                GetFollowingsResponse response = await _profileRepository.GetProfileFollowers(profileUsername);
+
+                if (response.IsSuccess)
+                {
+                    return Ok(response);
+                }
+
+                return BadRequest(response);
+            }
+            return StatusCode(500);
+        }
+
+        [Authorize]
+        [HttpPost("follow/{profileUsername}")]
+        [ProducesResponseType(200, Type = typeof(BaseResponse))]
+        [ProducesResponseType(400, Type = typeof(BaseResponse))]
+        public async Task<IActionResult> FollowProfile(string profileUsername)
+        {
+            if (ModelState.IsValid)
+            {
+                BaseResponse response = await _profileRepository.FollowProfile(profileUsername);
 
                 if (response.IsSuccess)
                 {
