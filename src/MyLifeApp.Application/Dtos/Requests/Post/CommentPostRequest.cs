@@ -1,7 +1,10 @@
-﻿namespace MyLifeApp.Application.Dtos.Requests.Post
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace MyLifeApp.Application.Dtos.Requests.Post
 {
     public class CommentPostRequest
     {
-        public string Comment { get; set; }
+        [StringLength(255, MinimumLength = 5)]
+        public string? Comment { get; set; }
     }
 }
