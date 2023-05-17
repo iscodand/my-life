@@ -1,10 +1,11 @@
-﻿namespace MyLifeApp.Application.Dtos.Responses.Profile
+﻿using Identity.Infrastructure.Models;
+
+namespace MyLifeApp.Application.Dtos.Responses.Profile
 {
-    public class GetProfileResponse : BaseResponse
+    public class GetProfileResponse
     {
         public Guid Id { get; set; }
-        public string Name { get; set; }
-        public string Username { get; set; }
+        public GetUserResponse User { get; set; }
         public bool IsPrivate { get; set; }
     }
 }

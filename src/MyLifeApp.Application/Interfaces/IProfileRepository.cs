@@ -15,10 +15,11 @@ namespace MyLifeApp.Application.Interfaces
 
         public bool RegisterProfile(string userId);
         public Task<DetailProfileResponse> GetAuthenticatedProfile();
-        public Task<DetailProfileResponse> GetProfileByUsername(string profileUsername);
-        public Task<GetTotalFollowersResponse> GetTotalFollowersByUsername(string profileUsername);
+        public Task<DetailProfileResponse> GetProfile(string profileUsername);
+        public Task<GetFollowingsResponse> GetProfileFollowings(string profileUsername);
+        public Task<GetFollowingsResponse> GetProfileFollowers(string profileUsername);
         public Task<BaseResponse> UpdateProfile(UpdateProfileRequest profileRequest);
-        public Task<BaseResponse> FollowProfile(string username);
-        public Task<BaseResponse> UnfollowProfile(string username);
+        public Task<BaseResponse> FollowProfile(string profileUsername);
+        public Task<BaseResponse> UnfollowProfile(string profileUsername);
     }
 }

@@ -64,7 +64,7 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
         public async Task<DetailProfileResponse> GetAuthenticatedProfile()
         {
             User authenticatedUser = await GetAuthenticatedUser();
-            Domain.Entities.Profile? profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == authenticatedUser!.Id);
+            Domain.Entities.Profile? profile = await _context.Profiles.FirstAsync(p => p.UserId == authenticatedUser!.Id);
 
             return new DetailProfileResponse()
             {
@@ -79,7 +79,7 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             };
         }
 
-        public async Task<DetailProfileResponse> GetProfileByUsername(string profileUsername)
+        public async Task<DetailProfileResponse> GetProfile(string profileUsername)
         {
             Domain.Entities.Profile? profile = await _context.Profiles.FirstOrDefaultAsync(p => p.User.UserName == profileUsername);
 
@@ -128,6 +128,92 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             };
         }
 
+        // TO-DO
+        // => refactor
+        // => maybe creating a BaseProfileFollowers/Following and avoid Code Redundance
+        private List<Domain.Entities.Profile> GetTotalProfileFollowers(Domain.Entities.Profile profile)
+        {
+            List<ProfileFollower> profileFollowers = _context.ProfileFollowers.Where(pf => pf.FollowerId == profile.Id)
+                                                     .Include(p => p.Follower.User)
+                                                     .ToList();
+
+            List<Domain.Entities.Profile> followersCollection = new();
+
+            foreach (ProfileFollower followers in profileFollowers)
+            {
+                followersCollection.Add(followers.Follower);
+            }
+
+            return followersCollection;
+        }
+
+        public async Task<GetFollowingsResponse> GetProfileFollowers(string profileUsername)
+        {
+            Domain.Entities.Profile? profile = await _context.Profiles.FirstOrDefaultAsync(p => p.User.UserName == profileUsername);
+
+            if (profile == null)
+            {
+                return new GetFollowingsResponse()
+                {
+                    Message = "User not found",
+                    IsSuccess = false
+                };
+            }
+
+            ICollection<GetProfileResponse> followersResponseMapper = _mapper.Map<ICollection<GetProfileResponse>>(GetTotalProfileFollowers(profile));
+
+            return new GetFollowingsResponse()
+            {
+                Total = followersResponseMapper.Count,
+                Profiles = followersResponseMapper,
+                Message = "Success",
+                IsSuccess = true
+            };
+        }
+
+        // TO-DO
+        // => refactor
+        // => maybe creating a BaseProfileFollowers/Following and avoid Code Redundance
+        private List<Domain.Entities.Profile> GetTotalProfileFollowings(Domain.Entities.Profile profile)
+        {
+            List<ProfileFollower> profileFollowings = _context.ProfileFollowers.Where(pf => pf.ProfileId == profile.Id)
+                                                      .Include(pf => pf.Follower.User)
+                                                      .ToList();
+
+            List<Domain.Entities.Profile> followingCollection = new();
+
+            foreach (ProfileFollower follower in profileFollowings)
+            {
+                followingCollection.Add(follower.Follower);
+            }
+
+            return followingCollection;
+        }
+
+        public async Task<GetFollowingsResponse> GetProfileFollowings(string profileUsername)
+        {
+            Domain.Entities.Profile? profile = await _context.Profiles.FirstOrDefaultAsync(p => p.User.UserName == profileUsername);
+
+            if (profile == null)
+            {
+                return new GetFollowingsResponse()
+                {
+                    Message = "User not found.",
+                    IsSuccess = false
+                };
+            }
+
+            ICollection<GetProfileResponse> followingsResponseMapper = _mapper.Map<ICollection<GetProfileResponse>>(GetTotalProfileFollowings(profile));
+
+            return new GetFollowingsResponse()
+            {
+                Total = followingsResponseMapper.Count,
+                Profiles = followingsResponseMapper,
+                Message = "Testing",
+                IsSuccess = true
+            };
+        }
+
         private async Task<bool> AlreadyFollowProfile(User authenticatedUser, Domain.Entities.Profile followerProfile)
         {
             Domain.Entities.Profile? authenticatedUserProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == authenticatedUser.Id);
@@ -139,13 +225,13 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
         // TO-DO
         // => add ProfileAnalytics followers counter support
         // => add ProfileAnalytics following counter support
-        // => refactor
-        public async Task<BaseResponse> FollowProfile(string username)
+        // => fix: user can "auto follow" and "auto unfollow"
+        public async Task<BaseResponse> FollowProfile(string profileUsername)
         {
             User authenticatedUser = await GetAuthenticatedUser();
             Domain.Entities.Profile? authenticatedUserProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == authenticatedUser.Id);
 
-            Domain.Entities.Profile? followerProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.User.UserName == username);
+            Domain.Entities.Profile? followerProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.User.UserName == profileUsername);
             if (followerProfile == null)
             {
                 return new BaseResponse()
@@ -182,12 +268,16 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             };
         }
 
-        public async Task<BaseResponse> UnfollowProfile(string username)
+        // TO-DO
+        // => add ProfileAnalytics followers counter support
+        // => add ProfileAnalytics following counter support
+        // => fix: user can "auto follow" and "auto unfollow"
+        public async Task<BaseResponse> UnfollowProfile(string profileUsername)
         {
             User authenticatedUser = await GetAuthenticatedUser();
             Domain.Entities.Profile? authenticatedUserProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == authenticatedUser.Id);
 
-            Domain.Entities.Profile? followerProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.User.UserName == username);
+            Domain.Entities.Profile? followerProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.User.UserName == profileUsername);
             if (followerProfile == null)
             {
                 return new BaseResponse()
@@ -219,11 +309,6 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
                 Message = "You must to be a follower of this profile to unfollow.",
                 IsSuccess = false
             };
-        }
-
-        public Task<GetTotalFollowersResponse> GetTotalFollowersByUsername(string profileUsername)
-        {
-            throw new NotImplementedException();
         }
     }
 }
