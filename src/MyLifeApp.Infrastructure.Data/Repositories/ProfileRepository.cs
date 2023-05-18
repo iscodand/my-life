@@ -10,6 +10,8 @@ using MyLifeApp.Application.Interfaces;
 using MyLifeApp.Domain.Entities;
 using MyLifeApp.Infrastructure.Data.Context;
 using System.Diagnostics;
+using System.Linq.Expressions;
+using System.Reflection.Metadata.Ecma335;
 using System.Security.Claims;
 
 namespace MyLifeApp.Infrastructure.Data.Repositories
@@ -222,6 +224,13 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             return alreadyFollow;
         }
 
+        private async Task<bool> BlockAutoInteractProfile(User authenticatedUser, Domain.Entities.Profile followerProfile)
+        {
+            Domain.Entities.Profile? authenticatedUserProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == authenticatedUser.Id);
+            Domain.Entities.Profile? followerUser = await _context.Profiles.FirstOrDefaultAsync(p => p.User.Id == followerProfile.User.Id);
+            return authenticatedUserProfile?.Id == followerUser?.Id ? true : false;
+        }
+
         // TO-DO
         // => add ProfileAnalytics followers counter support
         // => add ProfileAnalytics following counter support
@@ -242,8 +251,9 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             }
 
             bool alreadyFollow = await AlreadyFollowProfile(authenticatedUser, followerProfile);
+            bool Autorization = await BlockAutoInteractProfile(authenticatedUser, followerProfile);
 
-            if (!alreadyFollow)
+            if (!alreadyFollow && Autorization)
             {
                 ProfileFollower profileFollower = new()
                 {
