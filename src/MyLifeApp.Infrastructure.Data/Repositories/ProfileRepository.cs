@@ -224,11 +224,10 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             return alreadyFollow;
         }
 
-        private async Task<bool> BlockAutoInteractProfile(User authenticatedUser, Domain.Entities.Profile followerProfile)
+        private bool BlockAutoFollow(User authenticatedUser, Domain.Entities.Profile followerProfile)
         {
-            Domain.Entities.Profile? authenticatedUserProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == authenticatedUser.Id);
-            Domain.Entities.Profile? followerUser = await _context.Profiles.FirstOrDefaultAsync(p => p.User.Id == followerProfile.User.Id);
-            return authenticatedUserProfile?.Id == followerUser?.Id ? true : false;
+            bool result = authenticatedUser.Id == followerProfile?.UserId ? true : false;
+            return result;
         }
 
         // TO-DO
@@ -251,9 +250,18 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             }
 
             bool alreadyFollow = await AlreadyFollowProfile(authenticatedUser, followerProfile);
-            bool Autorization = await BlockAutoInteractProfile(authenticatedUser, followerProfile);
+            bool VerifyAutoFollow = BlockAutoFollow(authenticatedUser, followerProfile);
 
-            if (!alreadyFollow && Autorization)
+            if (VerifyAutoFollow)
+            {
+                return new BaseResponse()
+                {
+                    Message = "Sorry, you cannot follow your own account. Please select another account to follow.",
+                    IsSuccess = false
+                };
+            }
+
+            if (!alreadyFollow)
             {
                 ProfileFollower profileFollower = new()
                 {
