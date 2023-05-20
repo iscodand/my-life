@@ -25,10 +25,11 @@ public class AuthenticationController : Controller
         if (ModelState.IsValid)
         {
             RegisterUserResponse response = await _userRepository.Register(user);
-            bool profile = _profileRepository.RegisterProfile(response.Id);
 
             if (response.IsSuccess)
             {
+                bool profile = _profileRepository.RegisterProfile(response.Id);
+
                 if (profile)
                     return Ok(response);
             }
