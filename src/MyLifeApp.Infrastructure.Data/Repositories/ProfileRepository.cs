@@ -10,6 +10,8 @@ using MyLifeApp.Application.Interfaces;
 using MyLifeApp.Domain.Entities;
 using MyLifeApp.Infrastructure.Data.Context;
 using System.Diagnostics;
+using System.Linq.Expressions;
+using System.Reflection.Metadata.Ecma335;
 using System.Security.Claims;
 
 namespace MyLifeApp.Infrastructure.Data.Repositories
@@ -222,6 +224,12 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             return alreadyFollow;
         }
 
+        private bool BlockAutoFollow(User authenticatedUser, Domain.Entities.Profile followerProfile)
+        {
+            bool result = authenticatedUser.Id == followerProfile?.UserId ? true : false;
+            return result;
+        }
+
         // TO-DO
         // => add ProfileAnalytics followers counter support
         // => add ProfileAnalytics following counter support
@@ -242,6 +250,16 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             }
 
             bool alreadyFollow = await AlreadyFollowProfile(authenticatedUser, followerProfile);
+            bool VerifyAutoFollow = BlockAutoFollow(authenticatedUser, followerProfile);
+
+            if (VerifyAutoFollow)
+            {
+                return new BaseResponse()
+                {
+                    Message = "Sorry, you cannot follow your own account. Please select another account to follow.",
+                    IsSuccess = false
+                };
+            }
 
             if (!alreadyFollow)
             {
