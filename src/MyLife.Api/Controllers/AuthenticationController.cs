@@ -3,7 +3,6 @@ using Identity.Infrastructure.DTOs.Response;
 using Identity.Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using MyLifeApp.Application.Interfaces;
-using System.Diagnostics;
 
 [Route("api/v1/authentication")]
 [ApiController]
@@ -30,11 +29,8 @@ public class AuthenticationController : Controller
 
             if (response.IsSuccess)
             {
-                // Profile must be created
                 if (profile)
                     return Ok(response);
-
-                Debug.WriteLine(profile);
             }
 
             return BadRequest(response);
