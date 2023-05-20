@@ -10,8 +10,6 @@ using MyLifeApp.Application.Interfaces;
 using MyLifeApp.Domain.Entities;
 using MyLifeApp.Infrastructure.Data.Context;
 using System.Diagnostics;
-using System.Linq.Expressions;
-using System.Reflection.Metadata.Ecma335;
 using System.Security.Claims;
 
 namespace MyLifeApp.Infrastructure.Data.Repositories
@@ -42,23 +40,15 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
         }
 
         // TO-DO
-        // Refactor => verify the best way to create a profile
+        // refactor => verify the best way to create a profile
         public bool RegisterProfile(string userId)
         {
-            try
+            Domain.Entities.Profile profile = new()
             {
-                Domain.Entities.Profile profile = new()
-                {
-                    UserId = userId
-                };
-                _context.Add(profile);
-                _context.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex);
-                return false;
-            }
+                UserId = userId
+            };
+            _context.Add(profile);
+            _context.SaveChanges();
 
             return true;
         }
