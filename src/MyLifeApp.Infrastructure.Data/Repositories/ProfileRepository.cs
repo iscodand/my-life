@@ -224,16 +224,14 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             return alreadyFollow;
         }
 
-        private bool BlockAutoFollow(User authenticatedUser, Domain.Entities.Profile followerProfile)
+        private bool IsSelfFollow(User authenticatedUser, Domain.Entities.Profile followerProfile)
         {
-            bool result = authenticatedUser.Id == followerProfile?.UserId ? true : false;
-            return result;
+            return authenticatedUser.Id == followerProfile?.UserId;
         }
 
         // TO-DO
         // => add ProfileAnalytics followers counter support
         // => add ProfileAnalytics following counter support
-        // => fix: user can "auto follow" and "auto unfollow"
         public async Task<BaseResponse> FollowProfile(string profileUsername)
         {
             User authenticatedUser = await GetAuthenticatedUser();
@@ -250,9 +248,9 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             }
 
             bool alreadyFollow = await AlreadyFollowProfile(authenticatedUser, followerProfile);
-            bool VerifyAutoFollow = BlockAutoFollow(authenticatedUser, followerProfile);
+            bool isSelfFollow = IsSelfFollow(authenticatedUser, followerProfile);
 
-            if (VerifyAutoFollow)
+            if (isSelfFollow)
             {
                 return new BaseResponse()
                 {
@@ -306,6 +304,16 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             }
 
             bool alreadyFollow = await AlreadyFollowProfile(authenticatedUser, followerProfile);
+            bool isSelfFollow = IsSelfFollow(authenticatedUser, followerProfile);
+
+            if (isSelfFollow)
+            {
+                return new BaseResponse()
+                {
+                    Message = "Sorry, you cannot follow your own account. Please select another account to follow.",
+                    IsSuccess = false
+                };
+            }
 
             if (alreadyFollow)
             {
