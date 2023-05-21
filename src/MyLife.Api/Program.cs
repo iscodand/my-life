@@ -26,6 +26,8 @@ builder.Services.AddControllers().AddNewtonsoftJson(options =>
 
 // Dependency Injection
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
+//builder.Services.AddScoped<IBaseRepository, BaseRepository>();
+builder.Services.AddScoped<IPostRepository, PostRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();

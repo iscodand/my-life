@@ -7,14 +7,13 @@ using MyLifeApp.Application.Dtos.Requests.Profile;
 using MyLifeApp.Application.Dtos.Responses;
 using MyLifeApp.Application.Dtos.Responses.Profile;
 using MyLifeApp.Application.Interfaces;
-using MyLifeApp.Domain.Entities;
 using MyLifeApp.Infrastructure.Data.Context;
-using System.Diagnostics;
-using System.Security.Claims;
+using MyLifeApp.Domain.Entities;
+using Profile = MyLifeApp.Domain.Entities.Profile;
 
 namespace MyLifeApp.Infrastructure.Data.Repositories
 {
-    public class ProfileRepository : IProfileRepository
+    public class ProfileRepository : BaseRepository, IProfileRepository
     {
         private readonly IHttpContextAccessor _httpContext;
         private readonly UserManager<User> _userManager;
@@ -32,31 +31,22 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             _context = context;
         }
 
-        private async Task<User> GetAuthenticatedUser()
-        {
-            ClaimsPrincipal userClaims = _httpContext.HttpContext!.User;
-            User? authenticatedUser = await _userManager.GetUserAsync(userClaims);
-            return authenticatedUser!;
-        }
-
         // TO-DO
         // refactor => verify the best way to create a profile
-        public bool RegisterProfile(string userId)
+        public async Task<bool> RegisterProfile(string userId)
         {
-            Domain.Entities.Profile profile = new()
+            Profile profile = new()
             {
                 UserId = userId
             };
-            _context.Add(profile);
-            _context.SaveChanges();
-
-            return true;
+            await _context.AddAsync(profile);
+            return await _context.SaveChangesAsync() > 0;
         }
 
         public async Task<DetailProfileResponse> GetAuthenticatedProfile()
         {
-            User authenticatedUser = await GetAuthenticatedUser();
-            Domain.Entities.Profile? profile = await _context.Profiles.FirstAsync(p => p.UserId == authenticatedUser!.Id);
+            User authenticatedUser = await GetAuthenticatedUser(_httpContext, _userManager);
+            Profile? profile = await _context.Profiles.FirstAsync(p => p.UserId == authenticatedUser!.Id);
 
             return new DetailProfileResponse()
             {
@@ -73,7 +63,7 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
 
         public async Task<DetailProfileResponse> GetProfile(string profileUsername)
         {
-            Domain.Entities.Profile? profile = await _context.Profiles.FirstOrDefaultAsync(p => p.User.UserName == profileUsername);
+            Profile? profile = await _context.Profiles.FirstOrDefaultAsync(p => p.User.UserName == profileUsername);
 
             if (profile == null)
             {
@@ -109,7 +99,7 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
                 };
 
             User? authenticatedUser = await _userManager.GetUserAsync(_httpContext.HttpContext!.User);
-            Domain.Entities.Profile profile = _context.Profiles.First(u => u.UserId == authenticatedUser!.Id);
+            Profile profile = _context.Profiles.First(u => u.UserId == authenticatedUser!.Id);
             _mapper.Map(profileRequest, profile);
             await _context.SaveChangesAsync();
 
@@ -120,17 +110,16 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             };
         }
 
-        // TO-DO
-        // => refactor
-        // => maybe creating a BaseProfileFollowers/Following and avoid Code Redundance
-        private List<Domain.Entities.Profile> GetTotalProfileFollowers(Domain.Entities.Profile profile)
+        // TODO
+        // => try AutoMapper with this
+        private List<Profile> GetTotalProfileFollowers(Profile profile)
         {
             List<ProfileFollower> profileFollowers = _context.ProfileFollowers.Where(pf => pf.FollowerId == profile.Id)
                                                      .Include(p => p.Follower.User)
                                                      .ToList();
 
-            List<Domain.Entities.Profile> followersCollection = new();
 
+            List<Profile> followersCollection = new();
             foreach (ProfileFollower followers in profileFollowers)
             {
                 followersCollection.Add(followers.Follower);
@@ -141,7 +130,7 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
 
         public async Task<GetFollowingsResponse> GetProfileFollowers(string profileUsername)
         {
-            Domain.Entities.Profile? profile = await _context.Profiles.FirstOrDefaultAsync(p => p.User.UserName == profileUsername);
+            Profile? profile = await _context.Profiles.FirstOrDefaultAsync(p => p.User.UserName == profileUsername);
 
             if (profile == null)
             {
@@ -166,14 +155,13 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
         // TO-DO
         // => refactor
         // => maybe creating a BaseProfileFollowers/Following and avoid Code Redundance
-        private List<Domain.Entities.Profile> GetTotalProfileFollowings(Domain.Entities.Profile profile)
+        private List<Profile> GetTotalProfileFollowings(Profile profile)
         {
             List<ProfileFollower> profileFollowings = _context.ProfileFollowers.Where(pf => pf.ProfileId == profile.Id)
                                                       .Include(pf => pf.Follower.User)
                                                       .ToList();
 
-            List<Domain.Entities.Profile> followingCollection = new();
-
+            List<Profile> followingCollection = new();
             foreach (ProfileFollower follower in profileFollowings)
             {
                 followingCollection.Add(follower.Follower);
@@ -184,7 +172,7 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
 
         public async Task<GetFollowingsResponse> GetProfileFollowings(string profileUsername)
         {
-            Domain.Entities.Profile? profile = await _context.Profiles.FirstOrDefaultAsync(p => p.User.UserName == profileUsername);
+            Profile? profile = await _context.Profiles.FirstOrDefaultAsync(p => p.User.UserName == profileUsername);
 
             if (profile == null)
             {
@@ -206,15 +194,15 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             };
         }
 
-        private async Task<bool> AlreadyFollowProfile(User authenticatedUser, Domain.Entities.Profile followerProfile)
+        private async Task<bool> AlreadyFollowProfile(User authenticatedUser, Profile followerProfile)
         {
-            Domain.Entities.Profile? authenticatedUserProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == authenticatedUser.Id);
+            Profile? authenticatedUserProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == authenticatedUser.Id);
             List<ProfileFollower> authenticatedUserFollowers = _context.ProfileFollowers.Where(pf => pf.ProfileId == authenticatedUserProfile!.Id).ToList();
             bool alreadyFollow = authenticatedUserFollowers.Any(uf => uf.FollowerId == followerProfile.Id);
             return alreadyFollow;
         }
 
-        private bool IsSelfFollow(User authenticatedUser, Domain.Entities.Profile followerProfile)
+        private bool IsSelfFollow(User authenticatedUser, Profile followerProfile)
         {
             return authenticatedUser.Id == followerProfile?.UserId;
         }
@@ -224,10 +212,10 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
         // => add ProfileAnalytics following counter support
         public async Task<BaseResponse> FollowProfile(string profileUsername)
         {
-            User authenticatedUser = await GetAuthenticatedUser();
-            Domain.Entities.Profile? authenticatedUserProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == authenticatedUser.Id);
+            User authenticatedUser = await GetAuthenticatedUser(_httpContext, _userManager);
+            Profile? authenticatedUserProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == authenticatedUser.Id);
 
-            Domain.Entities.Profile? followerProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.User.UserName == profileUsername);
+            Profile? followerProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.User.UserName == profileUsername);
             if (followerProfile == null)
             {
                 return new BaseResponse()
@@ -280,10 +268,10 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
         // => fix: user can "auto follow" and "auto unfollow"
         public async Task<BaseResponse> UnfollowProfile(string profileUsername)
         {
-            User authenticatedUser = await GetAuthenticatedUser();
-            Domain.Entities.Profile? authenticatedUserProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == authenticatedUser.Id);
+            User authenticatedUser = await GetAuthenticatedUser(_httpContext, _userManager);
+            Profile? authenticatedUserProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == authenticatedUser.Id);
 
-            Domain.Entities.Profile? followerProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.User.UserName == profileUsername);
+            Profile? followerProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.User.UserName == profileUsername);
             if (followerProfile == null)
             {
                 return new BaseResponse()

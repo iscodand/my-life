@@ -2,21 +2,22 @@
 using Identity.Infrastructure.Models;
 using MyLifeApp.Application.Dtos.Requests.Profile;
 using MyLifeApp.Application.Dtos.Responses.Profile;
+using MyLifeApp.Domain.Entities;
+using Profile = MyLifeApp.Domain.Entities.Profile;
 
 namespace MyLifeApp.Application.Mappings
 {
-    public class ProfilesMapping : Profile
+    public class ProfilesMapping : AutoMapper.Profile
     {
         public ProfilesMapping()
         {
-            CreateMap<Domain.Entities.Profile, UpdateProfileRequest>();
-            CreateMap<UpdateProfileRequest, Domain.Entities.Profile>();
+            CreateMap<Profile, UpdateProfileRequest>();
+            CreateMap<UpdateProfileRequest, Profile>();
 
-            CreateMap<GetProfileResponse, Domain.Entities.Profile>();
-            CreateMap<Domain.Entities.Profile, GetProfileResponse>();
+            CreateMap<GetProfileResponse, Profile>();
+            CreateMap<Profile, GetProfileResponse>();
 
-            CreateMap<GetUserResponse, User>();
-            CreateMap<User, GetUserResponse>();
+            CreateMap<ProfileFollower, GetProfileResponse>();
         }
     }
 }
