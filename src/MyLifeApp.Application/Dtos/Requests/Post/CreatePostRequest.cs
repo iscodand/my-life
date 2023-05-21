@@ -9,7 +9,7 @@ namespace MyLifeApp.Application.Dtos.Requests.Post
         public string? Title { get; set; }
 
         [Required(ErrorMessage = "Post Description is required.")]
-        [StringLength(255, MinimumLength = 5)]
+        [StringLength(5000, MinimumLength = 5)]
         public string? Description { get; set; }
         
         public bool IsPrivate { get; set; }
