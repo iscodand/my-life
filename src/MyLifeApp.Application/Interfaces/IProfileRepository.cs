@@ -4,7 +4,7 @@ using MyLifeApp.Application.Dtos.Responses;
 
 namespace MyLifeApp.Application.Interfaces
 {
-    public interface IProfileRepository
+    public interface IProfileRepository : IBaseRepository
     {
         // Implement =>
         // Get all Posts from Profile
@@ -13,7 +13,7 @@ namespace MyLifeApp.Application.Interfaces
         // Get all Comments from Profile
         // Patch Update Profile
 
-        public bool RegisterProfile(string userId);
+        public Task<bool> RegisterProfile(string userId);
         public Task<DetailProfileResponse> GetAuthenticatedProfile();
         public Task<DetailProfileResponse> GetProfile(string profileUsername);
         public Task<GetFollowingsResponse> GetProfileFollowings(string profileUsername);
