@@ -9,6 +9,7 @@
         public BaseEntity()
         {
             Id = Guid.NewGuid();
+            CreatedAt = DateTime.Now;
         }
     }
 }
