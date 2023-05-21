@@ -3,7 +3,6 @@ using Identity.Infrastructure.DTOs.Response;
 using Identity.Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using MyLifeApp.Application.Interfaces;
-using System.Diagnostics;
 
 [Route("api/v1/authentication")]
 [ApiController]
@@ -26,15 +25,13 @@ public class AuthenticationController : Controller
         if (ModelState.IsValid)
         {
             RegisterUserResponse response = await _userRepository.Register(user);
-            bool profile = _profileRepository.RegisterProfile(response.Id);
 
             if (response.IsSuccess)
             {
-                // Profile must be created
+                bool profile = _profileRepository.RegisterProfile(response.Id);
+
                 if (profile)
                     return Ok(response);
-
-                Debug.WriteLine(profile);
             }
 
             return BadRequest(response);
