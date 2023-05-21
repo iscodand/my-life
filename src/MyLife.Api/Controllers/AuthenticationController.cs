@@ -28,7 +28,7 @@ public class AuthenticationController : Controller
 
             if (response.IsSuccess)
             {
-                bool profile = _profileRepository.RegisterProfile(response.Id);
+                bool profile = await _profileRepository.RegisterProfile(response.Id);
 
                 if (profile)
                     return Ok(response);
