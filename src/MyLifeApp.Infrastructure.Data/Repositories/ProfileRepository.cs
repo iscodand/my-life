@@ -162,7 +162,6 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
                                                       .ToList();
 
             List<Profile> followingCollection = new();
-
             foreach (ProfileFollower follower in profileFollowings)
             {
                 followingCollection.Add(follower.Follower);
