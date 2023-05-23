@@ -12,7 +12,6 @@ using MyLifeApp.Domain.Entities;
 using MyLifeApp.Infrastructure.Data.Context;
 using Profile = MyLifeApp.Domain.Entities.Profile;
 
-
 namespace MyLifeApp.Infrastructure.Data.Repositories
 {
     public class PostRepository : BaseRepository, IPostRepository
@@ -33,7 +32,7 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             _userManager = userManager;
         }
 
-        // Return only public Posts
+        // Only return public posts
         public async Task<GetAllPostsResponse> GetAllPosts()
         {
             ICollection<Post> posts = await _context.Posts.Where(p => p.IsPrivate == false)
@@ -54,31 +53,21 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
 
         public async Task<BaseResponse> CreatePost(CreatePostRequest postRequest)
         {
-            if (postRequest == null)
-            {
-                return new BaseResponse
-                {
-                    Message = "Post cannot be null.",
-                    IsSuccess = false
-                };
-            }
-
             User user = await GetAuthenticatedUser(_httpContext, _userManager);
-            Domain.Entities.Profile profile = await _context.Profiles.FirstAsync(p => p.UserId == user.Id);
-
+            Profile profile = await _context.Profiles.FirstAsync(p => p.UserId == user.Id);
             Post post = _mapper.Map<Post>(postRequest);
+
+            PostAnalytics analytics = new()
+            {
+                Post = post,
+                CommentsCount = 0,
+                LikesCount = 0
+            };
+
             post.Profile = profile;
 
-            _context.Add(post);
-
-            if (_context.SaveChanges() == 0)
-            {
-                return new BaseResponse()
-                {
-                    Message = "Error while creating post.",
-                    IsSuccess = false,
-                };
-            }
+            await _context.AddAsync(post);
+            await _context.SaveChangesAsync();
 
             return new BaseResponse()
             {
@@ -144,7 +133,7 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             Post? post = await _context.Posts.Where(p => p.Id == postId)
                                              .Include(p => p.Profile)
                                              .ThenInclude(p => p.User)
-                                             .FirstOrDefaultAsync();
+                                             .FirstAsync();
 
             bool isPostCreator = await IsPostCreator(post);
             if (post.IsPrivate && !isPostCreator)
