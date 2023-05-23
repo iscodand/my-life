@@ -7,9 +7,9 @@ namespace MyLifeApp.Domain.Entities
     public class Profile : BaseEntity
     {
         [ForeignKey("UserId")]
-        public User User { get; set; }
-        public string UserId { get; set; }
-        
+        public User? User { get; set; }
+        public string? UserId { get; set; }
+
         public string? Bio { get; set; }
         public string? Location { get; set; }
         public DateTime? BirthDate { get; set; }
@@ -31,7 +31,8 @@ namespace MyLifeApp.Domain.Entities
 
     public class ProfileAnalytics
     {
-        public Profile Profile { get; set; }
+        public Guid Id { get; set; }
+        public Profile? Profile { get; set; }
         public int FollowersCount { get; set; }
         public int FollowingCount { get; set; }
     }

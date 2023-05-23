@@ -15,6 +15,8 @@ namespace MyLifeApp.Domain.Entities
 
     public class PostAnalytics
     {
+        
+        public Guid Id { get; set; }
         public Post Post { get; set; }
         public int LikesCount { get; set; }
         public int CommentsCount { get; set; }
