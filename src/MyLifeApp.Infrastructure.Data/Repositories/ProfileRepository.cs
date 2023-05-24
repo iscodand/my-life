@@ -60,8 +60,8 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             return new DetailProfileResponse()
             {
                 Id = profile!.Id,
-                Name = profile.User.Name,
-                Username = profile.User.UserName,
+                Name = profile.User?.Name,
+                Username = profile.User?.UserName,
                 Bio = profile.Bio,
                 BirthDate = profile.BirthDate,
                 IsPrivate = profile.IsPrivate,
@@ -226,10 +226,14 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
                 profileAnalytics.FollowingCount += 1;
                 followerAnalytics.FollowersCount += 1;
             }
-            else
+            else if (action == "unfollow")
             {
                 profileAnalytics.FollowingCount -= 1;
                 followerAnalytics.FollowersCount -= 1;
+            }
+            else
+            {
+                throw new InvalidOperationException("Action must be follow or unfollow.");
             }
 
             _context.ProfileAnalytics.Update(profileAnalytics);
