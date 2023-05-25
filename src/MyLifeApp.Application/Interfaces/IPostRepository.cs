@@ -14,8 +14,9 @@ namespace MyLifeApp.Application.Interfaces
         public Task<DetailPostResponse> GetPostById(Guid postId);
         public Task<BaseResponse> CreatePost(CreatePostRequest postRequest);
         public Task<BaseResponse> UpdatePost(Guid postId, UpdatePostRequest postRequest);
+        public Task<BaseResponse> DeletePost(Guid postId);
         public Task<BaseResponse> CommentPost(Guid postId, CommentPostRequest postRequest);
         public Task<BaseResponse> LikePost(Guid postId);
-        public Task<bool> PostExists(Guid postId);
+        public bool PostExists(Guid postId);
     }
 }

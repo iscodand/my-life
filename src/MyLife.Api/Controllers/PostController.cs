@@ -101,5 +101,26 @@ namespace MyLife.Api.Controllers
 
             return StatusCode(500);
         }
+
+        [Authorize]
+        [HttpDelete("{postId}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> Delete(Guid postId)
+        {
+            if (ModelState.IsValid)
+            {
+                BaseResponse response = await _postRepository.DeletePost(postId);
+
+                if (response.IsSuccess)
+                {
+                    return NoContent();
+                }
+
+                return NotFound();
+            }
+
+            return StatusCode(500);
+        }
     }
 }

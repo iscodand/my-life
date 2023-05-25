@@ -39,7 +39,16 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             {
                 UserId = userId
             };
-            await _context.AddAsync(profile);
+
+            ProfileAnalytics analytics = new()
+            {
+                Profile = profile,
+                FollowersCount = 0,
+                FollowingCount = 0
+            };
+
+            await _context.Profiles.AddAsync(profile);
+            await _context.ProfileAnalytics.AddAsync(analytics);
             return await _context.SaveChangesAsync() > 0;
         }
 
@@ -79,7 +88,7 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             return new DetailProfileResponse()
             {
                 Id = profile.Id,
-                Name = profile.User.Name,
+                Name = profile.User!.Name,
                 Username = profile.User.UserName,
                 Bio = profile.Bio,
                 BirthDate = profile.BirthDate,
@@ -110,8 +119,6 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             };
         }
 
-        // TODO
-        // => try AutoMapper with this
         private List<Profile> GetTotalProfileFollowers(Profile profile)
         {
             List<ProfileFollower> profileFollowers = _context.ProfileFollowers.Where(pf => pf.FollowerId == profile.Id)
@@ -202,14 +209,33 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             return alreadyFollow;
         }
 
-        private bool IsSelfFollow(User authenticatedUser, Profile followerProfile)
+        private bool IsSelfFollowing(User authenticatedUser, Profile followerProfile)
         {
             return authenticatedUser.Id == followerProfile?.UserId;
         }
 
-        // TO-DO
-        // => add ProfileAnalytics followers counter support
-        // => add ProfileAnalytics following counter support
+        private void UpdateProfileAnalytics(Profile profile, Profile follower, string action)
+        {
+            ProfileAnalytics profileAnalytics = _context.ProfileAnalytics.Where(a => a.Profile == profile)
+                                                                               .First();
+            ProfileAnalytics followerAnalytics = _context.ProfileAnalytics.Where(a => a.Profile == follower)
+                                                                                .First();
+
+            if (action == "follow")
+            {
+                profileAnalytics.FollowingCount += 1;
+                followerAnalytics.FollowersCount += 1;
+            }
+            else
+            {
+                profileAnalytics.FollowingCount -= 1;
+                followerAnalytics.FollowersCount -= 1;
+            }
+
+            _context.ProfileAnalytics.Update(profileAnalytics);
+            _context.ProfileAnalytics.Update(followerAnalytics);
+        }
+
         public async Task<BaseResponse> FollowProfile(string profileUsername)
         {
             User authenticatedUser = await GetAuthenticatedUser(_httpContext, _userManager);
@@ -226,9 +252,9 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             }
 
             bool alreadyFollow = await AlreadyFollowProfile(authenticatedUser, followerProfile);
-            bool isSelfFollow = IsSelfFollow(authenticatedUser, followerProfile);
+            bool isSelfFollowing = IsSelfFollowing(authenticatedUser, followerProfile);
 
-            if (isSelfFollow)
+            if (isSelfFollowing)
             {
                 return new BaseResponse()
                 {
@@ -245,6 +271,7 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
                     Follower = followerProfile
                 };
 
+                UpdateProfileAnalytics(authenticatedUserProfile!, followerProfile, "follow");
                 await _context.ProfileFollowers.AddAsync(profileFollower);
                 await _context.SaveChangesAsync();
 
@@ -262,10 +289,6 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             };
         }
 
-        // TO-DO
-        // => add ProfileAnalytics followers counter support
-        // => add ProfileAnalytics following counter support
-        // => fix: user can "auto follow" and "auto unfollow"
         public async Task<BaseResponse> UnfollowProfile(string profileUsername)
         {
             User authenticatedUser = await GetAuthenticatedUser(_httpContext, _userManager);
@@ -282,9 +305,9 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             }
 
             bool alreadyFollow = await AlreadyFollowProfile(authenticatedUser, followerProfile);
-            bool isSelfFollow = IsSelfFollow(authenticatedUser, followerProfile);
+            bool isSelfFollowing = IsSelfFollowing(authenticatedUser, followerProfile);
 
-            if (isSelfFollow)
+            if (isSelfFollowing)
             {
                 return new BaseResponse()
                 {
@@ -298,9 +321,11 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
                 ProfileFollower? profileFollower = await _context.ProfileFollowers.FirstOrDefaultAsync(
                     pf => pf.Profile == authenticatedUserProfile
                     && pf.Follower == followerProfile);
-                _context.ProfileFollowers.Remove(profileFollower!);
-                await _context.SaveChangesAsync();
 
+                _context.ProfileFollowers.Remove(profileFollower!);
+
+                UpdateProfileAnalytics(authenticatedUserProfile!, followerProfile, "unfollow");
+                await _context.SaveChangesAsync();
                 return new BaseResponse()
                 {
                     Message = "Unfollow successfuly.",

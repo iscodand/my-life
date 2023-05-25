@@ -4,6 +4,7 @@ namespace MyLifeApp.Application.Dtos.Responses.Post
 {
     public class GetPostsResponse
     {
+        public Guid Id { get; set; }
         public string? Title { get; set; }
         public GetProfileResponse? Profile { get; set; }
         public int Likes { get; set; }

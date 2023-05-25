@@ -10,6 +10,7 @@ using MyLifeApp.Application.Dtos.Responses.Profile;
 using MyLifeApp.Application.Interfaces;
 using MyLifeApp.Domain.Entities;
 using MyLifeApp.Infrastructure.Data.Context;
+using Profile = MyLifeApp.Domain.Entities.Profile;
 
 namespace MyLifeApp.Infrastructure.Data.Repositories
 {
@@ -31,9 +32,11 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             _userManager = userManager;
         }
 
+        // Only return public posts
         public async Task<GetAllPostsResponse> GetAllPosts()
         {
-            ICollection<Post> posts = await _context.Posts.OrderBy(p => p.Id)
+            ICollection<Post> posts = await _context.Posts.Where(p => p.IsPrivate == false)
+                                            .OrderBy(p => p.CreatedAt)
                                             .Include(p => p.Profile)
                                             .ThenInclude(p => p.User)
                                             .ToListAsync();
@@ -50,31 +53,21 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
 
         public async Task<BaseResponse> CreatePost(CreatePostRequest postRequest)
         {
-            if (postRequest == null)
-            {
-                return new BaseResponse
-                {
-                    Message = "Post cannot be null.",
-                    IsSuccess = false
-                };
-            }
-
             User user = await GetAuthenticatedUser(_httpContext, _userManager);
-            Domain.Entities.Profile profile = await _context.Profiles.FirstAsync(p => p.UserId == user.Id);
-
+            Profile profile = await _context.Profiles.FirstAsync(p => p.UserId == user.Id);
             Post post = _mapper.Map<Post>(postRequest);
+
+            PostAnalytics analytics = new()
+            {
+                Post = post,
+                CommentsCount = 0,
+                LikesCount = 0
+            };
+
             post.Profile = profile;
 
-            _context.Add(post);
-
-            if (_context.SaveChanges() == 0)
-            {
-                return new BaseResponse()
-                {
-                    Message = "Error while creating post.",
-                    IsSuccess = false,
-                };
-            }
+            await _context.AddAsync(post);
+            await _context.SaveChangesAsync();
 
             return new BaseResponse()
             {
@@ -83,25 +76,31 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             };
         }
 
-        private bool IsPostCreator(Guid profileId, Post post)
+        private async Task<bool> IsPostCreator(Post post)
         {
-            return profileId == post.Profile.Id;
+            User authenticatedUser = await GetAuthenticatedUser(_httpContext, _userManager);
+            Profile profile = await _context.Profiles.FirstAsync(p => p.User == authenticatedUser);
+            return profile == post.Profile;
         }
 
         public async Task<BaseResponse> UpdatePost(Guid postId, UpdatePostRequest postRequest)
         {
-            if (postRequest == null)
+            Post? post = await _context.Posts.Where(p => p.Id == postId)
+                                            .Include(p => p.Profile)
+                                            .FirstOrDefaultAsync();
+
+            if (post == null)
+            {
                 return new BaseResponse()
                 {
-                    Message = "Post cannot be null.",
+                    Message = "Post not found",
                     IsSuccess = false
                 };
+            }
 
-            Post post = await _context.Posts.Where(p => p.Id == postId)
-                                            .Include(p => p.Profile)
-                                            .FirstAsync();
+            bool isPostCreator = await IsPostCreator(post);
 
-            if (!IsPostCreator(post.Profile.Id, post))
+            if (!isPostCreator)
             {
                 return new BaseResponse()
                 {
@@ -122,16 +121,26 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
 
         public async Task<DetailPostResponse> GetPostById(Guid postId)
         {
-            Post? post = await _context.Posts.Where(p => p.Id == postId)
-                                             .Include(p => p.Profile)
-                                             .ThenInclude(p => p.User)
-                                             .FirstOrDefaultAsync();
-
-            if (post == null)
+            if (PostExists(postId))
             {
                 return new DetailPostResponse()
                 {
                     Message = "Post not found.",
+                    IsSuccess = false
+                };
+            }
+
+            Post? post = await _context.Posts.Where(p => p.Id == postId)
+                                             .Include(p => p.Profile)
+                                             .ThenInclude(p => p.User)
+                                             .FirstAsync();
+
+            bool isPostCreator = await IsPostCreator(post);
+            if (post.IsPrivate && !isPostCreator)
+            {
+                return new DetailPostResponse()
+                {
+                    Message = "Post not found",
                     IsSuccess = false
                 };
             }
@@ -148,6 +157,36 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             };
         }
 
+        public async Task<BaseResponse> DeletePost(Guid postId)
+        {
+            Post? post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == postId);
+
+            if (post == null)
+            {
+                return new DetailPostResponse()
+                {
+                    IsSuccess = false
+                };
+            }
+
+            bool isPostCreator = await IsPostCreator(post);
+            if (!isPostCreator)
+            {
+                return new DetailPostResponse()
+                {
+                    IsSuccess = false
+                };
+            }
+
+            _context.Posts.Remove(post);
+            await _context.SaveChangesAsync();
+
+            return new BaseResponse()
+            {
+                IsSuccess = true
+            };
+        }
+
         public Task<BaseResponse> CommentPost(Guid postId, CommentPostRequest postRequest)
         {
             throw new NotImplementedException();
@@ -158,9 +197,10 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<bool> PostExists(Guid postId)
+        public bool PostExists(Guid postId)
         {
-            throw new NotImplementedException();
+            Post? post = _context.Posts.FirstOrDefault(p => p.Id == postId);
+            return post == null;
         }
     }
 }
