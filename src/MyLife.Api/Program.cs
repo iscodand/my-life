@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MyLifeApp.Application.Interfaces;
+using MyLifeApp.Application.Interfaces.Services;
+using MyLifeApp.Application.Services;
 using MyLifeApp.Infrastructure.Data.Context;
 using MyLifeApp.Infrastructure.Data.Repositories;
 using System.Text;
@@ -28,6 +30,11 @@ builder.Services.AddControllers().AddNewtonsoftJson(options =>
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
 //builder.Services.AddScoped<IBaseRepository, BaseRepository>();
 builder.Services.AddScoped<IPostRepository, PostRepository>();
+// Refactoring things
+builder.Services.AddScoped<IRefactorPostRepository, RefactorPostRepository>();
+builder.Services.AddScoped<IRefactorProfileRepository, RefactorProfileRepository>();
+builder.Services.AddScoped<IPostService, PostService>();
+//
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -47,6 +54,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
     options.Password.RequiredLength = 8;
+    options.User.RequireUniqueEmail = true;
 }).AddEntityFrameworkStores<ApplicationDbContext>()
   .AddDefaultTokenProviders();
 
@@ -82,3 +90,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+// run with custom port
+// dotnet run --urls=http://localhost:5001/
