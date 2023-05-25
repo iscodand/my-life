@@ -51,6 +51,8 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             };
         }
 
+
+        // refactored
         public async Task<BaseResponse> CreatePost(CreatePostRequest postRequest)
         {
             User user = await GetAuthenticatedUser(_httpContext, _userManager);
@@ -187,9 +189,22 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             };
         }
 
-        public Task<BaseResponse> CommentPost(Guid postId, CommentPostRequest postRequest)
+        public async Task<BaseResponse> CommentPost(Guid postId, CommentPostRequest postRequest)
         {
-            throw new NotImplementedException();
+            if (PostExists(postId))
+            {
+                return new BaseResponse()
+                {
+                    Message = "Post not found",
+                    IsSuccess = false
+                };
+            }
+
+            Post? post = await _context.Posts.FirstAsync(p => p.Id == postId);
+
+            PostAnalytics? analytics = await _context.PostAnalytics.FirstAsync(a => a.Post == post);
+
+            return null;
         }
 
         public Task<BaseResponse> LikePost(Guid postId)
