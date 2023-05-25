@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MyLifeApp.Application.Dtos.Requests.Post;
 using MyLifeApp.Application.Dtos.Responses;
 using MyLifeApp.Application.Interfaces;
+using MyLifeApp.Application.Interfaces.Services;
 
 namespace MyLife.Api.Controllers
 {
@@ -11,10 +12,12 @@ namespace MyLife.Api.Controllers
     public class PostController : Controller
     {
         private readonly IPostRepository _postRepository;
+        private readonly IPostService _postService;
 
-        public PostController(IPostRepository postRepository)
+        public PostController(IPostRepository postRepository, IPostService postService)
         {
             _postRepository = postRepository;
+            _postService = postService;
         }
 
         [HttpGet]
@@ -67,7 +70,7 @@ namespace MyLife.Api.Controllers
         {
             if (ModelState.IsValid)
             {
-                BaseResponse response = await _postRepository.CreatePost(request);
+                BaseResponse response = await _postService.CreatePost(request);
 
                 if (response.IsSuccess)
                 {
