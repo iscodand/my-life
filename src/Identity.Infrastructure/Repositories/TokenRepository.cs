@@ -23,7 +23,6 @@ namespace Identity.Infrastructure.Repositories
             return authSigningKey;
         }
 
-
         public JwtSecurityToken GenerateAccessToken(List<Claim> claims)
         {
             _ = int.TryParse(_configuration["JWTSettings:AccessTokenValidityInMinutes"],
