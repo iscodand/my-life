@@ -1,5 +1,6 @@
 using MyLifeApp.Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
+using MyLifeApp.Application.Interfaces;
 
 namespace MyLifeApp.Infrastructure.Data.Repositories
 {
@@ -25,20 +26,25 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
         public async Task<T> Create(T entity)
         {
             await _context.Set<T>().AddAsync(entity);
-            await _context.SaveChangesAsync();
+            await Save();
             return entity;
         }
 
         public async Task Update(T entity)
         {
             _context.Entry(entity).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+            await Save();
         }
 
         public async Task Delete(T entity)
         {
             _context.Set<T>().Remove(entity);
-            await _context.SaveChangesAsync();
+            await Save();
+        }
+
+        public Task Save()
+        {
+            return _context.SaveChangesAsync();
         }
     }
 }
