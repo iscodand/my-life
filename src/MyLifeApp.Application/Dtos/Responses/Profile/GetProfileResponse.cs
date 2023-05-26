@@ -1,6 +1,4 @@
-﻿using Identity.Infrastructure.Models;
-
-namespace MyLifeApp.Application.Dtos.Responses.Profile
+﻿namespace MyLifeApp.Application.Dtos.Responses.Profile
 {
     public class GetProfileResponse
     {

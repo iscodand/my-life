@@ -4,6 +4,7 @@ using MyLifeApp.Application.Dtos.Requests.Profile;
 using MyLifeApp.Application.Dtos.Responses;
 using MyLifeApp.Application.Dtos.Responses.Profile;
 using MyLifeApp.Application.Interfaces;
+using MyLifeApp.Application.Interfaces.Services;
 
 namespace MyLife.Api.Controllers
 {
@@ -12,21 +13,23 @@ namespace MyLife.Api.Controllers
     public class ProfileController : Controller
     {
         private readonly IProfileRepository _profileRepository;
+        private readonly IProfileService _profileService;
 
-        public ProfileController(IProfileRepository profileRepository)
+        public ProfileController(IProfileRepository profileRepository, IProfileService profileService)
         {
             _profileRepository = profileRepository;
+            _profileService = profileService;
         }
 
         [Authorize]
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(DetailProfileResponse))]
         [ProducesResponseType(404, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> GetMyProfile()
+        public async Task<IActionResult> GetAuthenticatedProfile()
         {
             if (ModelState.IsValid)
             {
-                DetailProfileResponse response = await _profileRepository.GetAuthenticatedProfile();
+                DetailProfileResponse response = await _profileService.GetAuthenticatedProfile();
 
                 if (response.IsSuccess)
                 {
@@ -46,7 +49,7 @@ namespace MyLife.Api.Controllers
         {
             if (ModelState.IsValid)
             {
-                DetailProfileResponse response = await _profileRepository.GetProfile(profileUsername);
+                DetailProfileResponse response = await _profileService.GetProfileByUsername(profileUsername);
 
                 if (response.IsSuccess)
                 {
@@ -66,7 +69,7 @@ namespace MyLife.Api.Controllers
         {
             if (ModelState.IsValid)
             {
-                BaseResponse response = await _profileRepository.UpdateProfile(profileRequest);
+                BaseResponse response = await _profileService.UpdateProfile(profileRequest);
                 
                 if (response.IsSuccess)
                 {
