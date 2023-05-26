@@ -28,12 +28,11 @@ builder.Services.AddControllers().AddNewtonsoftJson(options =>
 
 // Dependency Injection
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
-//builder.Services.AddScoped<IBaseRepository, BaseRepository>();
 builder.Services.AddScoped<IPostRepository, PostRepository>();
-// Refactoring things
-builder.Services.AddScoped<IRefactorPostRepository, RefactorPostRepository>();
-builder.Services.AddScoped<IRefactorProfileRepository, RefactorProfileRepository>();
 builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
+// Refactoring things
+builder.Services.AddScoped<IRefactorProfileRepository, RefactorProfileRepository>();
 //
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
