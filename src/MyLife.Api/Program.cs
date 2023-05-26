@@ -35,7 +35,7 @@ builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<IRefactorProfileRepository, RefactorProfileRepository>();
 //
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
+//builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -92,3 +92,5 @@ app.Run();
 
 // run with custom port
 // dotnet run --urls=http://localhost:5001/
+
+// https://www.creative-tim.com/product/vue-argon-dashboard-asp-net
