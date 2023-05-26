@@ -13,7 +13,7 @@ using Profile = MyLifeApp.Domain.Entities.Profile;
 
 namespace MyLifeApp.Infrastructure.Data.Repositories
 {
-    public class ProfileRepository : BaseRepository, IProfileRepository
+    public class ProfileRepository : BaseRepository
     {
         private readonly IHttpContextAccessor _httpContext;
         private readonly UserManager<User> _userManager;
@@ -29,94 +29,6 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             _userManager = userManager;
             _mapper = mapper;
             _context = context;
-        }
-
-        // TO-DO
-        // refactor => verify the best way to create a profile
-        public async Task<bool> RegisterProfile(string userId)
-        {
-            Profile profile = new()
-            {
-                UserId = userId
-            };
-
-            ProfileAnalytics analytics = new()
-            {
-                Profile = profile,
-                FollowersCount = 0,
-                FollowingCount = 0
-            };
-
-            await _context.Profiles.AddAsync(profile);
-            await _context.ProfileAnalytics.AddAsync(analytics);
-            return await _context.SaveChangesAsync() > 0;
-        }
-
-        public async Task<DetailProfileResponse> GetAuthenticatedProfile()
-        {
-            User authenticatedUser = await GetAuthenticatedUser(_httpContext, _userManager);
-            Profile? profile = await _context.Profiles.FirstAsync(p => p.UserId == authenticatedUser!.Id);
-
-            return new DetailProfileResponse()
-            {
-                Id = profile!.Id,
-                Name = profile.User?.Name,
-                Username = profile.User?.UserName,
-                Bio = profile.Bio,
-                BirthDate = profile.BirthDate,
-                IsPrivate = profile.IsPrivate,
-                Message = "Success",
-                IsSuccess = true
-            };
-        }
-
-        public async Task<DetailProfileResponse> GetProfile(string profileUsername)
-        {
-            Profile? profile = await _context.Profiles.FirstOrDefaultAsync(p => p.User.UserName == profileUsername);
-
-            if (profile == null)
-            {
-                return new DetailProfileResponse()
-                {
-                    Message = "User not found",
-                    IsSuccess = false
-                };
-            }
-
-            User user = await _context.Users.FirstAsync(u => u.UserName == profileUsername);
-
-            return new DetailProfileResponse()
-            {
-                Id = profile.Id,
-                Name = profile.User!.Name,
-                Username = profile.User.UserName,
-                Bio = profile.Bio,
-                BirthDate = profile.BirthDate,
-                IsPrivate = profile.IsPrivate,
-                Message = "Success",
-                IsSuccess = true
-            };
-        }
-
-        public async Task<BaseResponse> UpdateProfile(UpdateProfileRequest profileRequest)
-        {
-            if (profileRequest == null)
-                return new BaseResponse()
-                {
-                    Message = "User cannot be null.",
-                    IsSuccess = false
-                };
-
-            User? authenticatedUser = await _userManager.GetUserAsync(_httpContext.HttpContext!.User);
-            Profile profile = _context.Profiles.First(u => u.UserId == authenticatedUser!.Id);
-            _mapper.Map(profileRequest, profile);
-            await _context.SaveChangesAsync();
-
-            return new BaseResponse()
-            {
-                Message = "User successfuly updated.",
-                IsSuccess = true
-            };
         }
 
         private List<Profile> GetTotalProfileFollowers(Profile profile)
@@ -179,7 +91,7 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
 
         public async Task<GetFollowingsResponse> GetProfileFollowings(string profileUsername)
         {
-            Profile? profile = await _context.Profiles.FirstOrDefaultAsync(p => p.User.UserName == profileUsername);
+            Profile? profile = await _context.Profiles.FirstOrDefaultAsync(p => p.User!.UserName == profileUsername);
 
             if (profile == null)
             {
