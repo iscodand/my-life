@@ -189,7 +189,8 @@ namespace MyLifeApp.Application.Services
                 Follower = follower
             };
 
-            await _profileRepository.CreateProfileFollowerAsync(follow);
+            profile.ProfileFollowers!.Add(follow);
+            await _profileRepository.SaveAsync();
 
             return new BaseResponse()
             {
@@ -224,7 +225,9 @@ namespace MyLifeApp.Application.Services
             }
 
             ProfileFollower unfollow = profileFollowings.Where(pf => pf.Follower == follower).First();
-            await _profileRepository.RemoveProfileFollowerAsync(unfollow);
+
+            profile.ProfileFollowers!.Remove(unfollow);
+            await _profileRepository.SaveAsync();
 
             return new BaseResponse()
             {

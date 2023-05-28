@@ -8,7 +8,5 @@ namespace MyLifeApp.Application.Interfaces.Repositories
         public Task<ICollection<ProfileFollower>> GetProfileFollowersAsync(Profile profile);
         public Task<ICollection<ProfileFollower>> GetProfileFollowingsAsync(Profile profile);
         public Task<ProfileAnalytics> CreateProfileAnalyticsAsync(ProfileAnalytics profileAnalytics);
-        public Task<ProfileFollower> CreateProfileFollowerAsync(ProfileFollower profileFollower);
-        public Task RemoveProfileFollowerAsync(ProfileFollower profileFollower);
     }
 }
