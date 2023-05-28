@@ -1,25 +1,14 @@
-﻿using MyLifeApp.Application.Dtos.Requests.Profile;
-using MyLifeApp.Application.Dtos.Responses.Profile;
-using MyLifeApp.Application.Dtos.Responses;
+using MyLifeApp.Domain.Entities;
 
 namespace MyLifeApp.Application.Interfaces
 {
-    public interface IProfileRepository : IBaseRepository
+    public interface IProfileRepository : IGenericRepository<Profile>
     {
-        // Implement =>
-        // Get all Posts from Profile
-        // Get all Followers from Profile
-        // Get all Posts Liked from Profile
-        // Get all Comments from Profile
-        // Patch Update Profile
-
-        public Task<bool> RegisterProfile(string userId);
-        public Task<DetailProfileResponse> GetAuthenticatedProfile();
-        public Task<DetailProfileResponse> GetProfile(string profileUsername);
-        public Task<GetFollowingsResponse> GetProfileFollowings(string profileUsername);
-        public Task<GetFollowingsResponse> GetProfileFollowers(string profileUsername);
-        public Task<BaseResponse> UpdateProfile(UpdateProfileRequest profileRequest);
-        public Task<BaseResponse> FollowProfile(string profileUsername);
-        public Task<BaseResponse> UnfollowProfile(string profileUsername);
+        public Task<Profile> GetProfileByUsername(string username);
+        public Task<ICollection<ProfileFollower>> GetProfileFollowers(Profile profile);
+        public Task<ICollection<ProfileFollower>> GetProfileFollowings(Profile profile);
+        public Task<ProfileAnalytics> CreateProfileAnalytics(ProfileAnalytics profileAnalytics);
+        public Task<ProfileFollower> CreateProfileFollower(ProfileFollower profileFollower);
+        public Task RemoveProfileFollower(ProfileFollower profileFollower);
     }
 }
