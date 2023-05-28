@@ -1,9 +1,4 @@
-﻿using Identity.Infrastructure.Interfaces;
-using Identity.Infrastructure.Models;
-using Identity.Infrastructure.Repositories;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -16,10 +11,8 @@ namespace Identity.Infrastructure
         // TO-DO: Add services extensions for Identity.Infra
         public static void AddIdentityInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-            #region Services
-            services.AddTransient<IUserRepository, UserRepository>();
-            services.AddTransient<ITokenRepository, TokenRepository>();
-            #endregion
+            //services.AddTransient<IUserService, UserService>();
+            //services.AddTransient<ITokenRepository, TokenService>();
 
             services.AddAuthentication(auth =>
             {

@@ -1,9 +1,9 @@
+using Microsoft.EntityFrameworkCore;
+using MyLifeApp.Application.Dtos.Requests.Post;
+using MyLifeApp.Application.Dtos.Responses;
+using MyLifeApp.Application.Interfaces.Repositories;
 using MyLifeApp.Domain.Entities;
 using MyLifeApp.Infrastructure.Data.Context;
-using MyLifeApp.Application.Interfaces;
-using MyLifeApp.Application.Dtos.Responses;
-using MyLifeApp.Application.Dtos.Requests.Post;
-using Microsoft.EntityFrameworkCore;
 
 namespace MyLifeApp.Infrastructure.Data.Repositories
 {
@@ -16,7 +16,7 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             _posts = context.Set<Post>();
         }
 
-        public async Task<ICollection<Post>> GetPublicPosts()
+        public async Task<ICollection<Post>> GetPublicPostsAsync()
         {
             return await _posts.Where(p => p.IsPrivate == false)
                                .OrderBy(p => p.CreatedAt)
@@ -25,7 +25,7 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
                                .ToListAsync();
         }
 
-        public async Task<Post> GetPostDetails(Guid postId)
+        public async Task<Post> GetPostDetailsAsync(Guid postId)
         {
             return await _posts.Where(p => p.Id == postId)
                                .Include(p => p.Profile)
@@ -33,17 +33,17 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
                                .FirstAsync();
         }
 
-        public async Task<bool> PostExists(Guid postId)
+        public async Task<bool> PostExistsAsync(Guid postId)
         {
             return await _posts.AnyAsync(p => p.Id == postId);
         }
 
-        public Task<BaseResponse> CommentPost(Guid postId, CommentPostRequest postRequest)
+        public Task<BaseResponse> CommentPostAsync(Guid postId, CommentPostRequest postRequest)
         {
             throw new NotImplementedException();
         }
 
-        public Task<BaseResponse> LikePost(Guid postId)
+        public Task<BaseResponse> LikePostAsync(Guid postId)
         {
             throw new NotImplementedException();
         }

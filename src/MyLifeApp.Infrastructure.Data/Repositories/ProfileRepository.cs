@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using MyLifeApp.Application.Interfaces;
+using MyLifeApp.Application.Interfaces.Repositories;
 using MyLifeApp.Domain.Entities;
 using MyLifeApp.Infrastructure.Data.Context;
 
@@ -18,50 +18,37 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             _analytics = context.Set<ProfileAnalytics>();
         }
 
-        public async Task<Profile> GetProfileByUsername(string username)
+        public async Task<Profile> GetProfileByUsernameAsync(string username)
         {
             return await _profiles.Where(p => p.User.NormalizedUserName == username.ToUpper().Trim())
                                   .Include(p => p.User)
                                   .FirstOrDefaultAsync();
         }
 
-        public async Task<ICollection<ProfileFollower>> GetProfileFollowers(Profile profile)
+        public async Task<ICollection<ProfileFollower>> GetProfileFollowersAsync(Profile profile)
         {
             return await _profileFollowers.Where(pf => pf.Follower == profile)
                                     .Include(pf => pf.Follower.User)
                                     .ToListAsync();
         }
 
-        public async Task<ICollection<ProfileFollower>> GetProfileFollowings(Profile profile)
+        public async Task<ICollection<ProfileFollower>> GetProfileFollowingsAsync(Profile profile)
         {
             return await _profileFollowers.Where(pf => pf.Profile == profile)
                                     .Include(pf => pf.Follower.User)
                                     .ToListAsync();
         }
 
-        public async Task<ProfileAnalytics> GetProfileAnalytics(Profile profile)
+        public async Task<ProfileAnalytics> GetProfileAnalyticsAsync(Profile profile)
         {
             return await _analytics.FirstOrDefaultAsync(p => p.Profile == profile);
         }
 
-        public async Task<ProfileAnalytics> CreateProfileAnalytics(ProfileAnalytics profileAnalytics)
+        public async Task<ProfileAnalytics> CreateProfileAnalyticsAsync(ProfileAnalytics profileAnalytics)
         {
             await _analytics.AddAsync(profileAnalytics);
-            await base.Save();
+            await base.SaveAsync();
             return profileAnalytics;
-        }
-
-        public async Task<ProfileFollower> CreateProfileFollower(ProfileFollower profileFollower)
-        {
-            await _profileFollowers.AddAsync(profileFollower);
-            await base.Save();
-            return profileFollower;
-        }
-
-        public async Task RemoveProfileFollower(ProfileFollower profileFollower)
-        {
-            _profileFollowers.Remove(profileFollower);
-            await base.Save();
         }
     }
 }

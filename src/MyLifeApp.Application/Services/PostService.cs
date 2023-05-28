@@ -1,16 +1,15 @@
 using AutoMapper;
+using Identity.Infrastructure.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using System.Security.Claims;
-
-using Identity.Infrastructure.Models;
-using MyLifeApp.Application.Interfaces.Services;
-using MyLifeApp.Application.Interfaces;
-using MyLifeApp.Application.Dtos.Responses;
-using MyLifeApp.Application.Dtos.Responses.Profile;
 using MyLifeApp.Application.Dtos.Requests.Post;
+using MyLifeApp.Application.Dtos.Responses;
 using MyLifeApp.Application.Dtos.Responses.Post;
+using MyLifeApp.Application.Dtos.Responses.Profile;
+using MyLifeApp.Application.Interfaces.Repositories;
+using MyLifeApp.Application.Interfaces.Services;
 using MyLifeApp.Domain.Entities;
+using System.Security.Claims;
 using Profile = MyLifeApp.Domain.Entities.Profile;
 
 namespace MyLifeApp.Application.Services
@@ -36,9 +35,9 @@ namespace MyLifeApp.Application.Services
             _userManager = userManager;
         }
 
-        public async Task<GetAllPostsResponse> GetPublicPosts()
+        public async Task<GetAllPostsResponse> GetPublicPostsAsync()
         {
-            ICollection<Post> posts = await _postRepository.GetPublicPosts();
+            ICollection<Post> posts = await _postRepository.GetPublicPostsAsync();
             ICollection<GetPostsResponse> postsMapper = _mapper.Map<ICollection<GetPostsResponse>>(posts);
 
             return new GetAllPostsResponse()
@@ -49,9 +48,9 @@ namespace MyLifeApp.Application.Services
             };
         }
 
-        public async Task<DetailPostResponse> GetPostById(Guid postId)
+        public async Task<DetailPostResponse> GetPostByIdAsync(Guid postId)
         {
-            if (!await _postRepository.PostExists(postId))
+            if (!await _postRepository.PostExistsAsync(postId))
             {
                 return new DetailPostResponse()
                 {
@@ -60,7 +59,7 @@ namespace MyLifeApp.Application.Services
                 };
             }
 
-            Post post = await _postRepository.GetPostDetails(postId);
+            Post post = await _postRepository.GetPostDetailsAsync(postId);
             Profile profile = post.Profile;
 
             GetPostsResponse postMapper = _mapper.Map<GetPostsResponse>(post);
@@ -76,28 +75,28 @@ namespace MyLifeApp.Application.Services
             };
         }
 
-        private async Task<Profile> GetAuthenticatedProfile()
+        private async Task<Profile> GetAuthenticatedProfileAsync()
         {
             ClaimsPrincipal userClaims = _httpContext.HttpContext!.User;
             User? authenticatedUser = await _userManager.GetUserAsync(userClaims);
-            ICollection<Profile> profiles = await _profileRepository.GetAll();
+            ICollection<Profile> profiles = await _profileRepository.GetAllAsync();
             Profile authenticatedProfile = profiles.First(p => p.UserId == authenticatedUser!.Id);
 
             return authenticatedProfile;
         }
 
-        private bool IsPostCreator(Post post, Profile profile)
+        private static bool IsPostCreator(Post post, Profile profile)
         {
             return post.Profile == profile;
         }
 
-        public async Task<BaseResponse> CreatePost(CreatePostRequest request)
+        public async Task<BaseResponse> CreatePostAsync(CreatePostRequest request)
         {
-            Profile authenticatedProfile = await GetAuthenticatedProfile();
+            Profile authenticatedProfile = await GetAuthenticatedProfileAsync();
 
             Post post = _mapper.Map<Post>(request);
             post.Profile = authenticatedProfile;
-            await _postRepository.Create(post);
+            await _postRepository.CreateAsync(post);
 
             PostAnalytics analytics = new()
             {
@@ -113,9 +112,9 @@ namespace MyLifeApp.Application.Services
             };
         }
 
-        public async Task<BaseResponse> UpdatePost(Guid postId, UpdatePostRequest request)
+        public async Task<BaseResponse> UpdatePostAsync(Guid postId, UpdatePostRequest request)
         {
-            if (!await _postRepository.PostExists(postId))
+            if (!await _postRepository.PostExistsAsync(postId))
             {
                 return new DetailPostResponse()
                 {
@@ -124,8 +123,8 @@ namespace MyLifeApp.Application.Services
                 };
             }
 
-            Post postToUpdate = await _postRepository.GetById(postId);
-            Profile authenticatedProfile = await GetAuthenticatedProfile();
+            Post postToUpdate = await _postRepository.GetByIdAsync(postId);
+            Profile authenticatedProfile = await GetAuthenticatedProfileAsync();
 
             if (!IsPostCreator(postToUpdate, authenticatedProfile))
             {
@@ -137,7 +136,7 @@ namespace MyLifeApp.Application.Services
             }
 
             _mapper.Map(request, postToUpdate);
-            await _postRepository.Save();
+            await _postRepository.SaveAsync();
 
             return new BaseResponse()
             {
@@ -146,9 +145,9 @@ namespace MyLifeApp.Application.Services
             };
         }
 
-        public async Task<BaseResponse> DeletePost(Guid postId)
+        public async Task<BaseResponse> DeletePostAsync(Guid postId)
         {
-            if (!await _postRepository.PostExists(postId))
+            if (!await _postRepository.PostExistsAsync(postId))
             {
                 return new DetailPostResponse()
                 {
@@ -157,8 +156,8 @@ namespace MyLifeApp.Application.Services
                 };
             }
 
-            Post postToDelete = await _postRepository.GetById(postId);
-            Profile authenticatedProfile = await GetAuthenticatedProfile();
+            Post postToDelete = await _postRepository.GetByIdAsync(postId);
+            Profile authenticatedProfile = await GetAuthenticatedProfileAsync();
 
             if (!IsPostCreator(postToDelete, authenticatedProfile))
             {
@@ -169,7 +168,7 @@ namespace MyLifeApp.Application.Services
                 };
             }
 
-            await _postRepository.Delete(postToDelete);
+            await _postRepository.DeleteAsync(postToDelete);
 
             return new BaseResponse()
             {

@@ -1,20 +1,19 @@
 using Identity.Infrastructure.DTOs.Request;
 using Identity.Infrastructure.DTOs.Response;
-using Identity.Infrastructure.Interfaces;
+using Identity.Infrastructure.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
-using MyLifeApp.Application.Interfaces;
 using MyLifeApp.Application.Interfaces.Services;
 
 [Route("api/v1/authentication")]
 [ApiController]
 public class AuthenticationController : Controller
 {
-    public readonly IUserRepository _userRepository;
+    public readonly IUserService _userService;
     public readonly IProfileService _profileService;
 
-    public AuthenticationController(IUserRepository userRepository, IProfileService profileService)
+    public AuthenticationController(IUserService userService, IProfileService profileService)
     {
-        _userRepository = userRepository;
+        _userService = userService;
         _profileService = profileService;
     }
 
@@ -25,11 +24,11 @@ public class AuthenticationController : Controller
     {
         if (ModelState.IsValid)
         {
-            RegisterUserResponse response = await _userRepository.Register(user);
+            RegisterUserResponse response = await _userService.RegisterAsync(user);
 
             if (response.IsSuccess)
             {
-                bool profile = await _profileService.CreateProfile(response.Id);
+                bool profile = await _profileService.CreateProfileAsync(response.Id);
 
                 if (profile)
                     return Ok(response);
@@ -48,7 +47,7 @@ public class AuthenticationController : Controller
     {
         if (ModelState.IsValid)
         {
-            LoginUserResponse response = await _userRepository.Login(user);
+            LoginUserResponse response = await _userService.LoginAsync(user);
 
             if (response.IsSuccess)
             {
@@ -68,7 +67,7 @@ public class AuthenticationController : Controller
     {
         if (ModelState.IsValid)
         {
-            RefreshTokenResponse response = await _userRepository.RefreshToken(request);
+            RefreshTokenResponse response = await _userService.RefreshTokenAsync(request);
 
             if (response.IsSuccess)
             {

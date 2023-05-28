@@ -1,16 +1,16 @@
-using Identity.Infrastructure.Interfaces;
+using Identity.Infrastructure.Interfaces.Services;
 using Identity.Infrastructure.Models;
-using Identity.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using MyLifeApp.Application.Interfaces;
 using MyLifeApp.Application.Interfaces.Services;
 using MyLifeApp.Application.Services;
 using MyLifeApp.Infrastructure.Data.Context;
 using MyLifeApp.Infrastructure.Data.Repositories;
+using Identity.Infrastructure.Services;
 using System.Text;
+using MyLifeApp.Application.Interfaces.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,8 +27,8 @@ builder.Services.AddControllers().AddNewtonsoftJson(options =>
 //    });
 
 // Dependency Injection
-builder.Services.AddScoped<ITokenRepository, TokenRepository>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPostRepository, PostRepository>();
 builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
 builder.Services.AddScoped<IPostService, PostService>();

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using MyLifeApp.Application.Dtos.Requests.Profile;
 using MyLifeApp.Application.Dtos.Responses;
 using MyLifeApp.Application.Dtos.Responses.Profile;
-using MyLifeApp.Application.Interfaces;
+using MyLifeApp.Application.Interfaces.Repositories;
 using MyLifeApp.Application.Interfaces.Services;
 using MyLifeApp.Domain.Entities;
 using System.Security.Claims;
@@ -31,7 +31,7 @@ namespace MyLifeApp.Application.Services
             _userManager = userManager;
         }
 
-        public async Task<bool> CreateProfile(string userId)
+        public async Task<bool> CreateProfileAsync(string userId)
         {
             Profile profile = new()
             {
@@ -45,25 +45,25 @@ namespace MyLifeApp.Application.Services
                 FollowingCount = 0
             };
 
-            Profile? created = await _profileRepository.Create(profile);
-            await _profileRepository.CreateProfileAnalytics(analytics);
+            Profile? created = await _profileRepository.CreateAsync(profile);
+            await _profileRepository.CreateProfileAnalyticsAsync(analytics);
 
             return created != null;
         }
 
-        private async Task<Profile> _GetAuthenticatedProfile()
+        private async Task<Profile> _GetAuthenticatedProfileAsync()
         {
             ClaimsPrincipal userClaims = _httpContext.HttpContext!.User;
             User? authenticatedUser = await _userManager.GetUserAsync(userClaims);
-            ICollection<Profile> profiles = await _profileRepository.GetAll();
+            ICollection<Profile> profiles = await _profileRepository.GetAllAsync();
             Profile authenticatedProfile = profiles.First(p => p.UserId == authenticatedUser!.Id);
 
             return authenticatedProfile;
         }
 
-        public async Task<DetailProfileResponse> GetAuthenticatedProfile()
+        public async Task<DetailProfileResponse> GetAuthenticatedProfileAsync()
         {
-            Profile profile = await _GetAuthenticatedProfile();
+            Profile profile = await _GetAuthenticatedProfileAsync();
 
             return new DetailProfileResponse()
             {
@@ -78,9 +78,9 @@ namespace MyLifeApp.Application.Services
             };
         }
 
-        public async Task<DetailProfileResponse> GetProfileByUsername(string username)
+        public async Task<DetailProfileResponse> GetProfileByUsernameAsync(string username)
         {
-            Profile? profile = await _profileRepository.GetProfileByUsername(username);
+            Profile? profile = await _profileRepository.GetProfileByUsernameAsync(username);
 
             return new DetailProfileResponse()
             {
@@ -95,11 +95,11 @@ namespace MyLifeApp.Application.Services
             };
         }
 
-        public async Task<BaseResponse> UpdateProfile(UpdateProfileRequest request)
+        public async Task<BaseResponse> UpdateProfileAsync(UpdateProfileRequest request)
         {
-            Profile profileToUpdate = await _GetAuthenticatedProfile();
+            Profile profileToUpdate = await _GetAuthenticatedProfileAsync();
             Profile profileMapper = _mapper.Map(request, profileToUpdate);
-            await _profileRepository.Save();
+            await _profileRepository.SaveAsync();
 
             return new BaseResponse()
             {
@@ -108,9 +108,9 @@ namespace MyLifeApp.Application.Services
             };
         }
 
-        public async Task<GetFollowingsResponse> GetProfileFollowings(string username)
+        public async Task<GetFollowingsResponse> GetProfileFollowingsAsync(string username)
         {
-            Profile profile = await _profileRepository.GetProfileByUsername(username);
+            Profile profile = await _profileRepository.GetProfileByUsernameAsync(username);
 
             if (profile == null)
             {
@@ -121,7 +121,7 @@ namespace MyLifeApp.Application.Services
                 };
             }
 
-            ICollection<ProfileFollower> followings = await _profileRepository.GetProfileFollowings(profile);
+            ICollection<ProfileFollower> followings = await _profileRepository.GetProfileFollowingsAsync(profile);
             ICollection<Profile> profileFollowings = followings.Select(f => f.Follower).ToList();
             ICollection<GetProfileResponse> profileFollowingsMapper = _mapper.Map<ICollection<GetProfileResponse>>(profileFollowings);
 
@@ -133,9 +133,9 @@ namespace MyLifeApp.Application.Services
             };
         }
 
-        public async Task<GetFollowingsResponse> GetProfileFollowers(string username)
+        public async Task<GetFollowingsResponse> GetProfileFollowersAsync(string username)
         {
-            Profile profile = await _profileRepository.GetProfileByUsername(username);
+            Profile profile = await _profileRepository.GetProfileByUsernameAsync(username);
 
             if (profile == null)
             {
@@ -146,7 +146,7 @@ namespace MyLifeApp.Application.Services
                 };
             }
 
-            ICollection<ProfileFollower> followers = await _profileRepository.GetProfileFollowers(profile);
+            ICollection<ProfileFollower> followers = await _profileRepository.GetProfileFollowersAsync(profile);
             ICollection<Profile> profileFollowers = followers.Select(f => f.Follower).ToList();
             ICollection<GetProfileResponse> profileFollowersMapper = _mapper.Map<ICollection<GetProfileResponse>>(profileFollowers);
 
@@ -158,10 +158,10 @@ namespace MyLifeApp.Application.Services
             };
         }
 
-        public async Task<BaseResponse> FollowProfile(string username)
+        public async Task<BaseResponse> FollowProfileAsync(string username)
         {
-            Profile profile = await _GetAuthenticatedProfile();
-            Profile follower = await _profileRepository.GetProfileByUsername(username);
+            Profile profile = await _GetAuthenticatedProfileAsync();
+            Profile follower = await _profileRepository.GetProfileByUsernameAsync(username);
 
             if (follower == null)
             {
@@ -172,7 +172,7 @@ namespace MyLifeApp.Application.Services
                 };
             }
 
-            ICollection<ProfileFollower> profileFollowings = await _profileRepository.GetProfileFollowings(profile);
+            ICollection<ProfileFollower> profileFollowings = await _profileRepository.GetProfileFollowingsAsync(profile);
 
             if (profileFollowings.Any(pf => pf.Follower == follower))
             {
@@ -189,7 +189,8 @@ namespace MyLifeApp.Application.Services
                 Follower = follower
             };
 
-            await _profileRepository.CreateProfileFollower(follow);
+            profile.ProfileFollowers!.Add(follow);
+            await _profileRepository.SaveAsync();
 
             return new BaseResponse()
             {
@@ -198,10 +199,10 @@ namespace MyLifeApp.Application.Services
             };
         }
 
-        public async Task<BaseResponse> UnfollowProfile(string username)
+        public async Task<BaseResponse> UnfollowProfileAsync(string username)
         {
-            Profile profile = await _GetAuthenticatedProfile();
-            Profile follower = await _profileRepository.GetProfileByUsername(username);
+            Profile profile = await _GetAuthenticatedProfileAsync();
+            Profile follower = await _profileRepository.GetProfileByUsernameAsync(username);
 
             if (follower == null)
             {
@@ -212,7 +213,7 @@ namespace MyLifeApp.Application.Services
                 };
             }
 
-            ICollection<ProfileFollower> profileFollowings = await _profileRepository.GetProfileFollowings(profile);
+            ICollection<ProfileFollower> profileFollowings = await _profileRepository.GetProfileFollowingsAsync(profile);
 
             if (!profileFollowings.Any(pf => pf.Follower == follower))
             {
@@ -224,7 +225,9 @@ namespace MyLifeApp.Application.Services
             }
 
             ProfileFollower unfollow = profileFollowings.Where(pf => pf.Follower == follower).First();
-            await _profileRepository.RemoveProfileFollower(unfollow);
+
+            profile.ProfileFollowers!.Remove(unfollow);
+            await _profileRepository.SaveAsync();
 
             return new BaseResponse()
             {
