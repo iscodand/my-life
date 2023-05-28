@@ -1,4 +1,4 @@
-﻿using Identity.Infrastructure.Interfaces;
+﻿using Identity.Infrastructure.Interfaces.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -6,20 +6,20 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Identity.Infrastructure.Repositories
+namespace Identity.Infrastructure.Services
 {
-    public class TokenRepository : ITokenRepository
+    public class TokenService : ITokenService
     {
         private readonly IConfiguration _configuration;
 
-        public TokenRepository(IConfiguration configuration)
+        public TokenService(IConfiguration configuration)
         {
             _configuration = configuration;
         }
 
         private SymmetricSecurityKey AuthSigningKey()
         {
-            SymmetricSecurityKey authSigningKey = new(Encoding.UTF8.GetBytes(_configuration["JWTSettings:Key"]));
+            SymmetricSecurityKey authSigningKey = new(Encoding.UTF8.GetBytes(_configuration["JWTSettings:Key"]!));
             return authSigningKey;
         }
 

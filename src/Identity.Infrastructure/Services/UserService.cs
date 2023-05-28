@@ -1,30 +1,30 @@
 ﻿using Identity.Infrastructure.DTOs.Request;
 using Identity.Infrastructure.DTOs.Response;
-using Identity.Infrastructure.Interfaces;
+using Identity.Infrastructure.Interfaces.Services;
 using Identity.Infrastructure.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
-namespace Identity.Infrastructure.Repositories
+namespace Identity.Infrastructure.Services
 {
-    public class UserRepository : IUserRepository
+    public class UserService : IUserService
     {
-        public readonly ITokenRepository _tokenRepository;
+        public readonly ITokenService _tokenService;
         public readonly UserManager<User> _userManager;
         public readonly IConfiguration _configuration;
 
-        public UserRepository(ITokenRepository tokenRepository,
+        public UserService(ITokenService tokenService,
             UserManager<User> userManager,
             IConfiguration configuration)
         {
-            _tokenRepository = tokenRepository;
+            _tokenService = tokenService;
             _userManager = userManager;
             _configuration = configuration;
         }
 
-        public async Task<RegisterUserResponse> Register(RegisterUserRequest userRequest)
+        public async Task<RegisterUserResponse> RegisterAsync(RegisterUserRequest userRequest)
         {
             User user = new()
             {
@@ -53,9 +53,9 @@ namespace Identity.Infrastructure.Repositories
             };
         }
 
-        public async Task<LoginUserResponse> Login(LoginUserRequest userRequest)
+        public async Task<LoginUserResponse> LoginAsync(LoginUserRequest userRequest)
         {
-            User user = await _userManager.FindByNameAsync(userRequest.Username);
+            User? user = await _userManager.FindByNameAsync(userRequest.Username);
 
             if (user == null)
             {
@@ -79,13 +79,13 @@ namespace Identity.Infrastructure.Repositories
 
             List<Claim> claims = new()
             {
-                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.Name, user.UserName!),
                 new Claim(ClaimTypes.NameIdentifier, user.Id)
             };
 
             // Generating tokens
-            JwtSecurityToken accessToken = _tokenRepository.GenerateAccessToken(claims);
-            string refreshToken = _tokenRepository.GenerateRefreshToken();
+            JwtSecurityToken accessToken = _tokenService.GenerateAccessToken(claims);
+            string refreshToken = _tokenService.GenerateRefreshToken();
 
             _ = int.TryParse(_configuration["JWTSettings:RefreshTokenValidityInMinutes"],
                 out int refreshTokenValidityTime);
@@ -106,12 +106,12 @@ namespace Identity.Infrastructure.Repositories
             };
         }
 
-        public async Task<RefreshTokenResponse> RefreshToken(RefreshTokenRequest tokenRequest)
+        public async Task<RefreshTokenResponse> RefreshTokenAsync(RefreshTokenRequest tokenRequest)
         {
             string accessToken = tokenRequest.AccessToken;
             string refreshToken = tokenRequest.RefreshToken;
 
-            ClaimsPrincipal principal = _tokenRepository.GetPrincipalForExpiredToken(accessToken);
+            ClaimsPrincipal principal = _tokenService.GetPrincipalForExpiredToken(accessToken);
 
             if (principal == null)
             {
@@ -122,7 +122,7 @@ namespace Identity.Infrastructure.Repositories
                 };
             }
 
-            User user = await _userManager.FindByNameAsync(principal.Identity.Name);
+            User? user = await _userManager.FindByNameAsync(principal.Identity.Name);
 
             if (user == null ||
                 user.RefreshToken != refreshToken ||
@@ -135,8 +135,8 @@ namespace Identity.Infrastructure.Repositories
                 };
             }
 
-            JwtSecurityToken newAccessToken = _tokenRepository.GenerateAccessToken(principal.Claims.ToList());
-            string newRefreshToken = _tokenRepository.GenerateRefreshToken();
+            JwtSecurityToken newAccessToken = _tokenService.GenerateAccessToken(principal.Claims.ToList());
+            string newRefreshToken = _tokenService.GenerateRefreshToken();
 
             _ = int.TryParse(_configuration["JWTSettings:RefreshTokenValidityInMinutes"],
                 out int refreshTokenValidityTime);
