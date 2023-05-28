@@ -11,6 +11,6 @@ namespace MyLifeApp.Application.Dtos.Responses.Profile
         public DateTime? BirthDate { get; set; }
         public bool IsActive { get; set; }
         public bool IsPrivate { get; set; }
-        public ICollection<GetPostsResponse> Posts { get; set; }
+        public ICollection<GetPostsResponse>? Posts { get; set; }
     }
 }

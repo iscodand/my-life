@@ -3,18 +3,19 @@ using Identity.Infrastructure.DTOs.Response;
 using Identity.Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using MyLifeApp.Application.Interfaces;
+using MyLifeApp.Application.Interfaces.Services;
 
 [Route("api/v1/authentication")]
 [ApiController]
 public class AuthenticationController : Controller
 {
     public readonly IUserRepository _userRepository;
-    public readonly IProfileRepository _profileRepository;
+    public readonly IProfileService _profileService;
 
-    public AuthenticationController(IUserRepository userRepository, IProfileRepository profileRepository)
+    public AuthenticationController(IUserRepository userRepository, IProfileService profileService)
     {
         _userRepository = userRepository;
-        _profileRepository = profileRepository;
+        _profileService = profileService;
     }
 
     [HttpPost("register")]
@@ -28,7 +29,7 @@ public class AuthenticationController : Controller
 
             if (response.IsSuccess)
             {
-                bool profile = await _profileRepository.RegisterProfile(response.Id);
+                bool profile = await _profileService.CreateProfile(response.Id);
 
                 if (profile)
                     return Ok(response);

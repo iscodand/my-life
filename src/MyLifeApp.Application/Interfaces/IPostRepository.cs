@@ -1,22 +1,15 @@
-﻿using MyLifeApp.Application.Dtos.Requests.Post;
+using MyLifeApp.Application.Dtos.Requests.Post;
 using MyLifeApp.Application.Dtos.Responses;
-using MyLifeApp.Application.Dtos.Responses.Post;
+using MyLifeApp.Domain.Entities;
 
 namespace MyLifeApp.Application.Interfaces
 {
-    public interface IPostRepository : IBaseRepository
+    public interface IPostRepository : IGenericRepository<Post>
     {
-
-        // TODO
-        // => add partial update post
-
-        public Task<GetAllPostsResponse> GetAllPosts();
-        public Task<DetailPostResponse> GetPostById(Guid postId);
-        public Task<BaseResponse> CreatePost(CreatePostRequest postRequest);
-        public Task<BaseResponse> UpdatePost(Guid postId, UpdatePostRequest postRequest);
-        public Task<BaseResponse> DeletePost(Guid postId);
+        public Task<ICollection<Post>> GetPublicPosts();
+        public Task<Post> GetPostDetails(Guid postId);
+        public Task<bool> PostExists(Guid postId);
         public Task<BaseResponse> CommentPost(Guid postId, CommentPostRequest postRequest);
         public Task<BaseResponse> LikePost(Guid postId);
-        public bool PostExists(Guid postId);
     }
 }

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MyLifeApp.Application.Dtos.Requests.Post;
 using MyLifeApp.Application.Dtos.Responses;
-using MyLifeApp.Application.Interfaces;
+using MyLifeApp.Application.Interfaces.Services;
 
 namespace MyLife.Api.Controllers
 {
@@ -10,22 +10,22 @@ namespace MyLife.Api.Controllers
     [ApiController]
     public class PostController : Controller
     {
-        private readonly IPostRepository _postRepository;
+        private readonly IPostService _postService;
 
-        public PostController(IPostRepository postRepository)
+        public PostController(IPostService postService)
         {
-            _postRepository = postRepository;
+            _postService = postService;
         }
 
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
         [ProducesResponseType(404, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> GetAllPosts()
+        public async Task<IActionResult> GetPublicPosts()
         {
             if (ModelState.IsValid)
             {
-                BaseResponse response = await _postRepository.GetAllPosts();
+                BaseResponse response = await _postService.GetPublicPosts();
 
                 if (response.IsSuccess)
                 {
@@ -46,7 +46,7 @@ namespace MyLife.Api.Controllers
         {
             if (ModelState.IsValid)
             {
-                BaseResponse response = await _postRepository.GetPostById(postId);
+                BaseResponse response = await _postService.GetPostById(postId);
 
                 if (response.IsSuccess)
                 {
@@ -63,11 +63,11 @@ namespace MyLife.Api.Controllers
         [HttpPost]
         [ProducesResponseType(201, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> Create(CreatePostRequest request)
+        public async Task<IActionResult> Create([FromBody] CreatePostRequest request)
         {
             if (ModelState.IsValid)
             {
-                BaseResponse response = await _postRepository.CreatePost(request);
+                BaseResponse response = await _postService.CreatePost(request);
 
                 if (response.IsSuccess)
                 {
@@ -89,7 +89,7 @@ namespace MyLife.Api.Controllers
         {
             if (ModelState.IsValid)
             {
-                BaseResponse response = await _postRepository.UpdatePost(postId, request);
+                BaseResponse response = await _postService.UpdatePost(postId, request);
 
                 if (response.IsSuccess)
                 {
@@ -104,13 +104,13 @@ namespace MyLife.Api.Controllers
 
         [Authorize]
         [HttpDelete("{postId}")]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(404)]
+        [ProducesResponseType(200, Type = typeof(BaseResponse))]
+        [ProducesResponseType(404, Type = typeof(BaseResponse))]
         public async Task<IActionResult> Delete(Guid postId)
         {
             if (ModelState.IsValid)
             {
-                BaseResponse response = await _postRepository.DeletePost(postId);
+                BaseResponse response = await _postService.DeletePost(postId);
 
                 if (response.IsSuccess)
                 {
