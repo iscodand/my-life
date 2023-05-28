@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using MyLifeApp.Application.Dtos.Requests.Profile;
 using MyLifeApp.Application.Dtos.Responses;
 using MyLifeApp.Application.Dtos.Responses.Profile;
-using MyLifeApp.Application.Interfaces;
 using MyLifeApp.Application.Interfaces.Services;
 
 namespace MyLife.Api.Controllers
@@ -12,12 +11,10 @@ namespace MyLife.Api.Controllers
     [ApiController]
     public class ProfileController : Controller
     {
-        private readonly IProfileRepository _profileRepository;
         private readonly IProfileService _profileService;
 
-        public ProfileController(IProfileRepository profileRepository, IProfileService profileService)
+        public ProfileController(IProfileService profileService)
         {
-            _profileRepository = profileRepository;
             _profileService = profileService;
         }
 
@@ -70,7 +67,7 @@ namespace MyLife.Api.Controllers
             if (ModelState.IsValid)
             {
                 BaseResponse response = await _profileService.UpdateProfile(profileRequest);
-                
+
                 if (response.IsSuccess)
                 {
                     return Ok(response);
@@ -88,7 +85,7 @@ namespace MyLife.Api.Controllers
         {
             if (ModelState.IsValid)
             {
-                GetFollowingsResponse response = await _profileRepository.GetProfileFollowings(profileUsername);
+                GetFollowingsResponse response = await _profileService.GetProfileFollowings(profileUsername);
 
                 if (response.IsSuccess)
                 {
@@ -107,7 +104,7 @@ namespace MyLife.Api.Controllers
         {
             if (ModelState.IsValid)
             {
-                GetFollowingsResponse response = await _profileRepository.GetProfileFollowers(profileUsername);
+                GetFollowingsResponse response = await _profileService.GetProfileFollowers(profileUsername);
 
                 if (response.IsSuccess)
                 {
@@ -120,14 +117,14 @@ namespace MyLife.Api.Controllers
         }
 
         [Authorize]
-        [HttpPost("follow/{profileUsername}")]
+        [HttpPost("follow/{username}")]
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> FollowProfile(string profileUsername)
+        public async Task<IActionResult> FollowProfile(string username)
         {
             if (ModelState.IsValid)
             {
-                BaseResponse response = await _profileRepository.FollowProfile(profileUsername);
+                BaseResponse response = await _profileService.FollowProfile(username);
 
                 if (response.IsSuccess)
                 {
@@ -147,7 +144,7 @@ namespace MyLife.Api.Controllers
         {
             if (ModelState.IsValid)
             {
-                BaseResponse response = await _profileRepository.UnfollowProfile(username);
+                BaseResponse response = await _profileService.UnfollowProfile(username);
 
                 if (response.IsSuccess)
                 {
