@@ -18,13 +18,13 @@ namespace MyLifeApp.Application.Services
     public class PostService : IPostService
     {
         public readonly IPostRepository _postRepository;
-        public readonly IRefactorProfileRepository _profileRepository;
+        public readonly IProfileRepository _profileRepository;
         public readonly IMapper _mapper;
         public readonly IHttpContextAccessor _httpContext;
         public readonly UserManager<User> _userManager;
 
         public PostService(IPostRepository postRepository,
-                           IRefactorProfileRepository profileRepository,
+                           IProfileRepository profileRepository,
                            IMapper mapper,
                            IHttpContextAccessor httpContext,
                            UserManager<User> userManager)
