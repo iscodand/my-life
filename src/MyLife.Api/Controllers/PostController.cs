@@ -25,7 +25,7 @@ namespace MyLife.Api.Controllers
         {
             if (ModelState.IsValid)
             {
-                BaseResponse response = await _postService.GetPublicPosts();
+                BaseResponse response = await _postService.GetPublicPostsAsync();
 
                 if (response.IsSuccess)
                 {
@@ -46,7 +46,7 @@ namespace MyLife.Api.Controllers
         {
             if (ModelState.IsValid)
             {
-                BaseResponse response = await _postService.GetPostById(postId);
+                BaseResponse response = await _postService.GetPostByIdAsync(postId);
 
                 if (response.IsSuccess)
                 {
@@ -67,7 +67,7 @@ namespace MyLife.Api.Controllers
         {
             if (ModelState.IsValid)
             {
-                BaseResponse response = await _postService.CreatePost(request);
+                BaseResponse response = await _postService.CreatePostAsync(request);
 
                 if (response.IsSuccess)
                 {
@@ -89,7 +89,7 @@ namespace MyLife.Api.Controllers
         {
             if (ModelState.IsValid)
             {
-                BaseResponse response = await _postService.UpdatePost(postId, request);
+                BaseResponse response = await _postService.UpdatePostAsync(postId, request);
 
                 if (response.IsSuccess)
                 {
@@ -110,7 +110,7 @@ namespace MyLife.Api.Controllers
         {
             if (ModelState.IsValid)
             {
-                BaseResponse response = await _postService.DeletePost(postId);
+                BaseResponse response = await _postService.DeletePostAsync(postId);
 
                 if (response.IsSuccess)
                 {

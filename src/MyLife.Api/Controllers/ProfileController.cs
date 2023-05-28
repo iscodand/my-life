@@ -26,7 +26,7 @@ namespace MyLife.Api.Controllers
         {
             if (ModelState.IsValid)
             {
-                DetailProfileResponse response = await _profileService.GetAuthenticatedProfile();
+                DetailProfileResponse response = await _profileService.GetAuthenticatedProfileAsync();
 
                 if (response.IsSuccess)
                 {
@@ -46,7 +46,7 @@ namespace MyLife.Api.Controllers
         {
             if (ModelState.IsValid)
             {
-                DetailProfileResponse response = await _profileService.GetProfileByUsername(profileUsername);
+                DetailProfileResponse response = await _profileService.GetProfileByUsernameAsync(profileUsername);
 
                 if (response.IsSuccess)
                 {
@@ -66,7 +66,7 @@ namespace MyLife.Api.Controllers
         {
             if (ModelState.IsValid)
             {
-                BaseResponse response = await _profileService.UpdateProfile(profileRequest);
+                BaseResponse response = await _profileService.UpdateProfileAsync(profileRequest);
 
                 if (response.IsSuccess)
                 {
@@ -85,7 +85,7 @@ namespace MyLife.Api.Controllers
         {
             if (ModelState.IsValid)
             {
-                GetFollowingsResponse response = await _profileService.GetProfileFollowings(profileUsername);
+                GetFollowingsResponse response = await _profileService.GetProfileFollowingsAsync(profileUsername);
 
                 if (response.IsSuccess)
                 {
@@ -104,7 +104,7 @@ namespace MyLife.Api.Controllers
         {
             if (ModelState.IsValid)
             {
-                GetFollowingsResponse response = await _profileService.GetProfileFollowers(profileUsername);
+                GetFollowingsResponse response = await _profileService.GetProfileFollowersAsync(profileUsername);
 
                 if (response.IsSuccess)
                 {
@@ -124,7 +124,7 @@ namespace MyLife.Api.Controllers
         {
             if (ModelState.IsValid)
             {
-                BaseResponse response = await _profileService.FollowProfile(username);
+                BaseResponse response = await _profileService.FollowProfileAsync(username);
 
                 if (response.IsSuccess)
                 {
@@ -144,7 +144,7 @@ namespace MyLife.Api.Controllers
         {
             if (ModelState.IsValid)
             {
-                BaseResponse response = await _profileService.UnfollowProfile(username);
+                BaseResponse response = await _profileService.UnfollowProfileAsync(username);
 
                 if (response.IsSuccess)
                 {

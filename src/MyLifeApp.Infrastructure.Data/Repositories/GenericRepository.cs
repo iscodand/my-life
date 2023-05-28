@@ -1,6 +1,6 @@
-using MyLifeApp.Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
-using MyLifeApp.Application.Interfaces;
+using MyLifeApp.Application.Interfaces.Repositories;
+using MyLifeApp.Infrastructure.Data.Context;
 
 namespace MyLifeApp.Infrastructure.Data.Repositories
 {
@@ -13,36 +13,36 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             _context = context;
         }
 
-        public async Task<ICollection<T>> GetAll()
+        public async Task<ICollection<T>> GetAllAsync()
         {
             return await _context.Set<T>().ToListAsync();
         }
 
-        public async Task<T> GetById(Guid id)
+        public async Task<T> GetByIdAsync(Guid id)
         {
             return await _context.Set<T>().FindAsync(id);
         }
 
-        public async Task<T> Create(T entity)
+        public async Task<T> CreateAsync(T entity)
         {
             await _context.Set<T>().AddAsync(entity);
-            await Save();
+            await SaveAsync();
             return entity;
         }
 
-        public async Task Update(T entity)
+        public async Task UpdateAsync(T entity)
         {
             _context.Entry(entity).State = EntityState.Modified;
-            await Save();
+            await SaveAsync();
         }
 
-        public async Task Delete(T entity)
+        public async Task DeleteAsync(T entity)
         {
             _context.Set<T>().Remove(entity);
-            await Save();
+            await SaveAsync();
         }
 
-        public Task Save()
+        public Task SaveAsync()
         {
             return _context.SaveChangesAsync();
         }
