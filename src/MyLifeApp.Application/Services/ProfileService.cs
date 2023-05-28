@@ -1,27 +1,26 @@
 using AutoMapper;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Http;
 using Identity.Infrastructure.Models;
-
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using MyLifeApp.Application.Dtos.Requests.Profile;
+using MyLifeApp.Application.Dtos.Responses;
 using MyLifeApp.Application.Dtos.Responses.Profile;
 using MyLifeApp.Application.Interfaces;
 using MyLifeApp.Application.Interfaces.Services;
 using MyLifeApp.Domain.Entities;
-using Profile = MyLifeApp.Domain.Entities.Profile;
 using System.Security.Claims;
-using MyLifeApp.Application.Dtos.Responses;
-using MyLifeApp.Application.Dtos.Requests.Profile;
+using Profile = MyLifeApp.Domain.Entities.Profile;
 
 namespace MyLifeApp.Application.Services
 {
     public class ProfileService : IProfileService
     {
-        public readonly IRefactorProfileRepository _profileRepository;
+        public readonly IProfileRepository _profileRepository;
         public readonly IMapper _mapper;
         public readonly IHttpContextAccessor _httpContext;
         public readonly UserManager<User> _userManager;
 
-        public ProfileService(IRefactorProfileRepository profileRepository,
+        public ProfileService(IProfileRepository profileRepository,
                            IMapper mapper,
                            IHttpContextAccessor httpContext,
                            UserManager<User> userManager)
@@ -105,6 +104,131 @@ namespace MyLifeApp.Application.Services
             return new BaseResponse()
             {
                 Message = "Profile successfuly updated",
+                IsSuccess = true
+            };
+        }
+
+        public async Task<GetFollowingsResponse> GetProfileFollowings(string username)
+        {
+            Profile profile = await _profileRepository.GetProfileByUsername(username);
+
+            if (profile == null)
+            {
+                return new GetFollowingsResponse()
+                {
+                    Message = "Profile not found",
+                    IsSuccess = true
+                };
+            }
+
+            ICollection<ProfileFollower> followings = await _profileRepository.GetProfileFollowings(profile);
+            ICollection<Profile> profileFollowings = followings.Select(f => f.Follower).ToList();
+            ICollection<GetProfileResponse> profileFollowingsMapper = _mapper.Map<ICollection<GetProfileResponse>>(profileFollowings);
+
+            return new GetFollowingsResponse()
+            {
+                Profiles = profileFollowingsMapper,
+                Message = "Success",
+                IsSuccess = true
+            };
+        }
+
+        public async Task<GetFollowingsResponse> GetProfileFollowers(string username)
+        {
+            Profile profile = await _profileRepository.GetProfileByUsername(username);
+
+            if (profile == null)
+            {
+                return new GetFollowingsResponse()
+                {
+                    Message = "Profile not found",
+                    IsSuccess = false
+                };
+            }
+
+            ICollection<ProfileFollower> followers = await _profileRepository.GetProfileFollowers(profile);
+            ICollection<Profile> profileFollowers = followers.Select(f => f.Follower).ToList();
+            ICollection<GetProfileResponse> profileFollowersMapper = _mapper.Map<ICollection<GetProfileResponse>>(profileFollowers);
+
+            return new GetFollowingsResponse()
+            {
+                Profiles = profileFollowersMapper,
+                Message = "Success",
+                IsSuccess = true
+            };
+        }
+
+        public async Task<BaseResponse> FollowProfile(string username)
+        {
+            Profile profile = await _GetAuthenticatedProfile();
+            Profile follower = await _profileRepository.GetProfileByUsername(username);
+
+            if (follower == null)
+            {
+                return new BaseResponse()
+                {
+                    Message = "Profile not found",
+                    IsSuccess = false
+                };
+            }
+
+            ICollection<ProfileFollower> profileFollowings = await _profileRepository.GetProfileFollowings(profile);
+
+            if (profileFollowings.Any(pf => pf.Follower == follower))
+            {
+                return new BaseResponse()
+                {
+                    Message = "You already follow this profile.",
+                    IsSuccess = false
+                };
+            }
+
+            ProfileFollower follow = new()
+            {
+                Profile = profile,
+                Follower = follower
+            };
+
+            await _profileRepository.CreateProfileFollower(follow);
+
+            return new BaseResponse()
+            {
+                Message = $"Now you follow {follower.User?.UserName}",
+                IsSuccess = true
+            };
+        }
+
+        public async Task<BaseResponse> UnfollowProfile(string username)
+        {
+            Profile profile = await _GetAuthenticatedProfile();
+            Profile follower = await _profileRepository.GetProfileByUsername(username);
+
+            if (follower == null)
+            {
+                return new BaseResponse()
+                {
+                    Message = "Profile not found",
+                    IsSuccess = false
+                };
+            }
+
+            ICollection<ProfileFollower> profileFollowings = await _profileRepository.GetProfileFollowings(profile);
+
+            if (!profileFollowings.Any(pf => pf.Follower == follower))
+            {
+                return new BaseResponse()
+                {
+                    Message = "You not follow this profile.",
+                    IsSuccess = false
+                };
+            }
+
+            ProfileFollower unfollow = profileFollowings.Where(pf => pf.Follower == follower).First();
+            await _profileRepository.RemoveProfileFollower(unfollow);
+
+            return new BaseResponse()
+            {
+                Message = $"Successfuly Unfollow {follower.User?.UserName}",
                 IsSuccess = true
             };
         }
