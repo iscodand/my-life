@@ -82,6 +82,14 @@ namespace MyLifeApp.Application.Services
         {
             Profile? profile = await _profileRepository.GetProfileByUsernameAsync(username);
 
+            if (profile == null)
+            {
+                return new DetailProfileResponse()
+                {
+                    IsSuccess = false
+                };
+            }
+
             return new DetailProfileResponse()
             {
                 Id = profile!.Id,
@@ -147,7 +155,10 @@ namespace MyLifeApp.Application.Services
             }
 
             ICollection<ProfileFollower> followers = await _profileRepository.GetProfileFollowersAsync(profile);
-            ICollection<Profile> profileFollowers = followers.Select(f => f.Follower).ToList();
+            // ICollection<Profile> profileFollowers = followers.Select(f => f.Follower).ToList();
+
+            ICollection<Profile> profileFollowers = profile.ProfileFollowers.Select(pf => pf.Follower).ToList();
+
             ICollection<GetProfileResponse> profileFollowersMapper = _mapper.Map<ICollection<GetProfileResponse>>(profileFollowers);
 
             return new GetFollowingsResponse()
