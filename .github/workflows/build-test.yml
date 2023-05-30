@@ -24,8 +24,8 @@ jobs:
         with:
           dotnet-version: 7.0.x
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore ${{ env.API_PROJECT_PATH }}
       - name: Build
         run: dotnet build ${{ env.API_PROJECT_PATH }} --no-restore
       - name: Test
-        run: dotnet test ${{ env.TESTS_PROJECT_PATH }} --no-build --verbosity normal
+        run: dotnet test ${{ env.TESTS_PROJECT_PATH }} --verbosity normal
