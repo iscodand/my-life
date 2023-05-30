@@ -162,10 +162,7 @@ namespace MyLifeApp.Application.Services
             }
 
             ICollection<ProfileFollower> followers = await _profileRepository.GetProfileFollowersAsync(profile);
-            // ICollection<Profile> profileFollowers = followers.Select(f => f.Follower).ToList();
-
-            ICollection<Profile> profileFollowers = profile.ProfileFollowers.Select(pf => pf.Follower).ToList();
-
+            ICollection<Profile> profileFollowers = followers.Select(f => f.Follower).ToList();
             ICollection<GetProfileResponse> profileFollowersMapper = _mapper.Map<ICollection<GetProfileResponse>>(profileFollowers);
 
             return new GetFollowingsResponse()
@@ -188,7 +185,7 @@ namespace MyLifeApp.Application.Services
                 {
                     Message = "Profile not found",
                     IsSuccess = false,
-                    StatusCode = 200
+                    StatusCode = 404
                 };
             }
 
@@ -210,14 +207,13 @@ namespace MyLifeApp.Application.Services
                 Follower = follower
             };
 
-            profile.ProfileFollowers!.Add(follow);
-            await _profileRepository.SaveAsync();
+            await _profileRepository.AddProfileFollower(follow);
 
             return new BaseResponse()
             {
                 Message = $"Now you follow {follower.User?.UserName}",
                 IsSuccess = true,
-                StatusCode = 404
+                StatusCode = 200
             };
         }
 
@@ -250,8 +246,7 @@ namespace MyLifeApp.Application.Services
 
             ProfileFollower unfollow = profileFollowings.Where(pf => pf.Follower == follower).First();
 
-            profile.ProfileFollowers!.Remove(unfollow);
-            await _profileRepository.SaveAsync();
+            await _profileRepository.RemoveProfileFollower(unfollow);
 
             return new BaseResponse()
             {
