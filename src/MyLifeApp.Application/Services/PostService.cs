@@ -44,7 +44,8 @@ namespace MyLifeApp.Application.Services
             {
                 Posts = postsMapper,
                 Message = "Success",
-                IsSuccess = true
+                IsSuccess = true,
+                StatusCode = 200
             };
         }
 
@@ -55,7 +56,8 @@ namespace MyLifeApp.Application.Services
                 return new DetailPostResponse()
                 {
                     Message = "Post not found",
-                    IsSuccess = false
+                    IsSuccess = false,
+                    StatusCode = 404
                 };
             }
 
@@ -71,7 +73,8 @@ namespace MyLifeApp.Application.Services
                 Description = post.Description,
                 Profile = profileMapper,
                 Message = "Success",
-                IsSuccess = true
+                IsSuccess = true,
+                StatusCode = 200
             };
         }
 
@@ -108,7 +111,8 @@ namespace MyLifeApp.Application.Services
             return new BaseResponse()
             {
                 Message = "Post successfuly created.",
-                IsSuccess = true
+                IsSuccess = true,
+                StatusCode = 201
             };
         }
 
@@ -119,7 +123,8 @@ namespace MyLifeApp.Application.Services
                 return new DetailPostResponse()
                 {
                     Message = "Post not found",
-                    IsSuccess = false
+                    IsSuccess = false,
+                    StatusCode = 404
                 };
             }
 
@@ -131,7 +136,8 @@ namespace MyLifeApp.Application.Services
                 return new BaseResponse()
                 {
                     Message = "Only post creator can update the post.",
-                    IsSuccess = false
+                    IsSuccess = false,
+                    StatusCode = 400
                 };
             }
 
@@ -141,7 +147,8 @@ namespace MyLifeApp.Application.Services
             return new BaseResponse()
             {
                 Message = "Post Successfuly Updated",
-                IsSuccess = true
+                IsSuccess = true,
+                StatusCode = 200
             };
         }
 
@@ -152,7 +159,8 @@ namespace MyLifeApp.Application.Services
                 return new DetailPostResponse()
                 {
                     Message = "Post not found",
-                    IsSuccess = false
+                    IsSuccess = false,
+                    StatusCode = 404
                 };
             }
 
@@ -164,7 +172,8 @@ namespace MyLifeApp.Application.Services
                 return new BaseResponse()
                 {
                     Message = "Only post creator can delete the post",
-                    IsSuccess = false
+                    IsSuccess = false,
+                    StatusCode = 400
                 };
             }
 
@@ -172,7 +181,8 @@ namespace MyLifeApp.Application.Services
 
             return new BaseResponse()
             {
-                IsSuccess = true
+                IsSuccess = true,
+                StatusCode = 204
             };
         }
     }
