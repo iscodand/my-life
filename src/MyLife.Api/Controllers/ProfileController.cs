@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyLifeApp.Application.Dtos.Requests.Profile;
 using MyLifeApp.Application.Dtos.Responses;
@@ -151,7 +151,7 @@ namespace MyLife.Api.Controllers
                     return Ok(response);
                 }
 
-                return BadRequest(response);
+                return NotFound();
             }
             return StatusCode(500);
         }
