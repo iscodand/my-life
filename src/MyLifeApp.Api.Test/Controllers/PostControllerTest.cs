@@ -82,13 +82,21 @@ namespace MyLifeApp.Api.Test.Controllers
             // Arrange
             var inexistentId = Guid.NewGuid();
 
-            A.CallTo(() => _postService.GetPostByIdAsync(A<Guid>.Ignored));
+            DetailPostResponse response = new()
+            {
+                IsSuccess = false,
+                StatusCode = 404
+            };
+
+            A.CallTo(() => _postService.GetPostByIdAsync(A<Guid>.Ignored))
+                .Returns(Task.FromResult(response));
 
             // Act
             var result = await _controller.GetPost(inexistentId);
 
             // Assert
-            result.Should().BeOfType<NotFoundResult>();
+            result.Should().BeOfType<ObjectResult>()
+                .Which.StatusCode.Should().Be(404);
         }
 
         [Fact]
@@ -134,7 +142,8 @@ namespace MyLifeApp.Api.Test.Controllers
 
             BaseResponse response = new()
             {
-                IsSuccess = false
+                IsSuccess = false,
+                StatusCode = 400
             };
 
             A.CallTo(() => _postService.CreatePostAsync(A<CreatePostRequest>.Ignored)).
@@ -144,8 +153,8 @@ namespace MyLifeApp.Api.Test.Controllers
             var result = await _controller.Create(request);
 
             // Assert
-            result.Should().BeOfType<BadRequestObjectResult>()
-                .Which.Value.Should().BeEquivalentTo(response);
+            result.Should().BeOfType<ObjectResult>()
+                .Which.StatusCode.Should().Be(400);
         }
 
         [Fact]
@@ -194,7 +203,8 @@ namespace MyLifeApp.Api.Test.Controllers
             BaseResponse response = new()
             {
                 Message = "Post not found",
-                IsSuccess = false
+                IsSuccess = false,
+                StatusCode = 404
             };
 
             A.CallTo(() => _postService.UpdatePostAsync(inexistentId, A<UpdatePostRequest>.Ignored))
@@ -204,8 +214,8 @@ namespace MyLifeApp.Api.Test.Controllers
             var result = await _controller.Update(inexistentId, request);
 
             // Assert
-            result.Should().BeOfType<BadRequestObjectResult>()
-                   .Which.Value.Should().BeEquivalentTo(response);
+            result.Should().BeOfType<ObjectResult>()
+                .Which.StatusCode.Should().Be(404);
         }
 
         [Fact]
@@ -236,7 +246,8 @@ namespace MyLifeApp.Api.Test.Controllers
 
             BaseResponse response = new()
             {
-                IsSuccess = false
+                IsSuccess = false,
+                StatusCode = 404
             };
 
             A.CallTo(() => _postService.DeletePostAsync(inexistentId)).Returns(Task.FromResult(response));
@@ -245,7 +256,8 @@ namespace MyLifeApp.Api.Test.Controllers
             var result = await _controller.Delete(inexistentId);
 
             // Assert
-            result.Should().BeOfType<NotFoundResult>();
+            result.Should().BeOfType<ObjectResult>()
+                .Which.StatusCode.Should().Be(404);
         }
     }
 }

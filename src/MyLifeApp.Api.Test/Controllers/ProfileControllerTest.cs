@@ -69,7 +69,8 @@ namespace MyLifeApp.Api.Test.Controllers
 
             DetailProfileResponse response = new()
             {
-                IsSuccess = false
+                IsSuccess = false,
+                StatusCode = 404
             };
 
             A.CallTo(() => _profileService.GetProfileByUsernameAsync(inexistentProfile))
@@ -79,7 +80,8 @@ namespace MyLifeApp.Api.Test.Controllers
             var result = await _controller.GetProfileByUsername(inexistentProfile);
 
             // Assert
-            result.Should().BeOfType<NotFoundResult>();
+            result.Should().BeOfType<ObjectResult>()
+                .Which.StatusCode.Should().Be(404);
         }
 
         [Fact]
@@ -149,7 +151,8 @@ namespace MyLifeApp.Api.Test.Controllers
 
             GetFollowingsResponse response = new()
             {
-                IsSuccess = false
+                IsSuccess = false,
+                StatusCode = 404
             };
 
             A.CallTo(() => _profileService.GetProfileFollowingsAsync(inexistentProfile))
@@ -159,7 +162,8 @@ namespace MyLifeApp.Api.Test.Controllers
             var result = await _controller.GetProfileFollowings(inexistentProfile);
 
             // Assert
-            result.Should().BeOfType<NotFoundResult>();
+            result.Should().BeOfType<ObjectResult>()
+                .Which.StatusCode.Should().Be(404);
         }
 
         [Fact]
@@ -199,7 +203,8 @@ namespace MyLifeApp.Api.Test.Controllers
 
             GetFollowingsResponse response = new()
             {
-                IsSuccess = false
+                IsSuccess = false,
+                StatusCode = 404
             };
 
             A.CallTo(() => _profileService.GetProfileFollowersAsync(inexistentProfile))
@@ -209,7 +214,8 @@ namespace MyLifeApp.Api.Test.Controllers
             var result = await _controller.GetProfileFollowers(inexistentProfile);
 
             // Assert
-            result.Should().BeOfType<NotFoundResult>();
+            result.Should().BeOfType<ObjectResult>()
+                .Which.StatusCode.Should().Be(404);
         }
 
         [Fact]
@@ -250,7 +256,8 @@ namespace MyLifeApp.Api.Test.Controllers
 
             BaseResponse response = new()
             {
-                IsSuccess = false
+                IsSuccess = false,
+                StatusCode = 404
             };
 
             A.CallTo(() => _profileService.FollowProfileAsync(inexistentProfile))
@@ -260,41 +267,43 @@ namespace MyLifeApp.Api.Test.Controllers
             var result = await _controller.FollowProfile(inexistentProfile);
 
             // Assert
-            result.Should().BeOfType<NotFoundResult>();
+            result.Should().BeOfType<ObjectResult>()
+                .Which.StatusCode.Should().Be(404);
         }
 
-        // // TO-DO
-        // // => refactor all controllers and fix status code of them
+        // TO-DO
+        // => refactor all controllers and fix status code of them
 
-        // [Fact]
-        // public async Task FollowProfile_AlreadyFollowing_ReturnsBadRequest()
-        // {
-        //     // Arrange
-        //     var profile = A.Fake<Profile>();
-        //     var user = A.Fake<User>();
-        //     profile.User = user;
+        [Fact]
+        public async Task FollowProfile_AlreadyFollowing_ReturnsBadRequest()
+        {
+            // Arrange
+            var profile = A.Fake<Profile>();
+            var user = A.Fake<User>();
+            profile.User = user;
 
-        //     var anotherProfile = A.Fake<Profile>();
-        //     var anotherUser = A.Fake<User>();
-        //     anotherProfile.User = anotherUser;
+            var anotherProfile = A.Fake<Profile>();
+            var anotherUser = A.Fake<User>();
+            anotherProfile.User = anotherUser;
 
-        //     BaseResponse response = new()
-        //     {
-        //         Message = "You already follow this profile.",
-        //         IsSuccess = false
-        //     };
+            BaseResponse response = new()
+            {
+                Message = "You already follow this profile.",
+                IsSuccess = false,
+                StatusCode = 400
+            };
 
-        //     A.CallTo(() => _profileService.FollowProfileAsync(anotherProfile.User!.UserName!))
-        //         .Returns(Task.FromResult(response));
+            A.CallTo(() => _profileService.FollowProfileAsync(anotherProfile.User!.UserName!))
+                .Returns(Task.FromResult(response));
 
-        //     // Act
-        //     var result = await _controller.FollowProfile(anotherProfile.User!.UserName!);
+            // Act
+            var result = await _controller.FollowProfile(anotherProfile.User!.UserName!);
 
-        //     // Assert
-        //     result.Should().NotBeNull();
-        //     result.Should().BeOfType<BadRequestObjectResult>()
-        //         .Which.Value.Should().BeEquivalentTo(response);
-        // }
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().BeOfType<ObjectResult>()
+                .Which.StatusCode.Should().Be(400);
+        }
 
         [Fact]
         public async Task UnfollowProfile_ExistentProfile_ReturnsOk()
@@ -333,7 +342,8 @@ namespace MyLifeApp.Api.Test.Controllers
 
             BaseResponse response = new()
             {
-                IsSuccess = false
+                IsSuccess = false,
+                StatusCode = 404
             };
 
             A.CallTo(() => _profileService.UnfollowProfileAsync(inexistentProfile))
@@ -343,39 +353,41 @@ namespace MyLifeApp.Api.Test.Controllers
             var result = await _controller.UnfollowProfile(inexistentProfile);
 
             // Assert
-            result.Should().BeOfType<NotFoundResult>();
+            result.Should().BeOfType<ObjectResult>()
+                .Which.StatusCode.Should().Be(404);
         }
 
         // // TO-DO
         // // => refactor all controllers and fix status code of them
-        // [Fact]
-        // public async Task UnfollowProfile_NotFollowingProfile_ReturnsBadRequest()
-        // {
-        //     // Arrange
-        //     var profile = A.Fake<Profile>();
-        //     var user = A.Fake<User>();
-        //     profile.User = user;
+        [Fact]
+        public async Task UnfollowProfile_NotFollowingProfile_ReturnsBadRequest()
+        {
+            // Arrange
+            var profile = A.Fake<Profile>();
+            var user = A.Fake<User>();
+            profile.User = user;
 
-        //     var anotherProfile = A.Fake<Profile>();
-        //     var anotherUser = A.Fake<User>();
-        //     anotherProfile.User = anotherUser;
+            var anotherProfile = A.Fake<Profile>();
+            var anotherUser = A.Fake<User>();
+            anotherProfile.User = anotherUser;
 
-        //     BaseResponse response = new()
-        //     {
-        //         Message = "You not follow this profile.",
-        //         IsSuccess = false
-        //     };
+            BaseResponse response = new()
+            {
+                Message = "You not follow this profile.",
+                IsSuccess = false,
+                StatusCode = 400
+            };
 
-        //     A.CallTo(() => _profileService.UnfollowProfileAsync(anotherProfile.User!.UserName!))
-        //         .Returns(Task.FromResult(response));
+            A.CallTo(() => _profileService.UnfollowProfileAsync(anotherProfile.User!.UserName!))
+                .Returns(Task.FromResult(response));
 
-        //     // Act
-        //     var result = await _controller.UnfollowProfile(anotherProfile.User!.UserName!);
+            // Act
+            var result = await _controller.UnfollowProfile(anotherProfile.User!.UserName!);
 
-        //     // Assert
-        //     result.Should().NotBeNull();
-        //     result.Should().BeOfType<BadRequestObjectResult>()
-        //         .Which.Value.Should().BeEquivalentTo(response);
-        // }
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().BeOfType<ObjectResult>()
+                .Which.StatusCode.Should().Be(400);
+        }
     }
 }
