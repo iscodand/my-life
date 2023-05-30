@@ -92,7 +92,7 @@ namespace MyLife.Api.Controllers
                     return Ok(response);
                 }
 
-                return BadRequest(response);
+                return NotFound();
             }
             return StatusCode(500);
         }
@@ -111,7 +111,7 @@ namespace MyLife.Api.Controllers
                     return Ok(response);
                 }
 
-                return BadRequest(response);
+                return NotFound();
             }
             return StatusCode(500);
         }
