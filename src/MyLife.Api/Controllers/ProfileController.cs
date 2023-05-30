@@ -33,7 +33,7 @@ namespace MyLife.Api.Controllers
                     return Ok(response);
                 }
 
-                return BadRequest(response);
+                return StatusCode(response.StatusCode, response);
             }
 
             return StatusCode(500);
@@ -53,7 +53,7 @@ namespace MyLife.Api.Controllers
                     return Ok(response);
                 }
 
-                return NotFound();
+                return StatusCode(response.StatusCode, response);
             }
             return StatusCode(500);
         }
@@ -73,7 +73,7 @@ namespace MyLife.Api.Controllers
                     return Ok(response);
                 }
 
-                return BadRequest(response);
+                return StatusCode(response.StatusCode, response);
             }
             return StatusCode(500);
         }
@@ -92,7 +92,7 @@ namespace MyLife.Api.Controllers
                     return Ok(response);
                 }
 
-                return BadRequest(response);
+                return StatusCode(response.StatusCode, response);
             }
             return StatusCode(500);
         }
@@ -111,7 +111,7 @@ namespace MyLife.Api.Controllers
                     return Ok(response);
                 }
 
-                return BadRequest(response);
+                return StatusCode(response.StatusCode, response);
             }
             return StatusCode(500);
         }
@@ -131,7 +131,7 @@ namespace MyLife.Api.Controllers
                     return Ok(response);
                 }
 
-                return BadRequest(response);
+                return StatusCode(response.StatusCode, response);
             }
             return StatusCode(500);
         }
@@ -151,7 +151,7 @@ namespace MyLife.Api.Controllers
                     return Ok(response);
                 }
 
-                return BadRequest(response);
+                return StatusCode(response.StatusCode, response);
             }
             return StatusCode(500);
         }

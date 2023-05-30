@@ -50,5 +50,18 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             await base.SaveAsync();
             return profileAnalytics;
         }
+
+        public async Task<ProfileFollower> AddProfileFollower(ProfileFollower profileFollower)
+        {
+            await _profileFollowers.AddAsync(profileFollower);
+            await base.SaveAsync();
+            return profileFollower;
+        }
+
+        public async Task RemoveProfileFollower(ProfileFollower profileFollower)
+        {
+            _profileFollowers.Remove(profileFollower);
+            await base.SaveAsync();
+        }
     }
 }

@@ -72,7 +72,8 @@ namespace MyLifeApp.Api.Test.Controllers
             RegisterUserResponse response = new()
             {
                 Message = "Error while creating user",
-                IsSuccess = false
+                IsSuccess = false,
+                StatusCode = 400
             };
 
             A.CallTo(() => _userService.RegisterAsync(A<RegisterUserRequest>.Ignored))
@@ -84,8 +85,8 @@ namespace MyLifeApp.Api.Test.Controllers
             var result = await _controller.Register(request);
 
             // Assert
-            result.Should().BeOfType<BadRequestObjectResult>()
-                .Which.Value.Should().BeEquivalentTo(response);
+            result.Should().BeOfType<ObjectResult>()
+                .Which.StatusCode.Should().Be(400);
         }
 
         [Fact]
@@ -130,7 +131,8 @@ namespace MyLifeApp.Api.Test.Controllers
             LoginUserResponse response = new()
             {
                 Message = "Password invalid. Verify and try again.",
-                IsSuccess = false
+                IsSuccess = false,
+                StatusCode = 400
             };
 
             A.CallTo(() => _userService.LoginAsync(A<LoginUserRequest>.Ignored))
@@ -140,8 +142,8 @@ namespace MyLifeApp.Api.Test.Controllers
             var result = await _controller.Login(request);
 
             // Assert
-            result.Should().BeOfType<BadRequestObjectResult>()
-                .Which.Value.Should().BeEquivalentTo(response);
+            result.Should().BeOfType<ObjectResult>()
+                .Which.StatusCode.Should().Be(400);
         }
 
         [Fact]
@@ -186,7 +188,8 @@ namespace MyLifeApp.Api.Test.Controllers
             RefreshTokenResponse response = new()
             {
                 Message = "Invalid access/refresh token.",
-                IsSuccess = false
+                IsSuccess = false,
+                StatusCode = 400
             };
 
             A.CallTo(() => _userService.RefreshTokenAsync(A<RefreshTokenRequest>.Ignored))
@@ -196,8 +199,8 @@ namespace MyLifeApp.Api.Test.Controllers
             var result = await _controller.RefreshToken(request);
 
             // Assert
-            result.Should().BeOfType<BadRequestObjectResult>()
-                .Which.Value.Should().BeEquivalentTo(response);
+            result.Should().BeOfType<ObjectResult>()
+                .Which.StatusCode.Should().Be(400);
         }
     }
 }

@@ -41,7 +41,8 @@ namespace Identity.Infrastructure.Services
                 {
                     Message = "Error while creating user",
                     IsSuccess = false,
-                    Errors = result.Errors.Select(e => e.Description)
+                    Errors = result.Errors.Select(e => e.Description),
+                    StatusCode = 400
                 };
             }
 
@@ -50,6 +51,7 @@ namespace Identity.Infrastructure.Services
                 Id = user.Id,
                 Message = "User successfuly created",
                 IsSuccess = true,
+                StatusCode = 201
             };
         }
 
@@ -62,7 +64,8 @@ namespace Identity.Infrastructure.Services
                 return new LoginUserResponse()
                 {
                     Message = "Username doens't exists. Verify and try again.",
-                    IsSuccess = false
+                    IsSuccess = false,
+                    StatusCode = 400
                 };
             }
 
@@ -73,7 +76,8 @@ namespace Identity.Infrastructure.Services
                 return new LoginUserResponse()
                 {
                     Message = "Password invalid. Verify and try again.",
-                    IsSuccess = false
+                    IsSuccess = false,
+                    StatusCode = 400
                 };
             }
 
@@ -102,7 +106,8 @@ namespace Identity.Infrastructure.Services
                 Message = "Login Successfuly",
                 AccessToken = accessTokenAsString,
                 RefreshToken = refreshToken,
-                IsSuccess = true
+                IsSuccess = true,
+                StatusCode = 200
             };
         }
 
@@ -118,7 +123,8 @@ namespace Identity.Infrastructure.Services
                 return new RefreshTokenResponse()
                 {
                     Message = "Invalid access/refresh token.",
-                    IsSuccess = false
+                    IsSuccess = false,
+                    StatusCode = 400
                 };
             }
 
@@ -131,7 +137,8 @@ namespace Identity.Infrastructure.Services
                 return new RefreshTokenResponse()
                 {
                     Message = "Invalid access/refresh token",
-                    IsSuccess = false
+                    IsSuccess = false,
+                    StatusCode = 400
                 };
             }
 
@@ -154,6 +161,7 @@ namespace Identity.Infrastructure.Services
                 AccessToken = newAccessTokenAsString,
                 RefreshToken = newRefreshToken,
                 IsSuccess = true,
+                StatusCode = 200
             };
         }
     }

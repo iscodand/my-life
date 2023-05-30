@@ -34,7 +34,7 @@ public class AuthenticationController : Controller
                     return Ok(response);
             }
 
-            return BadRequest(response);
+            return StatusCode(response.StatusCode, response);
         }
 
         return StatusCode(500);
@@ -54,7 +54,7 @@ public class AuthenticationController : Controller
                 return Ok(response);
             }
 
-            return BadRequest(response);
+            return StatusCode(response.StatusCode, response);
         }
 
         return StatusCode(500);
@@ -74,7 +74,7 @@ public class AuthenticationController : Controller
                 return Ok(response);
             }
 
-            return BadRequest(response);
+            return StatusCode(response.StatusCode, response);
         }
 
         return StatusCode(500);

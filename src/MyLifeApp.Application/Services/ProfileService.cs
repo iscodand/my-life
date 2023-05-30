@@ -74,7 +74,8 @@ namespace MyLifeApp.Application.Services
                 BirthDate = profile.BirthDate,
                 IsPrivate = profile.IsPrivate,
                 Message = "Success",
-                IsSuccess = true
+                IsSuccess = true,
+                StatusCode = 200
             };
         }
 
@@ -86,7 +87,8 @@ namespace MyLifeApp.Application.Services
             {
                 return new DetailProfileResponse()
                 {
-                    IsSuccess = false
+                    IsSuccess = false,
+                    StatusCode = 404
                 };
             }
 
@@ -99,7 +101,8 @@ namespace MyLifeApp.Application.Services
                 BirthDate = profile.BirthDate,
                 IsPrivate = profile.IsPrivate,
                 Message = "Success",
-                IsSuccess = true
+                IsSuccess = true,
+                StatusCode = 200
             };
         }
 
@@ -112,7 +115,8 @@ namespace MyLifeApp.Application.Services
             return new BaseResponse()
             {
                 Message = "Profile successfuly updated",
-                IsSuccess = true
+                IsSuccess = true,
+                StatusCode = 200
             };
         }
 
@@ -125,7 +129,8 @@ namespace MyLifeApp.Application.Services
                 return new GetFollowingsResponse()
                 {
                     Message = "Profile not found",
-                    IsSuccess = true
+                    IsSuccess = false,
+                    StatusCode = 404
                 };
             }
 
@@ -137,7 +142,8 @@ namespace MyLifeApp.Application.Services
             {
                 Profiles = profileFollowingsMapper,
                 Message = "Success",
-                IsSuccess = true
+                IsSuccess = true,
+                StatusCode = 200
             };
         }
 
@@ -150,22 +156,21 @@ namespace MyLifeApp.Application.Services
                 return new GetFollowingsResponse()
                 {
                     Message = "Profile not found",
-                    IsSuccess = false
+                    IsSuccess = false,
+                    StatusCode = 404
                 };
             }
 
             ICollection<ProfileFollower> followers = await _profileRepository.GetProfileFollowersAsync(profile);
-            // ICollection<Profile> profileFollowers = followers.Select(f => f.Follower).ToList();
-
-            ICollection<Profile> profileFollowers = profile.ProfileFollowers.Select(pf => pf.Follower).ToList();
-
+            ICollection<Profile> profileFollowers = followers.Select(f => f.Follower).ToList();
             ICollection<GetProfileResponse> profileFollowersMapper = _mapper.Map<ICollection<GetProfileResponse>>(profileFollowers);
 
             return new GetFollowingsResponse()
             {
                 Profiles = profileFollowersMapper,
                 Message = "Success",
-                IsSuccess = true
+                IsSuccess = true,
+                StatusCode = 200
             };
         }
 
@@ -179,7 +184,8 @@ namespace MyLifeApp.Application.Services
                 return new BaseResponse()
                 {
                     Message = "Profile not found",
-                    IsSuccess = false
+                    IsSuccess = false,
+                    StatusCode = 404
                 };
             }
 
@@ -190,7 +196,8 @@ namespace MyLifeApp.Application.Services
                 return new BaseResponse()
                 {
                     Message = "You already follow this profile.",
-                    IsSuccess = false
+                    IsSuccess = false,
+                    StatusCode = 400
                 };
             }
 
@@ -200,13 +207,13 @@ namespace MyLifeApp.Application.Services
                 Follower = follower
             };
 
-            profile.ProfileFollowers!.Add(follow);
-            await _profileRepository.SaveAsync();
+            await _profileRepository.AddProfileFollower(follow);
 
             return new BaseResponse()
             {
                 Message = $"Now you follow {follower.User?.UserName}",
-                IsSuccess = true
+                IsSuccess = true,
+                StatusCode = 200
             };
         }
 
@@ -220,7 +227,8 @@ namespace MyLifeApp.Application.Services
                 return new BaseResponse()
                 {
                     Message = "Profile not found",
-                    IsSuccess = false
+                    IsSuccess = false,
+                    StatusCode = 404
                 };
             }
 
@@ -231,19 +239,20 @@ namespace MyLifeApp.Application.Services
                 return new BaseResponse()
                 {
                     Message = "You not follow this profile.",
-                    IsSuccess = false
+                    IsSuccess = false,
+                    StatusCode = 400
                 };
             }
 
             ProfileFollower unfollow = profileFollowings.Where(pf => pf.Follower == follower).First();
 
-            profile.ProfileFollowers!.Remove(unfollow);
-            await _profileRepository.SaveAsync();
+            await _profileRepository.RemoveProfileFollower(unfollow);
 
             return new BaseResponse()
             {
                 Message = $"Successfuly Unfollow {follower.User?.UserName}",
-                IsSuccess = true
+                IsSuccess = true,
+                StatusCode = 200
             };
         }
     }
