@@ -20,7 +20,6 @@ namespace MyLife.Api.Controllers
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
-        [ProducesResponseType(404, Type = typeof(BaseResponse))]
         public async Task<IActionResult> GetPublicPosts()
         {
             if (ModelState.IsValid)
@@ -32,7 +31,7 @@ namespace MyLife.Api.Controllers
                     return Ok(response);
                 }
 
-                return BadRequest(response);
+                return StatusCode(response.StatusCode, response);
             }
 
             return StatusCode(500);
@@ -53,7 +52,7 @@ namespace MyLife.Api.Controllers
                     return Ok(response);
                 }
 
-                return NotFound();
+                return StatusCode(response.StatusCode, response);
             }
 
             return StatusCode(500);
@@ -74,7 +73,7 @@ namespace MyLife.Api.Controllers
                     return StatusCode(201, response);
                 }
 
-                return BadRequest(response);
+                return StatusCode(response.StatusCode, response);
             }
 
             return StatusCode(500);
@@ -96,7 +95,7 @@ namespace MyLife.Api.Controllers
                     return Ok(response);
                 }
 
-                return BadRequest(response);
+                return StatusCode(response.StatusCode, response);
             }
 
             return StatusCode(500);
@@ -117,7 +116,7 @@ namespace MyLife.Api.Controllers
                     return NoContent();
                 }
 
-                return NotFound();
+                return StatusCode(response.StatusCode, response);
             }
 
             return StatusCode(500);
