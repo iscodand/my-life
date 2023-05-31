@@ -185,5 +185,100 @@ namespace MyLifeApp.Application.Services
                 StatusCode = 204
             };
         }
+
+        public async Task<BaseResponse> LikePostAsync(Guid postId)
+        {
+            Post post = await _postRepository.GetPostDetailsAsync(postId);
+            Profile authenticatedProfile = await GetAuthenticatedProfileAsync();
+
+            if (post == null)
+            {
+                return new BaseResponse()
+                {
+                    Message = "Post not found",
+                    IsSuccess = false,
+                    StatusCode = 404
+                };
+            }
+
+            PostLike like = new()
+            {
+                Profile = authenticatedProfile,
+                Post = post
+            };
+
+            bool postAlreadyLiked = post.PostLikes.Any(p => p.Post == post && p.Profile == authenticatedProfile);
+
+            if (postAlreadyLiked)
+            {
+                return new BaseResponse()
+                {
+                    Message = "You already liked this post.",
+                    IsSuccess = false,
+                    StatusCode = 400
+                };
+            }
+
+            await _postRepository.AddLikePostAsync(like);
+
+            return new BaseResponse()
+            {
+                Message = "Post successfuly liked",
+                IsSuccess = true,
+                StatusCode = 200
+            };
+        }
+
+        public async Task<BaseResponse> UnlikePostAsync(Guid postId)
+        {
+            Post post = await _postRepository.GetPostDetailsAsync(postId);
+            Profile authenticatedProfile = await GetAuthenticatedProfileAsync();
+
+            if (post == null)
+            {
+                return new BaseResponse()
+                {
+                    Message = "Post not found",
+                    IsSuccess = false,
+                    StatusCode = 404
+                };
+            }
+
+            PostLike? postToUnlike = post.PostLikes.FirstOrDefault(p => p.Post == post && p.Profile == authenticatedProfile);
+
+            if (postToUnlike == null)
+            {
+                return new BaseResponse()
+                {
+                    Message = "You doens't like this post yet.",
+                    IsSuccess = false,
+                    StatusCode = 400
+                };
+            }
+
+            await _postRepository.RemoveLikePostAsync(postToUnlike);
+
+            return new BaseResponse()
+            {
+                Message = "Post successfuly unliked",
+                IsSuccess = true,
+                StatusCode = 200
+            };
+        }
+
+        public Task<BaseResponse> CommentPostAsync(Guid postId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<BaseResponse> UpdateCommentAsync(Guid postId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<BaseResponse> DeleteCommentAsync(Guid postId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
