@@ -10,10 +10,14 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
     public class PostRepository : GenericRepository<Post>, IPostRepository
     {
         public readonly DbSet<Post> _posts;
+        public readonly DbSet<PostLike> _postLikes;
+        public readonly DbSet<PostComment> _postComments;
 
         public PostRepository(ApplicationDbContext context) : base(context)
         {
             _posts = context.Set<Post>();
+            _postLikes = context.Set<PostLike>();
+            _postComments = context.Set<PostComment>();
         }
 
         public async Task<ICollection<Post>> GetPublicPostsAsync()
@@ -30,6 +34,8 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             return await _posts.Where(p => p.Id == postId)
                                .Include(p => p.Profile)
                                .ThenInclude(p => p.User)
+                               .Include(p => p.PostLikes)
+                               .Include(p => p.PostComments)
                                .FirstAsync();
         }
 
@@ -38,14 +44,24 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             return await _posts.AnyAsync(p => p.Id == postId);
         }
 
-        public Task<BaseResponse> CommentPostAsync(Guid postId, CommentPostRequest postRequest)
+        public async Task<PostComment> AddCommentPostAsync(PostComment comment)
         {
-            throw new NotImplementedException();
+            await _postComments.AddAsync(comment);
+            await base.SaveAsync();
+            return comment;
         }
 
-        public Task<BaseResponse> LikePostAsync(Guid postId)
+        public async Task<PostLike> AddLikePostAsync(PostLike like)
         {
-            throw new NotImplementedException();
+            await _postLikes.AddAsync(like);
+            await base.SaveAsync();
+            return like;
+        }
+        
+        public async Task RemoveLikePostAsync(PostLike like)
+        {
+            _postLikes.Remove(like);
+            await base.SaveAsync();
         }
     }
 }

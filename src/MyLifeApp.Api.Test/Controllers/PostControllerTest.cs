@@ -259,5 +259,148 @@ namespace MyLifeApp.Api.Test.Controllers
             result.Should().BeOfType<ObjectResult>()
                 .Which.StatusCode.Should().Be(404);
         }
+
+        [Fact]
+        public async Task LikePost_ExistentPost_ReturnsOk()
+        {
+            // Arrange
+            var post = A.Fake<Post>();
+            var profile = A.Fake<Profile>();
+
+            BaseResponse response = new()
+            {
+                Message = "Post successfuly liked.",
+                IsSuccess = true,
+                StatusCode = 200
+            };
+
+            A.CallTo(() => _postService.LikePostAsync(post.Id)).Returns(Task.FromResult(response));
+
+            // Act
+            var result = await _controller.LikePost(post.Id);
+
+            // Assert
+            result.Should().BeOfType<OkObjectResult>()
+                .Which.Value.Should().BeEquivalentTo(response);
+        }
+
+        [Fact]
+        public async Task LikePost_InexistentPost_ReturnsNotFound()
+        {
+            // Arrange
+            Guid inexistentPost = Guid.NewGuid();
+
+            BaseResponse response = new()
+            {
+                Message = "Post not found.",
+                IsSuccess = false,
+                StatusCode = 404
+            };
+
+            A.CallTo(() => _postService.LikePostAsync(inexistentPost)).Returns(Task.FromResult(response));
+
+            // Act
+            var result = await _controller.LikePost(inexistentPost);
+
+            // Assert
+            result.Should().BeOfType<ObjectResult>()
+                .Which.StatusCode.Should().Be(404);
+        }
+
+        [Fact]
+        public async Task LikePost_AlreadyLikedByProfile_ReturnsBadRequest()
+        {
+            // Arrange
+            var post = A.Fake<Post>();
+            var profile = A.Fake<Profile>();
+
+            BaseResponse response = new()
+            {
+                Message = "You already liked this post.",
+                IsSuccess = false,
+                StatusCode = 400
+            };
+
+            A.CallTo(() => _postService.LikePostAsync(post.Id)).Returns(Task.FromResult(response));
+
+            // Act
+            var result = await _controller.LikePost(post.Id);
+
+            // Assert
+            result.Should().BeOfType<ObjectResult>()
+                .Which.StatusCode.Should().Be(400);
+        }
+
+        [Fact]
+        public async Task UnlikePost_ExistentPost_ReturnsOk()
+        {
+            // Arrange
+            var post = A.Fake<Post>();
+            var profile = A.Fake<Profile>();
+
+            BaseResponse response = new()
+            {
+                Message = "Post successfuly unliked.",
+                IsSuccess = true,
+                StatusCode = 200
+            };
+
+            A.CallTo(() => _postService.UnlikePostAsync(post.Id)).Returns(Task.FromResult(response));
+
+            // Act
+            var result = await _controller.UnlikePost(post.Id);
+
+            // Assert
+            result.Should().BeOfType<OkObjectResult>()
+                .Which.Value.Should().BeEquivalentTo(response);
+        }
+
+        [Fact]
+        public async Task UnlikePost_InexistentPost_ReturnsNotFound()
+        {
+            // Arrange
+            Guid inexistentPost = Guid.NewGuid();
+
+            BaseResponse response = new()
+            {
+                Message = "Post not found.",
+                IsSuccess = false,
+                StatusCode = 404
+            };
+
+            A.CallTo(() => _postService.UnlikePostAsync(inexistentPost)).Returns(Task.FromResult(response));
+
+            // Act
+            var result = await _controller.UnlikePost(inexistentPost);
+
+            // Assert
+            result.Should().BeOfType<ObjectResult>()
+                .Which.StatusCode.Should().Be(404);
+        }
+
+
+        [Fact]
+        public async Task UnlikePost_NotLikedByProfile_ReturnsBadRequest()
+        {
+            // Arrange
+            var post = A.Fake<Post>();
+            var profile = A.Fake<Profile>();
+
+            BaseResponse response = new()
+            {
+                Message = "You doens't like this post yet.",
+                IsSuccess = false,
+                StatusCode = 400
+            };
+
+            A.CallTo(() => _postService.UnlikePostAsync(post.Id)).Returns(Task.FromResult(response));
+
+            // Act
+            var result = await _controller.UnlikePost(post.Id);
+
+            // Assert
+            result.Should().BeOfType<ObjectResult>()
+                .Which.StatusCode.Should().Be(400);
+        }
     }
 }

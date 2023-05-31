@@ -121,5 +121,49 @@ namespace MyLife.Api.Controllers
 
             return StatusCode(500);
         }
+
+        [Authorize]
+        [HttpPost("{postId}/like")]
+        [ProducesResponseType(200, Type = typeof(BaseResponse))]
+        [ProducesResponseType(400, Type = typeof(BaseResponse))]
+        [ProducesResponseType(404, Type = typeof(BaseResponse))]
+        public async Task<IActionResult> LikePost(Guid postId)
+        {
+            if (ModelState.IsValid)
+            {
+                BaseResponse response = await _postService.LikePostAsync(postId);
+
+                if (response.IsSuccess)
+                {
+                    return Ok(response);
+                }
+
+                return StatusCode(response.StatusCode, response);
+            }
+
+            return StatusCode(500);
+        }
+
+        [Authorize]
+        [HttpPost("{postId}/unlike")]
+        [ProducesResponseType(200, Type = typeof(BaseResponse))]
+        [ProducesResponseType(400, Type = typeof(BaseResponse))]
+        [ProducesResponseType(404, Type = typeof(BaseResponse))]
+        public async Task<IActionResult> UnlikePost(Guid postId)
+        {
+            if (ModelState.IsValid)
+            {
+                BaseResponse response = await _postService.UnlikePostAsync(postId);
+
+                if (response.IsSuccess)
+                {
+                    return Ok(response);
+                }
+
+                return StatusCode(response.StatusCode, response);
+            }
+
+            return StatusCode(500);
+        }
     }
 }

@@ -9,13 +9,13 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
     {
         private readonly DbSet<Profile> _profiles;
         private readonly DbSet<ProfileFollower> _profileFollowers;
-        private readonly DbSet<ProfileAnalytics> _analytics;
+        private readonly DbSet<ProfileAnalytics> _profileAnalytics;
 
         public ProfileRepository(ApplicationDbContext context) : base(context)
         {
             _profiles = context.Set<Profile>();
             _profileFollowers = context.Set<ProfileFollower>();
-            _analytics = context.Set<ProfileAnalytics>();
+            _profileAnalytics = context.Set<ProfileAnalytics>();
         }
 
         public async Task<Profile> GetProfileByUsernameAsync(string username)
@@ -41,12 +41,12 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
 
         public async Task<ProfileAnalytics> GetProfileAnalyticsAsync(Profile profile)
         {
-            return await _analytics.FirstOrDefaultAsync(p => p.Profile == profile);
+            return await _profileAnalytics.FirstOrDefaultAsync(p => p.Profile == profile);
         }
 
         public async Task<ProfileAnalytics> CreateProfileAnalyticsAsync(ProfileAnalytics profileAnalytics)
         {
-            await _analytics.AddAsync(profileAnalytics);
+            await _profileAnalytics.AddAsync(profileAnalytics);
             await base.SaveAsync();
             return profileAnalytics;
         }
