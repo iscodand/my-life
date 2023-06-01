@@ -89,5 +89,3 @@ app.Run();
 
 // run with custom port
 // dotnet run --urls=http://localhost:5001/
-
-// https://www.creative-tim.com/product/vue-argon-dashboard-asp-net
