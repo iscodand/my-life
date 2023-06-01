@@ -1,21 +1,20 @@
 using Identity.Infrastructure.DTOs.Request;
 using Identity.Infrastructure.DTOs.Response;
-using Identity.Infrastructure.Interfaces;
+using Identity.Infrastructure.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
-using MyLifeApp.Application.Interfaces;
-using System.Diagnostics;
+using MyLifeApp.Application.Interfaces.Services;
 
 [Route("api/v1/authentication")]
 [ApiController]
 public class AuthenticationController : Controller
 {
-    public readonly IUserRepository _userRepository;
-    public readonly IProfileRepository _profileRepository;
+    public readonly IUserService _userService;
+    public readonly IProfileService _profileService;
 
-    public AuthenticationController(IUserRepository userRepository, IProfileRepository profileRepository)
+    public AuthenticationController(IUserService userService, IProfileService profileService)
     {
-        _userRepository = userRepository;
-        _profileRepository = profileRepository;
+        _userService = userService;
+        _profileService = profileService;
     }
 
     [HttpPost("register")]
@@ -25,19 +24,17 @@ public class AuthenticationController : Controller
     {
         if (ModelState.IsValid)
         {
-            RegisterUserResponse response = await _userRepository.Register(user);
-            bool profile = _profileRepository.RegisterProfile(response.Id);
+            RegisterUserResponse response = await _userService.RegisterAsync(user);
 
             if (response.IsSuccess)
             {
-                // Profile must be created
+                bool profile = await _profileService.CreateProfileAsync(response.Id);
+
                 if (profile)
                     return Ok(response);
-
-                Debug.WriteLine(profile);
             }
 
-            return BadRequest(response);
+            return StatusCode(response.StatusCode, response);
         }
 
         return StatusCode(500);
@@ -50,14 +47,14 @@ public class AuthenticationController : Controller
     {
         if (ModelState.IsValid)
         {
-            LoginUserResponse response = await _userRepository.Login(user);
+            LoginUserResponse response = await _userService.LoginAsync(user);
 
             if (response.IsSuccess)
             {
                 return Ok(response);
             }
 
-            return BadRequest(response);
+            return StatusCode(response.StatusCode, response);
         }
 
         return StatusCode(500);
@@ -70,14 +67,14 @@ public class AuthenticationController : Controller
     {
         if (ModelState.IsValid)
         {
-            RefreshTokenResponse response = await _userRepository.RefreshToken(request);
+            RefreshTokenResponse response = await _userService.RefreshTokenAsync(request);
 
             if (response.IsSuccess)
             {
                 return Ok(response);
             }
 
-            return BadRequest(response);
+            return StatusCode(response.StatusCode, response);
         }
 
         return StatusCode(500);

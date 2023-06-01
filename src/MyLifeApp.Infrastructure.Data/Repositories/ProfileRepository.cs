@@ -1,229 +1,67 @@
-﻿using AutoMapper;
-using Identity.Infrastructure.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using MyLifeApp.Application.Dtos.Requests.Profile;
-using MyLifeApp.Application.Dtos.Responses;
-using MyLifeApp.Application.Dtos.Responses.Profile;
-using MyLifeApp.Application.Interfaces;
+using MyLifeApp.Application.Interfaces.Repositories;
 using MyLifeApp.Domain.Entities;
 using MyLifeApp.Infrastructure.Data.Context;
-using System.Diagnostics;
-using System.Security.Claims;
 
 namespace MyLifeApp.Infrastructure.Data.Repositories
 {
-    public class ProfileRepository : IProfileRepository
+    public class ProfileRepository : GenericRepository<Profile>, IProfileRepository
     {
-        private readonly IHttpContextAccessor _httpContext;
-        private readonly UserManager<User> _userManager;
-        private readonly IMapper _mapper;
-        private readonly ApplicationDbContext _context;
+        private readonly DbSet<Profile> _profiles;
+        private readonly DbSet<ProfileFollower> _profileFollowers;
+        private readonly DbSet<ProfileAnalytics> _profileAnalytics;
 
-        public ProfileRepository(IHttpContextAccessor httpContext,
-            UserManager<User> userManager,
-            IMapper mapper,
-            ApplicationDbContext context)
+        public ProfileRepository(ApplicationDbContext context) : base(context)
         {
-            _httpContext = httpContext;
-            _userManager = userManager;
-            _mapper = mapper;
-            _context = context;
+            _profiles = context.Set<Profile>();
+            _profileFollowers = context.Set<ProfileFollower>();
+            _profileAnalytics = context.Set<ProfileAnalytics>();
         }
 
-        private async Task<User> GetAuthenticatedUser()
+        public async Task<Profile> GetProfileByUsernameAsync(string username)
         {
-            ClaimsPrincipal userClaims = _httpContext.HttpContext!.User;
-            User? authenticatedUser = await _userManager.GetUserAsync(userClaims);
-            return authenticatedUser!;
+            return await _profiles.Where(p => p.User.NormalizedUserName == username.ToUpper().Trim())
+                                  .Include(p => p.User)
+                                  .FirstOrDefaultAsync();
         }
 
-        // TO-DO
-        // Refactor => verify the best way to create a profile
-        public bool RegisterProfile(string userId)
+        public async Task<ICollection<ProfileFollower>> GetProfileFollowersAsync(Profile profile)
         {
-            try
-            {
-                Domain.Entities.Profile profile = new()
-                {
-                    UserId = userId
-                };
-                _context.Add(profile);
-                _context.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex);
-                return false;
-            }
-
-            return true;
+            return await _profileFollowers.Where(pf => pf.Follower == profile)
+                                    .Include(pf => pf.Follower.User)
+                                    .ToListAsync();
         }
 
-        public async Task<DetailProfileResponse> GetAuthenticatedProfile()
+        public async Task<ICollection<ProfileFollower>> GetProfileFollowingsAsync(Profile profile)
         {
-            User authenticatedUser = await GetAuthenticatedUser();
-            Domain.Entities.Profile? profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == authenticatedUser!.Id);
-
-            return new DetailProfileResponse()
-            {
-                Id = profile!.Id,
-                Name = profile.User.Name,
-                Username = profile.User.UserName,
-                Bio = profile.Bio,
-                BirthDate = profile.BirthDate,
-                IsPrivate = profile.IsPrivate,
-                Message = "Success",
-                IsSuccess = true
-            };
+            return await _profileFollowers.Where(pf => pf.Profile == profile)
+                                    .Include(pf => pf.Follower.User)
+                                    .ToListAsync();
         }
 
-        public async Task<DetailProfileResponse> GetProfileByUsername(string profileUsername)
+        public async Task<ProfileAnalytics> GetProfileAnalyticsAsync(Profile profile)
         {
-            Domain.Entities.Profile? profile = await _context.Profiles.FirstOrDefaultAsync(p => p.User.UserName == profileUsername);
-
-            if (profile == null)
-            {
-                return new DetailProfileResponse()
-                {
-                    Message = "User not found",
-                    IsSuccess = false
-                };
-            }
-
-            User user = await _context.Users.FirstAsync(u => u.UserName == profileUsername);
-
-            return new DetailProfileResponse()
-            {
-                Id = profile.Id,
-                Name = profile.User.Name,
-                Username = profile.User.UserName,
-                Bio = profile.Bio,
-                BirthDate = profile.BirthDate,
-                IsPrivate = profile.IsPrivate,
-                Message = "Success",
-                IsSuccess = true
-            };
+            return await _profileAnalytics.FirstOrDefaultAsync(p => p.Profile == profile);
         }
 
-        public async Task<BaseResponse> UpdateProfile(UpdateProfileRequest profileRequest)
+        public async Task<ProfileAnalytics> CreateProfileAnalyticsAsync(ProfileAnalytics profileAnalytics)
         {
-            if (profileRequest == null)
-                return new BaseResponse()
-                {
-                    Message = "User cannot be null.",
-                    IsSuccess = false
-                };
-
-            User? authenticatedUser = await _userManager.GetUserAsync(_httpContext.HttpContext!.User);
-            Domain.Entities.Profile profile = _context.Profiles.First(u => u.UserId == authenticatedUser!.Id);
-            _mapper.Map(profileRequest, profile);
-            await _context.SaveChangesAsync();
-
-            return new BaseResponse()
-            {
-                Message = "User successfuly updated.",
-                IsSuccess = true
-            };
+            await _profileAnalytics.AddAsync(profileAnalytics);
+            await base.SaveAsync();
+            return profileAnalytics;
         }
 
-        private async Task<bool> AlreadyFollowProfile(User authenticatedUser, Domain.Entities.Profile followerProfile)
+        public async Task<ProfileFollower> AddProfileFollower(ProfileFollower profileFollower)
         {
-            Domain.Entities.Profile? authenticatedUserProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == authenticatedUser.Id);
-            List<ProfileFollower> authenticatedUserFollowers = _context.ProfileFollowers.Where(pf => pf.ProfileId == authenticatedUserProfile!.Id).ToList();
-            bool alreadyFollow = authenticatedUserFollowers.Any(uf => uf.FollowerId == followerProfile.Id);
-            return alreadyFollow;
+            await _profileFollowers.AddAsync(profileFollower);
+            await base.SaveAsync();
+            return profileFollower;
         }
 
-        // TO-DO
-        // => add ProfileAnalytics followers counter support
-        // => add ProfileAnalytics following counter support
-        // => refactor
-        public async Task<BaseResponse> FollowProfile(string username)
+        public async Task RemoveProfileFollower(ProfileFollower profileFollower)
         {
-            User authenticatedUser = await GetAuthenticatedUser();
-            Domain.Entities.Profile? authenticatedUserProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == authenticatedUser.Id);
-
-            Domain.Entities.Profile? followerProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.User.UserName == username);
-            if (followerProfile == null)
-            {
-                return new BaseResponse()
-                {
-                    Message = "User not found.",
-                    IsSuccess = false
-                };
-            }
-
-            bool alreadyFollow = await AlreadyFollowProfile(authenticatedUser, followerProfile);
-
-            if (!alreadyFollow)
-            {
-                ProfileFollower profileFollower = new()
-                {
-                    Profile = authenticatedUserProfile!,
-                    Follower = followerProfile
-                };
-
-                await _context.ProfileFollowers.AddAsync(profileFollower);
-                await _context.SaveChangesAsync();
-
-                return new BaseResponse()
-                {
-                    Message = "Follow successfuly.",
-                    IsSuccess = true
-                };
-            }
-
-            return new BaseResponse()
-            {
-                Message = "You already follow this profile.",
-                IsSuccess = false
-            };
-        }
-
-        public async Task<BaseResponse> UnfollowProfile(string username)
-        {
-            User authenticatedUser = await GetAuthenticatedUser();
-            Domain.Entities.Profile? authenticatedUserProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == authenticatedUser.Id);
-
-            Domain.Entities.Profile? followerProfile = await _context.Profiles.FirstOrDefaultAsync(p => p.User.UserName == username);
-            if (followerProfile == null)
-            {
-                return new BaseResponse()
-                {
-                    Message = "User not found.",
-                    IsSuccess = false
-                };
-            }
-
-            bool alreadyFollow = await AlreadyFollowProfile(authenticatedUser, followerProfile);
-
-            if (alreadyFollow)
-            {
-                ProfileFollower? profileFollower = await _context.ProfileFollowers.FirstOrDefaultAsync(
-                    pf => pf.Profile == authenticatedUserProfile
-                    && pf.Follower == followerProfile);
-                _context.ProfileFollowers.Remove(profileFollower!);
-                await _context.SaveChangesAsync();
-
-                return new BaseResponse()
-                {
-                    Message = "Unfollow successfuly.",
-                    IsSuccess = true
-                };
-            }
-
-            return new BaseResponse()
-            {
-                Message = "You must to be a follower of this profile to unfollow.",
-                IsSuccess = false
-            };
-        }
-
-        public Task<GetTotalFollowersResponse> GetTotalFollowersByUsername(string profileUsername)
-        {
-            throw new NotImplementedException();
+            _profileFollowers.Remove(profileFollower);
+            await base.SaveAsync();
         }
     }
 }

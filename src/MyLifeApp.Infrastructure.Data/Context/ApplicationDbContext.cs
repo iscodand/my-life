@@ -24,10 +24,6 @@ namespace MyLifeApp.Infrastructure.Data.Context
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            // Defining Analytics with no Keys
-            builder.Entity<PostAnalytics>().HasNoKey();
-            builder.Entity<ProfileAnalytics>().HasNoKey();
-
             // Many-to-many: PostLike Entity
             builder.Entity<PostLike>()
                 .HasKey(pl => new { pl.ProfileId, pl.PostId });

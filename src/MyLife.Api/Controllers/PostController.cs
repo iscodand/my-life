@@ -1,32 +1,30 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MyLifeApp.Application.Dtos.Requests.Profile;
+using MyLifeApp.Application.Dtos.Requests.Post;
 using MyLifeApp.Application.Dtos.Responses;
-using MyLifeApp.Application.Dtos.Responses.Profile;
 using MyLifeApp.Application.Interfaces.Services;
 
 namespace MyLife.Api.Controllers
 {
-    [Route("api/v1/profile")]
+    [Route("api/v1/posts")]
     [ApiController]
-    public class ProfileController : Controller
+    public class PostController : Controller
     {
-        private readonly IProfileService _profileService;
+        private readonly IPostService _postService;
 
-        public ProfileController(IProfileService profileService)
+        public PostController(IPostService postService)
         {
-            _profileService = profileService;
+            _postService = postService;
         }
 
-        [Authorize]
         [HttpGet]
-        [ProducesResponseType(200, Type = typeof(DetailProfileResponse))]
-        [ProducesResponseType(404, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> GetAuthenticatedProfile()
+        [ProducesResponseType(200, Type = typeof(BaseResponse))]
+        [ProducesResponseType(400, Type = typeof(BaseResponse))]
+        public async Task<IActionResult> GetPublicPosts()
         {
             if (ModelState.IsValid)
             {
-                DetailProfileResponse response = await _profileService.GetAuthenticatedProfileAsync();
+                BaseResponse response = await _postService.GetPublicPostsAsync();
 
                 if (response.IsSuccess)
                 {
@@ -39,14 +37,15 @@ namespace MyLife.Api.Controllers
             return StatusCode(500);
         }
 
-        [HttpGet("{profileUsername}")]
-        [ProducesResponseType(200, Type = typeof(DetailProfileResponse))]
+        [HttpGet("{postId}")]
+        [ProducesResponseType(200, Type = typeof(BaseResponse))]
+        [ProducesResponseType(400, Type = typeof(BaseResponse))]
         [ProducesResponseType(404, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> GetProfileByUsername(string profileUsername)
+        public async Task<IActionResult> GetPost(Guid postId)
         {
             if (ModelState.IsValid)
             {
-                DetailProfileResponse response = await _profileService.GetProfileByUsernameAsync(profileUsername);
+                BaseResponse response = await _postService.GetPostByIdAsync(postId);
 
                 if (response.IsSuccess)
                 {
@@ -55,76 +54,41 @@ namespace MyLife.Api.Controllers
 
                 return StatusCode(response.StatusCode, response);
             }
+
             return StatusCode(500);
         }
 
         [Authorize]
-        [HttpPut]
-        [ProducesResponseType(200, Type = typeof(BaseResponse))]
+        [HttpPost]
+        [ProducesResponseType(201, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> UpdateProfile(UpdateProfileRequest profileRequest)
+        public async Task<IActionResult> Create([FromBody] CreatePostRequest request)
         {
             if (ModelState.IsValid)
             {
-                BaseResponse response = await _profileService.UpdateProfileAsync(profileRequest);
+                BaseResponse response = await _postService.CreatePostAsync(request);
 
                 if (response.IsSuccess)
                 {
-                    return Ok(response);
+                    return StatusCode(201, response);
                 }
 
                 return StatusCode(response.StatusCode, response);
             }
-            return StatusCode(500);
-        }
 
-        [HttpGet("{profileUsername}/following")]
-        [ProducesResponseType(200, Type = typeof(DetailProfileResponse))]
-        [ProducesResponseType(404, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> GetProfileFollowings(string profileUsername)
-        {
-            if (ModelState.IsValid)
-            {
-                GetFollowingsResponse response = await _profileService.GetProfileFollowingsAsync(profileUsername);
-
-                if (response.IsSuccess)
-                {
-                    return Ok(response);
-                }
-
-                return StatusCode(response.StatusCode, response);
-            }
-            return StatusCode(500);
-        }
-
-        [HttpGet("{profileUsername}/followers")]
-        [ProducesResponseType(200, Type = typeof(DetailProfileResponse))]
-        [ProducesResponseType(404, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> GetProfileFollowers(string profileUsername)
-        {
-            if (ModelState.IsValid)
-            {
-                GetFollowingsResponse response = await _profileService.GetProfileFollowersAsync(profileUsername);
-
-                if (response.IsSuccess)
-                {
-                    return Ok(response);
-                }
-
-                return StatusCode(response.StatusCode, response);
-            }
             return StatusCode(500);
         }
 
         [Authorize]
-        [HttpPost("follow/{username}")]
+        [HttpPut("{postId}")]
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> FollowProfile(string username)
+        [ProducesResponseType(404, Type = typeof(BaseResponse))]
+        public async Task<IActionResult> Update(Guid postId, [FromBody] UpdatePostRequest request)
         {
             if (ModelState.IsValid)
             {
-                BaseResponse response = await _profileService.FollowProfileAsync(username);
+                BaseResponse response = await _postService.UpdatePostAsync(postId, request);
 
                 if (response.IsSuccess)
                 {
@@ -133,18 +97,41 @@ namespace MyLife.Api.Controllers
 
                 return StatusCode(response.StatusCode, response);
             }
+
             return StatusCode(500);
         }
 
         [Authorize]
-        [HttpPost("unfollow/{username}")]
+        [HttpDelete("{postId}")]
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
-        [ProducesResponseType(400, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> UnfollowProfile(string username)
+        [ProducesResponseType(404, Type = typeof(BaseResponse))]
+        public async Task<IActionResult> Delete(Guid postId)
         {
             if (ModelState.IsValid)
             {
-                BaseResponse response = await _profileService.UnfollowProfileAsync(username);
+                BaseResponse response = await _postService.DeletePostAsync(postId);
+
+                if (response.IsSuccess)
+                {
+                    return NoContent();
+                }
+
+                return StatusCode(response.StatusCode, response);
+            }
+
+            return StatusCode(500);
+        }
+
+        [Authorize]
+        [HttpPost("{postId}/like")]
+        [ProducesResponseType(200, Type = typeof(BaseResponse))]
+        [ProducesResponseType(400, Type = typeof(BaseResponse))]
+        [ProducesResponseType(404, Type = typeof(BaseResponse))]
+        public async Task<IActionResult> LikePost(Guid postId)
+        {
+            if (ModelState.IsValid)
+            {
+                BaseResponse response = await _postService.LikePostAsync(postId);
 
                 if (response.IsSuccess)
                 {
@@ -153,6 +140,29 @@ namespace MyLife.Api.Controllers
 
                 return StatusCode(response.StatusCode, response);
             }
+
+            return StatusCode(500);
+        }
+
+        [Authorize]
+        [HttpPost("{postId}/unlike")]
+        [ProducesResponseType(200, Type = typeof(BaseResponse))]
+        [ProducesResponseType(400, Type = typeof(BaseResponse))]
+        [ProducesResponseType(404, Type = typeof(BaseResponse))]
+        public async Task<IActionResult> UnlikePost(Guid postId)
+        {
+            if (ModelState.IsValid)
+            {
+                BaseResponse response = await _postService.UnlikePostAsync(postId);
+
+                if (response.IsSuccess)
+                {
+                    return Ok(response);
+                }
+
+                return StatusCode(response.StatusCode, response);
+            }
+
             return StatusCode(500);
         }
     }

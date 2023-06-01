@@ -2,10 +2,12 @@
 
 namespace MyLifeApp.Application.Dtos.Responses.Post
 {
-    public class GetPostsResponse : BaseResponse
+    public class GetPostsResponse
     {
-        public string Title { get; set; }
-        public GetProfileResponse Profile { get; set; }
+        public Guid Id { get; set; }
+        public string? Title { get; set; }
+        public GetProfileResponse? Profile { get; set; }
         public int Likes { get; set; }
+        public int Comments { get; set; }
     }
 }

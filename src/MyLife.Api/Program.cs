@@ -1,19 +1,23 @@
-using Identity.Infrastructure.Interfaces;
+using Identity.Infrastructure.Interfaces.Services;
 using Identity.Infrastructure.Models;
-using Identity.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using MyLifeApp.Application.Interfaces;
+using MyLifeApp.Application.Interfaces.Services;
+using MyLifeApp.Application.Services;
 using MyLifeApp.Infrastructure.Data.Context;
 using MyLifeApp.Infrastructure.Data.Repositories;
+using Identity.Infrastructure.Services;
 using System.Text;
+using MyLifeApp.Application.Interfaces.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddNewtonsoftJson(options =>
+    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+);
 
 // Ignore null fields from Response
 //    .AddJsonOptions(options =>
@@ -23,9 +27,12 @@ builder.Services.AddControllers();
 //    });
 
 // Dependency Injection
-builder.Services.AddScoped<ITokenRepository, TokenRepository>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IPostRepository, PostRepository>();
 builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
+builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -43,6 +50,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
     options.Password.RequiredLength = 8;
+    options.User.RequireUniqueEmail = true;
 }).AddEntityFrameworkStores<ApplicationDbContext>()
   .AddDefaultTokenProviders();
 
@@ -57,7 +65,7 @@ builder.Services.AddAuthentication(auth =>
     {
         ValidateIssuer = false,
         ValidateAudience = false,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWTSettings:Key"])),
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWTSettings:Key"]!)),
         ValidateIssuerSigningKey = true
     };
 });
@@ -78,3 +86,8 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+// run with custom port
+// dotnet run --urls=http://localhost:5001/
+
+// https://www.creative-tim.com/product/vue-argon-dashboard-asp-net
