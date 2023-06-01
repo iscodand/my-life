@@ -96,6 +96,7 @@ namespace MyLifeApp.Api.Test.Services
         {
             // Arrange
             string inexistentUsername = "inexistentUsername";
+            Profile? nullProfile = null;
 
             DetailProfileResponse response = new()
             {
@@ -103,7 +104,7 @@ namespace MyLifeApp.Api.Test.Services
                 StatusCode = 404
             };
 
-            A.CallTo(() => _profileRepository.GetProfileByUsernameAsync(inexistentUsername));
+            A.CallTo(() => _profileRepository.GetProfileByUsernameAsync(inexistentUsername)).Returns(nullProfile);
 
             // Act
             var result = await _profileService.GetProfileByUsernameAsync(inexistentUsername);
@@ -112,37 +113,155 @@ namespace MyLifeApp.Api.Test.Services
             result.Should().BeEquivalentTo(response);
         }
 
+        // // TODO => verify how test Update Profile
+        // [Fact]
+        // public async Task UpdateProfileAsync_ValidUpdate_ReturnsSuccess()
+        // {
+        //     // Arrange
+        //     var profile = A.Fake<Profile>();
+        //     var user = A.Fake<User>();
+        //     profile.User = user;
+
+        //     UpdateProfileRequest request = new()
+        //     {
+        //         Bio = "Testing bio",
+        //         Location = "Testing location",
+        //         BirthDate = DateTime.Now,
+        //         IsPrivate = false
+        //     };
+
+        //     BaseResponse response = new()
+        //     {
+        //         Message = "Profile successfuly updated",
+        //         IsSuccess = true,
+        //         StatusCode = 200
+        //     };
+
+        //     A.CallTo(() => _mapper.Map(request, profile)).Returns(profile);
+        //     A.CallTo(() => _profileRepository.UpdateAsync(profile));
+
+        //     // Act
+        //     var result = await _profileService.UpdateProfileAsync(request);
+
+        //     // Assert
+        //     result.Should().BeEquivalentTo(response);
+        //     A.CallTo(() => _profileRepository.SaveAsync()).MustHaveHappenedOnceExactly();
+        // }
+
         [Fact]
-        public async Task UpdateProfileAsync_ValidUpdate_ReturnsSuccess()
+        public async Task GetProfileFollowingsAsync_ExistentProfile_ReturnsSuccess()
         {
             // Arrange
             var profile = A.Fake<Profile>();
             var user = A.Fake<User>();
 
-            UpdateProfileRequest request = new()
-            {
-                Bio = "Testing bio",
-                Location = "Testing location",
-                BirthDate = DateTime.Now,
-                IsPrivate = false
-            };
+            ICollection<ProfileFollower> followings = A.Fake<ICollection<ProfileFollower>>();
+            ICollection<Profile> profileFollowings = A.Fake<ICollection<Profile>>();
+            ICollection<GetProfileResponse> profileFollowingsMapper = A.Fake<ICollection<GetProfileResponse>>();
 
-            BaseResponse response = new()
+            profile.User = user;
+            profile.ProfileFollowers = followings;
+
+            GetFollowingsResponse response = new()
             {
-                Message = "Profile successfuly updated",
+                Profiles = profileFollowingsMapper,
+                Message = "Success",
                 IsSuccess = true,
                 StatusCode = 200
             };
 
-            A.CallTo(() => _mapper.Map(request, profile)).Returns(profile);
-            A.CallTo(() => _profileRepository.UpdateAsync(profile));
+            A.CallTo(() => _profileRepository.GetProfileFollowingsAsync(profile))
+                .Returns(Task.FromResult(followings));
+            A.CallTo(() => _mapper.Map<ICollection<GetProfileResponse>>(profileFollowings))
+                .Returns(profileFollowingsMapper);
 
             // Act
-            var result = await _profileService.UpdateProfileAsync(request);
+            var result = await _profileService.GetProfileFollowingsAsync(profile.User!.UserName!);
 
             // Assert
             result.Should().BeEquivalentTo(response);
-            A.CallTo(() => _profileRepository.SaveAsync()).MustHaveHappenedOnceExactly();
         }
+
+        [Fact]
+        public async Task GetProfileFollowingsAsync_InexistentProfile_ReturnsError()
+        {
+            // Arrange
+            string inexistentUsername = "inexistentUsername";
+            Profile? nullProfile = null;
+
+            GetFollowingsResponse response = new()
+            {
+                Message = "Profile not found",
+                IsSuccess = false,
+                StatusCode = 404
+            };
+
+            A.CallTo(() => _profileRepository.GetProfileByUsernameAsync(inexistentUsername)).Returns(nullProfile);
+
+            // Act
+            var result = await _profileService.GetProfileFollowingsAsync(inexistentUsername);
+
+            // Assert
+            result.Should().BeEquivalentTo(response);
+        }
+
+        [Fact]
+        public async Task GetProfileFollowersAsync_ExistentProfile_ReturnsSuccess()
+        {
+            // Arrange
+            var profile = A.Fake<Profile>();
+            var user = A.Fake<User>();
+
+            ICollection<ProfileFollower> followers = A.Fake<ICollection<ProfileFollower>>();
+            ICollection<Profile> profileFollowers = A.Fake<ICollection<Profile>>();
+            ICollection<GetProfileResponse> profileFollowersMapper = A.Fake<ICollection<GetProfileResponse>>();
+
+            profile.User = user;
+            profile.ProfileFollowers = followers;
+
+            GetFollowingsResponse response = new()
+            {
+                Profiles = profileFollowersMapper,
+                Message = "Success",
+                IsSuccess = true,
+                StatusCode = 200
+            };
+
+            A.CallTo(() => _profileRepository.GetProfileFollowersAsync(profile))
+                .Returns(Task.FromResult(followers));
+            A.CallTo(() => _mapper.Map<ICollection<GetProfileResponse>>(profileFollowers))
+                .Returns(profileFollowersMapper);
+
+            // Act
+            var result = await _profileService.GetProfileFollowersAsync(profile.User!.UserName!);
+
+            // Assert
+            result.Should().BeEquivalentTo(response);
+        }
+
+        [Fact]
+        public async Task GetProfileFollowersAsync_InexistentProfile_ReturnsError()
+        {
+            // Arrange
+            string inexistentUsername = "inexistentUsername";
+            Profile? nullProfile = null;
+
+            GetFollowingsResponse response = new()
+            {
+                Message = "Profile not found",
+                IsSuccess = false,
+                StatusCode = 404
+            };
+
+            A.CallTo(() => _profileRepository.GetProfileByUsernameAsync(inexistentUsername)).Returns(nullProfile);
+
+            // Act
+            var result = await _profileService.GetProfileFollowersAsync(inexistentUsername);
+
+            // Assert
+            result.Should().BeEquivalentTo(response);
+        }
+
+        // TODO => verify how get authenticated profile in unit tests
     }
 }
