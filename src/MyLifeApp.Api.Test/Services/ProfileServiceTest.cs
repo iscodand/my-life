@@ -23,6 +23,7 @@ namespace MyLifeApp.Api.Test.Services
         private readonly IMapper _mapper;
         private readonly IHttpContextAccessor _context;
         private readonly UserManager<User> _manager;
+        private readonly IAuthenticatedProfileService _authenticatedProfileService;
 
         public ProfileServiceTest()
         {
@@ -30,7 +31,8 @@ namespace MyLifeApp.Api.Test.Services
             _mapper = A.Fake<IMapper>();
             _context = A.Fake<IHttpContextAccessor>();
             _manager = A.Fake<UserManager<User>>();
-            _profileService = new ProfileService(_profileRepository, _mapper, _context, _manager);
+            _authenticatedProfileService = A.Fake<IAuthenticatedProfileService>();
+            _profileService = new ProfileService(_profileRepository, _mapper, _context, _manager, _authenticatedProfileService);
         }
 
         [Fact]
@@ -54,11 +56,37 @@ namespace MyLifeApp.Api.Test.Services
             result.Should().Be(true);
         }
 
-        // // TO-DO => implement this when I know how to implement
-        // [Fact]
-        // public async Task GetAuthenticatedProfile_SuccessfulyAuthenticated_ReturnsOk()
-        // {
-        // }
+        [Fact]
+        public async Task GetAuthenticatedProfileAsync_SuccessfulyAuthenticated_ReturnsOk()
+        {
+            // Arrange
+            var profile = A.Fake<Profile>();
+            var user = A.Fake<User>();
+            profile.User = user;
+
+            DetailProfileResponse response = new()
+            {
+                Id = profile!.Id,
+                Name = profile.User?.Name,
+                Username = profile.User?.UserName,
+                Bio = profile.Bio,
+                BirthDate = profile.BirthDate,
+                IsPrivate = profile.IsPrivate,
+                Message = "Success",
+                IsSuccess = true,
+                StatusCode = 200
+            };
+
+            A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(profile));
+
+            // Act
+            var result = await _profileService.GetAuthenticatedProfileAsync();
+
+            // Assert
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(200);
+            result.IsSuccess.Should().BeTrue();
+        }
 
         [Fact]
         public async Task GetProfileByUsernameAsync_GetExistentProfile_ReturnsSuccess()
@@ -89,6 +117,8 @@ namespace MyLifeApp.Api.Test.Services
 
             // Assert
             result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(200);
+            result.IsSuccess.Should().BeTrue();
         }
 
         [Fact]
@@ -111,42 +141,47 @@ namespace MyLifeApp.Api.Test.Services
 
             // Assert
             result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(404);
+            result.IsSuccess.Should().BeFalse();
         }
 
         // // TODO => verify how test Update Profile
-        // [Fact]
-        // public async Task UpdateProfileAsync_ValidUpdate_ReturnsSuccess()
-        // {
-        //     // Arrange
-        //     var profile = A.Fake<Profile>();
-        //     var user = A.Fake<User>();
-        //     profile.User = user;
+        [Fact]
+        public async Task UpdateProfileAsync_ValidUpdate_ReturnsSuccess()
+        {
+            // Arrange
+            var profile = A.Fake<Profile>();
+            var user = A.Fake<User>();
+            profile.User = user;
 
-        //     UpdateProfileRequest request = new()
-        //     {
-        //         Bio = "Testing bio",
-        //         Location = "Testing location",
-        //         BirthDate = DateTime.Now,
-        //         IsPrivate = false
-        //     };
+            UpdateProfileRequest request = new()
+            {
+                Bio = "Testing bio",
+                Location = "Testing location",
+                BirthDate = DateTime.Now,
+                IsPrivate = false
+            };
 
-        //     BaseResponse response = new()
-        //     {
-        //         Message = "Profile successfuly updated",
-        //         IsSuccess = true,
-        //         StatusCode = 200
-        //     };
+            BaseResponse response = new()
+            {
+                Message = "Profile successfuly updated",
+                IsSuccess = true,
+                StatusCode = 200
+            };
 
-        //     A.CallTo(() => _mapper.Map(request, profile)).Returns(profile);
-        //     A.CallTo(() => _profileRepository.UpdateAsync(profile));
+            A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(profile));
+            A.CallTo(() => _mapper.Map(request, profile)).Returns(profile);
+            A.CallTo(() => _profileRepository.UpdateAsync(profile));
 
-        //     // Act
-        //     var result = await _profileService.UpdateProfileAsync(request);
+            // Act
+            var result = await _profileService.UpdateProfileAsync(request);
 
-        //     // Assert
-        //     result.Should().BeEquivalentTo(response);
-        //     A.CallTo(() => _profileRepository.SaveAsync()).MustHaveHappenedOnceExactly();
-        // }
+            // Assert
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(200);
+            result.IsSuccess.Should().BeTrue();
+            A.CallTo(() => _profileRepository.SaveAsync()).MustHaveHappenedOnceExactly();
+        }
 
         [Fact]
         public async Task GetProfileFollowingsAsync_ExistentProfile_ReturnsSuccess()
@@ -180,6 +215,8 @@ namespace MyLifeApp.Api.Test.Services
 
             // Assert
             result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(200);
+            result.IsSuccess.Should().BeTrue();
         }
 
         [Fact]
@@ -203,6 +240,8 @@ namespace MyLifeApp.Api.Test.Services
 
             // Assert
             result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(404);
+            result.IsSuccess.Should().BeFalse();
         }
 
         [Fact]
@@ -237,6 +276,8 @@ namespace MyLifeApp.Api.Test.Services
 
             // Assert
             result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(200);
+            result.IsSuccess.Should().BeTrue();
         }
 
         [Fact]
@@ -260,8 +301,133 @@ namespace MyLifeApp.Api.Test.Services
 
             // Assert
             result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(404);
+            result.IsSuccess.Should().BeFalse();
         }
 
-        // TODO => verify how get authenticated profile in unit tests
+        [Fact]
+        public async Task FollowProfileAsync_ExistentProfile_ReturnsSuccess()
+        {
+            // Arrange
+            var profile = A.Fake<Profile>();
+            var user = A.Fake<User>();
+            profile.User = user;
+
+            var follower = A.Fake<Profile>();
+            var followerUser = A.Fake<User>();
+            follower.User = followerUser;
+
+            BaseResponse response = new()
+            {
+                Message = $"Now you follow {follower.User?.UserName}",
+                IsSuccess = true,
+                StatusCode = 200
+            };
+
+            ProfileFollower follow = new()
+            {
+                Profile = profile,
+                Follower = follower
+            };
+
+            A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(profile));
+            A.CallTo(() => _profileRepository.AddProfileFollower(follow)).Returns(Task.FromResult(follow));
+
+            // Act
+            var result = await _profileService.FollowProfileAsync(follower.User!.UserName!);
+
+            // Assert
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(200);
+            result.IsSuccess.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task FollowProfileAsync_InexistentProfile_ReturnsError()
+        {
+            // Arrange
+            var profile = A.Fake<Profile>();
+            var user = A.Fake<User>();
+            profile.User = user;
+
+            Profile? inexistentFollower = null;
+            var inexistentUsername = "inexistentUsername";
+
+            BaseResponse response = new()
+            {
+                Message = "Profile not found",
+                IsSuccess = false,
+                StatusCode = 404
+            };
+
+            ProfileFollower follow = new()
+            {
+                Profile = profile,
+                Follower = inexistentFollower
+            };
+
+            A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(profile));
+            A.CallTo(() => _profileRepository.GetProfileByUsernameAsync(inexistentUsername)).Returns(inexistentFollower);
+
+            // Act
+            var result = await _profileService.FollowProfileAsync(inexistentUsername);
+
+            // Assert
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(404);
+            result.IsSuccess.Should().BeFalse();
+        }
+
+        // // TODO => verify how to implement this test
+        // [Fact]
+        // public async Task FollowProfileAsync_AlreadyFollowingProfile_ReturnsError()
+        // {
+        //     // Arrange
+        //     var profile = A.Fake<Profile>();
+        //     var user = A.Fake<User>();
+        //     var profileFollowings = A.Fake<ICollection<ProfileFollower>>();
+        //     profile.User = user;
+        //     profile.ProfileFollowers = profileFollowings;
+
+        //     var follower = A.Fake<Profile>();
+        //     var followerUser = A.Fake<User>();
+        //     follower.User = followerUser;
+
+        //     BaseResponse response = new()
+        //     {
+        //         Message = "You already follow this profile.",
+        //         IsSuccess = false,
+        //         StatusCode = 400
+        //     };
+
+        //     A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(profile));
+        //     A.CallTo(() => _profileRepository.GetProfileFollowingsAsync(profile)).Returns(Task.FromResult(profileFollowings));
+
+        //     // Act
+        //     var result = await _profileService.FollowProfileAsync(follower.User!.UserName!);
+
+        //     // Assert
+        //     result.Should().BeEquivalentTo(response);
+        //     result.StatusCode.Should().Be(400);
+        //     result.IsSuccess.Should().BeFalse();
+        // }
+
+        [Fact]
+        public async Task UnfollowProfileAsync_ExistentProfile_ReturnSuccess()
+        {
+
+        }
+
+        [Fact]
+        public async Task UnfollowProfileAsync_InexistentProfile_ReturnError()
+        {
+
+        }
+
+        [Fact]
+        public async Task UnfollowProfileAsync_NotFollowing_ReturnError()
+        {
+
+        }
     }
 }
