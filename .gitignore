@@ -3,6 +3,10 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+# Project
+src/MyLife.Api/appsettings.json
+src/MyLife.Api/appsettings.Development.json
+
 # User-specific files
 *.rsuser
 *.suo
@@ -396,5 +400,3 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
-/src/MyLife.Api/appsettings.json
-src/MyLife.Api/appsettings.json
