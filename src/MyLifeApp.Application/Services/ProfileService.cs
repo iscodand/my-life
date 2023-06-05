@@ -8,27 +8,29 @@ using MyLifeApp.Application.Dtos.Responses.Profile;
 using MyLifeApp.Application.Interfaces.Repositories;
 using MyLifeApp.Application.Interfaces.Services;
 using MyLifeApp.Domain.Entities;
-using System.Security.Claims;
 using Profile = MyLifeApp.Domain.Entities.Profile;
 
 namespace MyLifeApp.Application.Services
 {
     public class ProfileService : IProfileService
     {
-        public readonly IProfileRepository _profileRepository;
-        public readonly IMapper _mapper;
-        public readonly IHttpContextAccessor _httpContext;
-        public readonly UserManager<User> _userManager;
+        private readonly IProfileRepository _profileRepository;
+        private readonly IMapper _mapper;
+        private readonly IHttpContextAccessor _httpContext;
+        private readonly UserManager<User> _userManager;
+        private readonly IAuthenticatedProfileService _authenticatedProfileService;
 
         public ProfileService(IProfileRepository profileRepository,
                            IMapper mapper,
                            IHttpContextAccessor httpContext,
-                           UserManager<User> userManager)
+                           UserManager<User> userManager,
+                           IAuthenticatedProfileService authenticatedProfileService)
         {
             _profileRepository = profileRepository;
             _mapper = mapper;
             _httpContext = httpContext;
             _userManager = userManager;
+            _authenticatedProfileService = authenticatedProfileService;
         }
 
         public async Task<bool> CreateProfileAsync(string userId)
@@ -51,19 +53,9 @@ namespace MyLifeApp.Application.Services
             return created != null;
         }
 
-        private async Task<Profile> _GetAuthenticatedProfileAsync()
-        {
-            ClaimsPrincipal userClaims = _httpContext.HttpContext!.User;
-            User? authenticatedUser = await _userManager.GetUserAsync(userClaims);
-            ICollection<Profile> profiles = await _profileRepository.GetAllAsync();
-            Profile authenticatedProfile = profiles.First(p => p.UserId == authenticatedUser!.Id);
-
-            return authenticatedProfile;
-        }
-
         public async Task<DetailProfileResponse> GetAuthenticatedProfileAsync()
         {
-            Profile profile = await _GetAuthenticatedProfileAsync();
+            Profile profile = await _authenticatedProfileService.GetAuthenticatedProfile();
 
             return new DetailProfileResponse()
             {
@@ -108,7 +100,7 @@ namespace MyLifeApp.Application.Services
 
         public async Task<BaseResponse> UpdateProfileAsync(UpdateProfileRequest request)
         {
-            Profile profileToUpdate = await _GetAuthenticatedProfileAsync();
+            Profile profileToUpdate = await _authenticatedProfileService.GetAuthenticatedProfile();
             Profile profileMapper = _mapper.Map(request, profileToUpdate);
             await _profileRepository.SaveAsync();
 
@@ -176,7 +168,7 @@ namespace MyLifeApp.Application.Services
 
         public async Task<BaseResponse> FollowProfileAsync(string username)
         {
-            Profile profile = await _GetAuthenticatedProfileAsync();
+            Profile profile = await _authenticatedProfileService.GetAuthenticatedProfile();
             Profile follower = await _profileRepository.GetProfileByUsernameAsync(username);
 
             if (follower == null)
@@ -219,7 +211,7 @@ namespace MyLifeApp.Application.Services
 
         public async Task<BaseResponse> UnfollowProfileAsync(string username)
         {
-            Profile profile = await _GetAuthenticatedProfileAsync();
+            Profile profile = await _authenticatedProfileService.GetAuthenticatedProfile();
             Profile follower = await _profileRepository.GetProfileByUsernameAsync(username);
 
             if (follower == null)

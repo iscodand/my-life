@@ -9,30 +9,32 @@ using MyLifeApp.Application.Dtos.Responses.Profile;
 using MyLifeApp.Application.Interfaces.Repositories;
 using MyLifeApp.Application.Interfaces.Services;
 using MyLifeApp.Domain.Entities;
-using System.Security.Claims;
 using Profile = MyLifeApp.Domain.Entities.Profile;
 
 namespace MyLifeApp.Application.Services
 {
     public class PostService : IPostService
     {
-        public readonly IPostRepository _postRepository;
-        public readonly IProfileRepository _profileRepository;
-        public readonly IMapper _mapper;
-        public readonly IHttpContextAccessor _httpContext;
-        public readonly UserManager<User> _userManager;
+        private readonly IPostRepository _postRepository;
+        private readonly IProfileRepository _profileRepository;
+        private readonly IMapper _mapper;
+        private readonly IHttpContextAccessor _httpContext;
+        private readonly UserManager<User> _userManager;
+        private readonly IAuthenticatedProfileService _authenticatedProfileService;
 
         public PostService(IPostRepository postRepository,
                            IProfileRepository profileRepository,
                            IMapper mapper,
                            IHttpContextAccessor httpContext,
-                           UserManager<User> userManager)
+                           UserManager<User> userManager,
+                           IAuthenticatedProfileService authenticatedProfileService)
         {
             _postRepository = postRepository;
             _profileRepository = profileRepository;
             _mapper = mapper;
             _httpContext = httpContext;
             _userManager = userManager;
+            _authenticatedProfileService = authenticatedProfileService;
         }
 
         public async Task<GetAllPostsResponse> GetPublicPostsAsync()
@@ -78,16 +80,6 @@ namespace MyLifeApp.Application.Services
             };
         }
 
-        private async Task<Profile> GetAuthenticatedProfileAsync()
-        {
-            ClaimsPrincipal userClaims = _httpContext.HttpContext!.User;
-            User? authenticatedUser = await _userManager.GetUserAsync(userClaims);
-            ICollection<Profile> profiles = await _profileRepository.GetAllAsync();
-            Profile authenticatedProfile = profiles.First(p => p.UserId == authenticatedUser!.Id);
-
-            return authenticatedProfile;
-        }
-
         private static bool IsPostCreator(Post post, Profile profile)
         {
             return post.Profile == profile;
@@ -95,7 +87,7 @@ namespace MyLifeApp.Application.Services
 
         public async Task<BaseResponse> CreatePostAsync(CreatePostRequest request)
         {
-            Profile authenticatedProfile = await GetAuthenticatedProfileAsync();
+            Profile authenticatedProfile = await _authenticatedProfileService.GetAuthenticatedProfile();
 
             Post post = _mapper.Map<Post>(request);
             post.Profile = authenticatedProfile;
@@ -129,7 +121,7 @@ namespace MyLifeApp.Application.Services
             }
 
             Post postToUpdate = await _postRepository.GetByIdAsync(postId);
-            Profile authenticatedProfile = await GetAuthenticatedProfileAsync();
+            Profile authenticatedProfile = await _authenticatedProfileService.GetAuthenticatedProfile();
 
             if (!IsPostCreator(postToUpdate, authenticatedProfile))
             {
@@ -165,7 +157,7 @@ namespace MyLifeApp.Application.Services
             }
 
             Post postToDelete = await _postRepository.GetByIdAsync(postId);
-            Profile authenticatedProfile = await GetAuthenticatedProfileAsync();
+            Profile authenticatedProfile = await _authenticatedProfileService.GetAuthenticatedProfile();
 
             if (!IsPostCreator(postToDelete, authenticatedProfile))
             {
@@ -189,7 +181,7 @@ namespace MyLifeApp.Application.Services
         public async Task<BaseResponse> LikePostAsync(Guid postId)
         {
             Post post = await _postRepository.GetPostDetailsAsync(postId);
-            Profile authenticatedProfile = await GetAuthenticatedProfileAsync();
+            Profile authenticatedProfile = await _authenticatedProfileService.GetAuthenticatedProfile();
 
             if (post == null)
             {
@@ -232,7 +224,7 @@ namespace MyLifeApp.Application.Services
         public async Task<BaseResponse> UnlikePostAsync(Guid postId)
         {
             Post post = await _postRepository.GetPostDetailsAsync(postId);
-            Profile authenticatedProfile = await GetAuthenticatedProfileAsync();
+            Profile authenticatedProfile = await _authenticatedProfileService.GetAuthenticatedProfile();
 
             if (post == null)
             {
