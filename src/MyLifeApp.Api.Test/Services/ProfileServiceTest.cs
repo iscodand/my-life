@@ -378,7 +378,7 @@ namespace MyLifeApp.Api.Test.Services
             result.IsSuccess.Should().BeFalse();
         }
 
-        // // TODO => verify how to implement this test
+        // // TODO => verify how to implement this tests above
         // [Fact]
         // public async Task FollowProfileAsync_AlreadyFollowingProfile_ReturnsError()
         // {
@@ -402,6 +402,7 @@ namespace MyLifeApp.Api.Test.Services
 
         //     A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(profile));
         //     A.CallTo(() => _profileRepository.GetProfileFollowingsAsync(profile)).Returns(Task.FromResult(profileFollowings));
+        //     A.CallTo(() => profileFollowings.Contains(A<ProfileFollower>.That.Matches(pf => pf.Follower == follower))).Returns(true);
 
         //     // Act
         //     var result = await _profileService.FollowProfileAsync(follower.User!.UserName!);
