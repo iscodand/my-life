@@ -51,6 +51,7 @@ namespace MyLifeApp.Application.Services
             };
         }
 
+        // TODO => add validation for private posts only for posts owners
         public async Task<DetailPostResponse> GetPostByIdAsync(Guid postId)
         {
             if (!await _postRepository.PostExistsAsync(postId))
@@ -80,7 +81,7 @@ namespace MyLifeApp.Application.Services
             };
         }
 
-        private static bool IsPostCreator(Post post, Profile profile)
+        public static bool IsPostCreator(Post post, Profile profile)
         {
             return post.Profile == profile;
         }
