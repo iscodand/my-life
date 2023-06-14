@@ -181,10 +181,7 @@ namespace MyLifeApp.Application.Services
 
         public async Task<BaseResponse> LikePostAsync(Guid postId)
         {
-            Post post = await _postRepository.GetPostDetailsAsync(postId);
-            Profile authenticatedProfile = await _authenticatedProfileService.GetAuthenticatedProfile();
-
-            if (post == null)
+            if (!await _postRepository.PostExistsAsync(postId))
             {
                 return new BaseResponse()
                 {
@@ -193,6 +190,9 @@ namespace MyLifeApp.Application.Services
                     StatusCode = 404
                 };
             }
+
+            Post post = await _postRepository.GetPostDetailsAsync(postId);
+            Profile authenticatedProfile = await _authenticatedProfileService.GetAuthenticatedProfile();
 
             PostLike like = new()
             {
@@ -224,10 +224,7 @@ namespace MyLifeApp.Application.Services
 
         public async Task<BaseResponse> UnlikePostAsync(Guid postId)
         {
-            Post post = await _postRepository.GetPostDetailsAsync(postId);
-            Profile authenticatedProfile = await _authenticatedProfileService.GetAuthenticatedProfile();
-
-            if (post == null)
+            if (!await _postRepository.PostExistsAsync(postId))
             {
                 return new BaseResponse()
                 {
@@ -236,6 +233,9 @@ namespace MyLifeApp.Application.Services
                     StatusCode = 404
                 };
             }
+
+            Post post = await _postRepository.GetPostDetailsAsync(postId);
+            Profile authenticatedProfile = await _authenticatedProfileService.GetAuthenticatedProfile();
 
             PostLike? postToUnlike = post.PostLikes.FirstOrDefault(p => p.Post == post && p.Profile == authenticatedProfile);
 
