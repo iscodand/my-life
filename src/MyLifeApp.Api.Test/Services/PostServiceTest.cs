@@ -232,41 +232,333 @@ namespace MyLifeApp.Api.Test
             // Assert
             result.Should().BeEquivalentTo(response);
             result.StatusCode.Should().Be(404);
+            result.IsSuccess.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task UpdatePostAsync_UpdateWithNotPostCreator_ReturnsError()
+        {
+            // Arrange
+            var profile = A.Fake<Profile>();
+            var user = A.Fake<User>();
+            profile.User = user;
+
+            var anotherProfile = A.Fake<Profile>();
+            var antotherUser = A.Fake<User>();
+            anotherProfile.User = antotherUser;
+
+            var post = A.Fake<Post>();
+            post.Profile = profile;
+
+            UpdatePostRequest request = new()
+            {
+                Title = "Testing title",
+                Description = "Testing update description",
+                IsPrivate = false,
+            };
+
+            BaseResponse response = new()
+            {
+                Message = "Only post creator can update the post.",
+                IsSuccess = false,
+                StatusCode = 400
+            };
+
+            A.CallTo(() => _postRepository.PostExistsAsync(post.Id)).Returns(Task.FromResult(true));
+            A.CallTo(() => _postRepository.GetByIdAsync(post.Id)).Returns(Task.FromResult(post));
+            A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(anotherProfile));
+
+            // Act
+            var result = await _postService.UpdatePostAsync(post.Id, request);
+
+            // Assert
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(400);
+            result.IsSuccess.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task DeletePostAsync_ExistentAndValidPost_ReturnsSuccess()
+        {
+            // Arrange
+            var post = A.Fake<Post>();
+            var profile = A.Fake<Profile>();
+            var user = A.Fake<User>();
+
+            profile.User = user;
+            post.Profile = profile;
+
+            BaseResponse response = new()
+            {
+                IsSuccess = true,
+                StatusCode = 204
+            };
+
+            A.CallTo(() => _postRepository.PostExistsAsync(post.Id)).Returns(Task.FromResult(true));
+            A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(profile));
+            A.CallTo(() => _postRepository.GetByIdAsync(post.Id)).Returns(Task.FromResult(post));
+            A.CallTo(() => _postRepository.DeleteAsync(post));
+
+            // Act
+            var result = await _postService.DeletePostAsync(post.Id);
+
+            // Assert
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(204);
             result.IsSuccess.Should().BeTrue();
         }
 
-        // ToDo => Implement this test
-        // [Fact]
-        // public async Task UpdatePostAsync_UpdateWithNotPostCreator_ReturnsError()
-        // {
-        //     // Arrange
-        //     var profile = A.Fake<Profile>();
-        //     var user = A.Fake<User>();
-        //     profile.User = user;
+        [Fact]
+        public async Task DeletePostAsync_InexistentPost_ReturnsError()
+        {
+            // Arrange
+            Guid inexistentPostGuid = Guid.NewGuid();
 
-        //     var anotherProfile = A.Fake<Profile>();
-        //     var antotherUser = A.Fake<User>();
-        //     anotherProfile.User = antotherUser;
+            BaseResponse response = new()
+            {
+                Message = "Post not found",
+                IsSuccess = false,
+                StatusCode = 404
+            };
 
-        //     var post = A.Fake<Post>();
-        //     post.Profile = profile;
+            A.CallTo(() => _postRepository.PostExistsAsync(inexistentPostGuid)).Returns(Task.FromResult(false));
 
-        //     UpdatePostRequest request = new()
-        //     {
-        //         Title = "Testing title",
-        //         Description = "Testing update description",
-        //         IsPrivate = false,
-        //     };
+            // Act
+            var result = await _postService.DeletePostAsync(inexistentPostGuid);
 
-        //     BaseResponse response = new()
-        //     {
-        //         Message = "Only post creator can update the post.",
-        //         IsSuccess = false,
-        //         StatusCode = 400
-        //     };
-            
-        //     A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(profile));
-        //     // Act
-        // }
+            // Assert
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(404);
+            result.IsSuccess.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task DeletePostAsync_WithNotPostCreator_ReturnsError()
+        {
+            // Arrange
+            var profile = A.Fake<Profile>();
+            var user = A.Fake<User>();
+            profile.User = user;
+
+            var anotherProfile = A.Fake<Profile>();
+            var antotherUser = A.Fake<User>();
+            anotherProfile.User = antotherUser;
+
+            var post = A.Fake<Post>();
+            post.Profile = profile;
+
+            BaseResponse response = new()
+            {
+                Message = "Only post creator can delete the post",
+                IsSuccess = false,
+                StatusCode = 400
+            };
+
+            A.CallTo(() => _postRepository.PostExistsAsync(post.Id)).Returns(Task.FromResult(true));
+            A.CallTo(() => _postRepository.GetByIdAsync(post.Id)).Returns(Task.FromResult(post));
+            A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(anotherProfile));
+
+            // Act
+            var result = await _postService.DeletePostAsync(post.Id);
+
+            // Assert
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(400);
+            result.IsSuccess.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task LikePostAsync_ExistentAndPublicPost_ReturnsSuccess()
+        {
+            // Arrange
+            var profile = A.Fake<Profile>();
+            var user = A.Fake<User>();
+            profile.User = user;
+
+            var post = A.Fake<Post>();
+            var postLikes = A.Fake<ICollection<PostLike>>();
+            post.Profile = profile;
+            post.PostLikes = postLikes;
+
+            BaseResponse response = new()
+            {
+                Message = "Post successfuly liked",
+                IsSuccess = true,
+                StatusCode = 200
+            };
+
+            PostLike like = new()
+            {
+                Post = post,
+                Profile = profile
+            };
+
+            A.CallTo(() => _postRepository.GetPostDetailsAsync(post.Id)).Returns(Task.FromResult(post));
+            A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(profile));
+            A.CallTo(() => _postRepository.PostExistsAsync(post.Id)).Returns(Task.FromResult(true));
+            A.CallTo(() => _postRepository.PostAlreadyLikedAsync(profile, post)).Returns(Task.FromResult(false));
+            A.CallTo(() => _postRepository.AddPostLikeAsync(like)).Returns(Task.FromResult(like));
+
+            // Act
+            var result = await _postService.LikePostAsync(post.Id);
+
+            // Assert 
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(200);
+            result.IsSuccess.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task LikePostAsync_InexistentPost_ReturnsError()
+        {
+            // Arrange
+            Guid inexistentPostGuid = Guid.NewGuid();
+
+            BaseResponse response = new()
+            {
+                Message = "Post not found",
+                IsSuccess = false,
+                StatusCode = 404
+            };
+
+            A.CallTo(() => _postRepository.PostExistsAsync(inexistentPostGuid)).Returns(Task.FromResult(false));
+
+            // Act
+            var result = await _postService.LikePostAsync(inexistentPostGuid);
+
+            // Assert
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(404);
+            result.IsSuccess.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task LikePostAsync_AlreadyLikedPost_ReturnsError()
+        {
+            // Arrange
+            var profile = A.Fake<Profile>();
+            var user = A.Fake<User>();
+            profile.User = user;
+
+            var post = A.Fake<Post>();
+            var postLikes = A.Fake<ICollection<PostLike>>();
+            post.Profile = profile;
+            post.PostLikes = postLikes;
+
+            BaseResponse response = new()
+            {
+                Message = "You already liked this post.",
+                IsSuccess = false,
+                StatusCode = 400
+            };
+
+            A.CallTo(() => _postRepository.PostExistsAsync(post.Id)).Returns(Task.FromResult(true));
+            A.CallTo(() => _postRepository.GetPostDetailsAsync(post.Id)).Returns(Task.FromResult(post));
+            A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(profile));
+            A.CallTo(() => _postRepository.PostAlreadyLikedAsync(profile, post)).Returns(Task.FromResult(true));
+
+            // Act
+            var result = await _postService.LikePostAsync(post.Id);
+
+            // Assert
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(400);
+            result.IsSuccess.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task UnlikePostAsync_ExistentAndValidPost_ReturnsSuccess()
+        {
+            // Arrange
+            var profile = A.Fake<Profile>();
+            var user = A.Fake<User>();
+            profile.User = user;
+
+            var post = A.Fake<Post>();
+            var postLike = A.Fake<PostLike>();
+            var postLikes = A.Fake<ICollection<PostLike>>();
+            post.Profile = profile;
+            post.PostLikes = postLikes;
+
+            BaseResponse response = new()
+            {
+                Message = "Post successfuly unliked",
+                IsSuccess = true,
+                StatusCode = 200
+            };
+
+            A.CallTo(() => _postRepository.PostExistsAsync(post.Id)).Returns(Task.FromResult(true));
+            A.CallTo(() => _postRepository.GetPostDetailsAsync(post.Id)).Returns(Task.FromResult(post));
+            A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(profile));
+            A.CallTo(() => _postRepository.GetPostLikeAsync(profile, post)).Returns(Task.FromResult(postLike));
+            A.CallTo(() => _postRepository.PostAlreadyLikedAsync(profile, post)).Returns(Task.FromResult(true));
+            A.CallTo(() => _postRepository.RemovePostLikeAsync(postLike));
+
+            // Act
+            var result = await _postService.UnlikePostAsync(post.Id);
+
+            // Assert
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(200);
+            result.IsSuccess.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task UnlikePostAsync_InexistentPost_ReturnsError()
+        {
+            // Arrange
+            Guid inexistentPostGuid = Guid.NewGuid();
+
+            BaseResponse response = new()
+            {
+                Message = "Post not found",
+                IsSuccess = false,
+                StatusCode = 404
+            };
+
+            A.CallTo(() => _postRepository.PostExistsAsync(inexistentPostGuid)).Returns(Task.FromResult(false));
+
+            // Act
+            var result = await _postService.UnlikePostAsync(inexistentPostGuid);
+
+            // Assert
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(404);
+            result.IsSuccess.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task UnlikePostAsync_NotLikedPost_ReturnsError()
+        {
+            // Arrange
+            var profile = A.Fake<Profile>();
+            var user = A.Fake<User>();
+            profile.User = user;
+
+            var post = A.Fake<Post>();
+            var postLikes = A.Fake<ICollection<PostLike>>();
+            post.Profile = profile;
+            post.PostLikes = postLikes;
+
+            BaseResponse response = new()
+            {
+                Message = "You doens't like this post yet.",
+                IsSuccess = false,
+                StatusCode = 400
+            };
+
+            A.CallTo(() => _postRepository.PostExistsAsync(post.Id)).Returns(Task.FromResult(true));
+            A.CallTo(() => _postRepository.GetPostDetailsAsync(post.Id)).Returns(Task.FromResult(post));
+            A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(profile));
+            A.CallTo(() => _postRepository.PostAlreadyLikedAsync(profile, post)).Returns(Task.FromResult(false));
+
+            // Act
+            var result = await _postService.UnlikePostAsync(post.Id);
+
+            // Assert
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(400);
+            result.IsSuccess.Should().BeFalse();
+        }
     }
 }
