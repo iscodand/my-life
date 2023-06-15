@@ -181,9 +181,7 @@ namespace MyLifeApp.Application.Services
                 };
             }
 
-            ICollection<ProfileFollower> profileFollowings = await _profileRepository.GetProfileFollowingsAsync(profile);
-
-            if (profileFollowings.Any(pf => pf.Follower == follower))
+            if (await _profileRepository.ProfileFollowerExistsAsync(profile, follower))
             {
                 return new BaseResponse()
                 {
@@ -223,10 +221,8 @@ namespace MyLifeApp.Application.Services
                     StatusCode = 404
                 };
             }
-
-            ICollection<ProfileFollower> profileFollowings = await _profileRepository.GetProfileFollowingsAsync(profile);
-
-            if (!profileFollowings.Any(pf => pf.Follower == follower))
+            
+            if (!await _profileRepository.ProfileFollowerExistsAsync(profile, follower))
             {
                 return new BaseResponse()
                 {
@@ -236,7 +232,7 @@ namespace MyLifeApp.Application.Services
                 };
             }
 
-            ProfileFollower unfollow = profileFollowings.Where(pf => pf.Follower == follower).First();
+            ProfileFollower unfollow = await _profileRepository.GetProfileFollowerAsync(profile, follower);
 
             await _profileRepository.RemoveProfileFollower(unfollow);
 

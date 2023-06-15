@@ -51,6 +51,11 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             return profileAnalytics;
         }
 
+        public async Task<ProfileFollower> GetProfileFollowerAsync(Profile profile, Profile follower)
+        {
+            return await _profileFollowers.FirstAsync(pf => pf.Profile == profile && pf.Follower == follower);
+        }
+
         public async Task<ProfileFollower> AddProfileFollower(ProfileFollower profileFollower)
         {
             await _profileFollowers.AddAsync(profileFollower);
@@ -62,6 +67,11 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
         {
             _profileFollowers.Remove(profileFollower);
             await base.SaveAsync();
+        }
+
+        public async Task<bool> ProfileFollowerExistsAsync(Profile profile, Profile follower)
+        {
+            return await _profileFollowers.AnyAsync(pf => pf.Profile == profile && pf.Follower == follower);
         }
     }
 }
