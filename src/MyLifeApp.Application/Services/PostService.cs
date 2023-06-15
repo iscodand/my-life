@@ -51,6 +51,7 @@ namespace MyLifeApp.Application.Services
             };
         }
 
+        // TODO => add validation for private posts only for posts owners
         public async Task<DetailPostResponse> GetPostByIdAsync(Guid postId)
         {
             if (!await _postRepository.PostExistsAsync(postId))
@@ -180,10 +181,7 @@ namespace MyLifeApp.Application.Services
 
         public async Task<BaseResponse> LikePostAsync(Guid postId)
         {
-            Post post = await _postRepository.GetPostDetailsAsync(postId);
-            Profile authenticatedProfile = await _authenticatedProfileService.GetAuthenticatedProfile();
-
-            if (post == null)
+            if (!await _postRepository.PostExistsAsync(postId))
             {
                 return new BaseResponse()
                 {
@@ -193,15 +191,10 @@ namespace MyLifeApp.Application.Services
                 };
             }
 
-            PostLike like = new()
-            {
-                Profile = authenticatedProfile,
-                Post = post
-            };
+            Post post = await _postRepository.GetPostDetailsAsync(postId);
+            Profile authenticatedProfile = await _authenticatedProfileService.GetAuthenticatedProfile();
 
-            bool postAlreadyLiked = post.PostLikes.Any(p => p.Post == post && p.Profile == authenticatedProfile);
-
-            if (postAlreadyLiked)
+            if (await _postRepository.PostAlreadyLikedAsync(authenticatedProfile, post))
             {
                 return new BaseResponse()
                 {
@@ -211,7 +204,13 @@ namespace MyLifeApp.Application.Services
                 };
             }
 
-            await _postRepository.AddLikePostAsync(like);
+            PostLike like = new()
+            {
+                Profile = authenticatedProfile,
+                Post = post
+            };
+
+            await _postRepository.AddPostLikeAsync(like);
 
             return new BaseResponse()
             {
@@ -223,10 +222,7 @@ namespace MyLifeApp.Application.Services
 
         public async Task<BaseResponse> UnlikePostAsync(Guid postId)
         {
-            Post post = await _postRepository.GetPostDetailsAsync(postId);
-            Profile authenticatedProfile = await _authenticatedProfileService.GetAuthenticatedProfile();
-
-            if (post == null)
+            if (!await _postRepository.PostExistsAsync(postId))
             {
                 return new BaseResponse()
                 {
@@ -236,9 +232,12 @@ namespace MyLifeApp.Application.Services
                 };
             }
 
-            PostLike? postToUnlike = post.PostLikes.FirstOrDefault(p => p.Post == post && p.Profile == authenticatedProfile);
+            Post post = await _postRepository.GetPostDetailsAsync(postId);
+            Profile authenticatedProfile = await _authenticatedProfileService.GetAuthenticatedProfile();
 
-            if (postToUnlike == null)
+            PostLike? postToUnlike = await _postRepository.GetPostLikeAsync(authenticatedProfile, post);
+            
+            if (!await _postRepository.PostAlreadyLikedAsync(authenticatedProfile, post))
             {
                 return new BaseResponse()
                 {
@@ -248,7 +247,7 @@ namespace MyLifeApp.Application.Services
                 };
             }
 
-            await _postRepository.RemoveLikePostAsync(postToUnlike);
+            await _postRepository.RemovePostLikeAsync(postToUnlike);
 
             return new BaseResponse()
             {

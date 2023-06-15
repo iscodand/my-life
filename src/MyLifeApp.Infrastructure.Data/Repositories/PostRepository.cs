@@ -51,17 +51,28 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             return comment;
         }
 
-        public async Task<PostLike> AddLikePostAsync(PostLike like)
+        // ToDo => create a repository for PostLike entity to avoid code redundance 
+        public async Task<PostLike> GetPostLikeAsync(Profile profile, Post post)
+        {
+            return await _postLikes.FirstAsync(p => p.Profile == profile && p.Post == post);
+        }
+
+        public async Task<PostLike> AddPostLikeAsync(PostLike like)
         {
             await _postLikes.AddAsync(like);
             await base.SaveAsync();
             return like;
         }
-        
-        public async Task RemoveLikePostAsync(PostLike like)
+
+        public async Task RemovePostLikeAsync(PostLike like)
         {
             _postLikes.Remove(like);
             await base.SaveAsync();
+        }
+
+        public async Task<bool> PostAlreadyLikedAsync(Profile profile, Post post)
+        {
+            return await _postLikes.AnyAsync(p => p.Profile == profile && p.Post == post);
         }
     }
 }

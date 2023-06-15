@@ -378,56 +378,141 @@ namespace MyLifeApp.Api.Test.Services
             result.IsSuccess.Should().BeFalse();
         }
 
-        // // TODO => verify how to implement this test
-        // [Fact]
-        // public async Task FollowProfileAsync_AlreadyFollowingProfile_ReturnsError()
-        // {
-        //     // Arrange
-        //     var profile = A.Fake<Profile>();
-        //     var user = A.Fake<User>();
-        //     var profileFollowings = A.Fake<ICollection<ProfileFollower>>();
-        //     profile.User = user;
-        //     profile.ProfileFollowers = profileFollowings;
+        // TODO => verify how to implement this tests above
+        [Fact]
+        public async Task FollowProfileAsync_AlreadyFollowingProfile_ReturnsError()
+        {
+            // Arrange
+            var profile = A.Fake<Profile>();
+            var user = A.Fake<User>();
+            profile.User = user;
 
-        //     var follower = A.Fake<Profile>();
-        //     var followerUser = A.Fake<User>();
-        //     follower.User = followerUser;
+            var follower = A.Fake<Profile>();
+            var followerUser = A.Fake<User>();
+            follower.User = followerUser;
 
-        //     BaseResponse response = new()
-        //     {
-        //         Message = "You already follow this profile.",
-        //         IsSuccess = false,
-        //         StatusCode = 400
-        //     };
+            BaseResponse response = new()
+            {
+                Message = "You already follow this profile.",
+                IsSuccess = false,
+                StatusCode = 400
+            };
 
-        //     A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(profile));
-        //     A.CallTo(() => _profileRepository.GetProfileFollowingsAsync(profile)).Returns(Task.FromResult(profileFollowings));
+            A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(profile));
+            A.CallTo(() => _profileRepository.GetProfileByUsernameAsync(follower.User!.UserName!)).Returns(Task.FromResult(follower));
+            A.CallTo(() => _profileRepository.ProfileFollowerExistsAsync(profile, follower)).Returns(Task.FromResult(true));
 
-        //     // Act
-        //     var result = await _profileService.FollowProfileAsync(follower.User!.UserName!);
+            // Act
+            var result = await _profileService.FollowProfileAsync(follower.User!.UserName!);
 
-        //     // Assert
-        //     result.Should().BeEquivalentTo(response);
-        //     result.StatusCode.Should().Be(400);
-        //     result.IsSuccess.Should().BeFalse();
-        // }
+            // Assert
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(400);
+            result.IsSuccess.Should().BeFalse();
+        }
 
         [Fact]
         public async Task UnfollowProfileAsync_ExistentProfile_ReturnSuccess()
         {
+            // Arrange
+            var profile = A.Fake<Profile>();
+            var user = A.Fake<User>();
+            profile.User = user;
 
+            var follower = A.Fake<Profile>();
+            var followerUser = A.Fake<User>();
+            var profileFollower = A.Fake<ProfileFollower>();
+            follower.User = followerUser;
+
+            BaseResponse response = new()
+            {
+                Message = $"Successfuly Unfollow {follower.User?.UserName}",
+                IsSuccess = true,
+                StatusCode = 200
+            };
+
+            A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(profile));
+            A.CallTo(() => _profileRepository.GetProfileByUsernameAsync(follower.User!.UserName!)).Returns(Task.FromResult(follower));
+            A.CallTo(() => _profileRepository.ProfileFollowerExistsAsync(profile, follower)).Returns(Task.FromResult(true));
+            A.CallTo(() => _profileRepository.GetProfileFollowerAsync(profile, follower)).Returns(Task.FromResult(profileFollower));
+            A.CallTo(() => _profileRepository.RemoveProfileFollower(profileFollower));
+
+            // Act
+            var result = await _profileService.UnfollowProfileAsync(follower.User!.UserName!);
+
+            // Assert
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(200);
+            result.IsSuccess.Should().BeTrue();
         }
 
         [Fact]
         public async Task UnfollowProfileAsync_InexistentProfile_ReturnError()
         {
+            // Arrange
+            var profile = A.Fake<Profile>();
+            var user = A.Fake<User>();
+            profile.User = user;
 
+            Profile? inexistentFollower = null;
+            var inexistentUsername = "inexistentUsername";
+
+            BaseResponse response = new()
+            {
+                Message = "Profile not found",
+                IsSuccess = false,
+                StatusCode = 404
+            };
+
+            ProfileFollower follow = new()
+            {
+                Profile = profile,
+                Follower = inexistentFollower
+            };
+
+            A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(profile));
+            A.CallTo(() => _profileRepository.GetProfileByUsernameAsync(inexistentUsername)).Returns(inexistentFollower);
+
+            // Act
+            var result = await _profileService.UnfollowProfileAsync(inexistentUsername);
+
+            // Assert
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(404);
+            result.IsSuccess.Should().BeFalse();
         }
 
         [Fact]
         public async Task UnfollowProfileAsync_NotFollowing_ReturnError()
         {
+            // Arrange
+            var profile = A.Fake<Profile>();
+            var user = A.Fake<User>();
+            profile.User = user;
 
+            var follower = A.Fake<Profile>();
+            var followerUser = A.Fake<User>();
+            var profileFollower = A.Fake<ProfileFollower>();
+            follower.User = followerUser;
+
+            BaseResponse response = new()
+            {
+                Message = "You not follow this profile.",
+                IsSuccess = false,
+                StatusCode = 400
+            };
+
+            A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(profile));
+            A.CallTo(() => _profileRepository.GetProfileByUsernameAsync(follower.User!.UserName!)).Returns(Task.FromResult(follower));
+            A.CallTo(() => _profileRepository.ProfileFollowerExistsAsync(profile, follower)).Returns(Task.FromResult(false));
+
+            // Act
+            var result = await _profileService.UnfollowProfileAsync(follower.User!.UserName!);
+
+            // Assert
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(400);
+            result.IsSuccess.Should().BeFalse();
         }
     }
 }
