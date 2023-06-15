@@ -81,7 +81,7 @@ namespace MyLifeApp.Application.Services
             };
         }
 
-        public static bool IsPostCreator(Post post, Profile profile)
+        private static bool IsPostCreator(Post post, Profile profile)
         {
             return post.Profile == profile;
         }
@@ -194,15 +194,7 @@ namespace MyLifeApp.Application.Services
             Post post = await _postRepository.GetPostDetailsAsync(postId);
             Profile authenticatedProfile = await _authenticatedProfileService.GetAuthenticatedProfile();
 
-            PostLike like = new()
-            {
-                Profile = authenticatedProfile,
-                Post = post
-            };
-
-            bool postAlreadyLiked = post.PostLikes.Any(p => p.Post == post && p.Profile == authenticatedProfile);
-
-            if (postAlreadyLiked)
+            if (await _postRepository.PostAlreadyLikedAsync(authenticatedProfile, post))
             {
                 return new BaseResponse()
                 {
@@ -212,7 +204,13 @@ namespace MyLifeApp.Application.Services
                 };
             }
 
-            await _postRepository.AddLikePostAsync(like);
+            PostLike like = new()
+            {
+                Profile = authenticatedProfile,
+                Post = post
+            };
+
+            await _postRepository.AddPostLikeAsync(like);
 
             return new BaseResponse()
             {
@@ -237,9 +235,9 @@ namespace MyLifeApp.Application.Services
             Post post = await _postRepository.GetPostDetailsAsync(postId);
             Profile authenticatedProfile = await _authenticatedProfileService.GetAuthenticatedProfile();
 
-            PostLike? postToUnlike = post.PostLikes.FirstOrDefault(p => p.Post == post && p.Profile == authenticatedProfile);
-
-            if (postToUnlike == null)
+            PostLike? postToUnlike = await _postRepository.GetPostLikeAsync(authenticatedProfile, post);
+            
+            if (!await _postRepository.PostAlreadyLikedAsync(authenticatedProfile, post))
             {
                 return new BaseResponse()
                 {
@@ -249,7 +247,7 @@ namespace MyLifeApp.Application.Services
                 };
             }
 
-            await _postRepository.RemoveLikePostAsync(postToUnlike);
+            await _postRepository.RemovePostLikeAsync(postToUnlike);
 
             return new BaseResponse()
             {
