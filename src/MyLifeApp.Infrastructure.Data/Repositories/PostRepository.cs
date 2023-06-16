@@ -44,12 +44,6 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             return await _posts.AnyAsync(p => p.Id == postId);
         }
 
-        public async Task<PostComment> AddCommentPostAsync(PostComment comment)
-        {
-            await _postComments.AddAsync(comment);
-            await base.SaveAsync();
-            return comment;
-        }
 
         // ToDo => create a repository for PostLike entity to avoid code redundance 
         public async Task<PostLike> GetPostLikeAsync(Profile profile, Post post)
@@ -73,6 +67,33 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
         public async Task<bool> PostAlreadyLikedAsync(Profile profile, Post post)
         {
             return await _postLikes.AnyAsync(p => p.Profile == profile && p.Post == post);
+        }
+
+        public async Task<PostComment> GetPostCommentAsync(Guid commentId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<PostComment> AddCommentPostAsync(PostComment comment)
+        {
+            await _postComments.AddAsync(comment);
+            await base.SaveAsync();
+            return comment;
+        }
+
+        public async Task<PostComment> UpdateCommentPostAsync(Guid commentId, PostComment comment)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<PostComment> DeleteCommentPostAsync(Guid commentId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> PostCommentExistsAsync(Guid commentId)
+        {
+            throw new NotImplementedException();
         }
     }
 }
