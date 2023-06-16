@@ -14,8 +14,8 @@ namespace MyLifeApp.Application.Interfaces.Services
         public Task<BaseResponse> DeletePostAsync(Guid postId);
         public Task<BaseResponse> LikePostAsync(Guid postId);
         public Task<BaseResponse> UnlikePostAsync(Guid postId);
-        public Task<BaseResponse> CommentPostAsync(Guid postId);
-        public Task<BaseResponse> UpdateCommentAsync(Guid postId);
-        public Task<BaseResponse> DeleteCommentAsync(Guid postId);
+        public Task<BaseResponse> CommentPostAsync(Guid postId, CommentPostRequest request);
+        public Task<BaseResponse> UpdateCommentAsync(Guid commentId, CommentPostRequest request);
+        public Task<BaseResponse> DeleteCommentAsync(Guid commentId);
     }
 }

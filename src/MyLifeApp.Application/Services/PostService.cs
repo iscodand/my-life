@@ -257,17 +257,17 @@ namespace MyLifeApp.Application.Services
             };
         }
 
-        public Task<BaseResponse> CommentPostAsync(Guid postId)
+        public Task<BaseResponse> CommentPostAsync(Guid postId, CommentPostRequest request)
         {
             throw new NotImplementedException();
         }
 
-        public Task<BaseResponse> UpdateCommentAsync(Guid postId)
+        public Task<BaseResponse> UpdateCommentAsync(Guid commentId, CommentPostRequest request)
         {
             throw new NotImplementedException();
         }
 
-        public Task<BaseResponse> DeleteCommentAsync(Guid postId)
+        public Task<BaseResponse> DeleteCommentAsync(Guid commentId)
         {
             throw new NotImplementedException();
         }
