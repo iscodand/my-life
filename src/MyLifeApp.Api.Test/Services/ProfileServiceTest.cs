@@ -145,7 +145,6 @@ namespace MyLifeApp.Api.Test.Services
             result.IsSuccess.Should().BeFalse();
         }
 
-        // // TODO => verify how test Update Profile
         [Fact]
         public async Task UpdateProfileAsync_ValidUpdate_ReturnsSuccess()
         {
