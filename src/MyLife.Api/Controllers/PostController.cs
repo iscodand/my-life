@@ -165,5 +165,71 @@ namespace MyLife.Api.Controllers
 
             return StatusCode(500);
         }
+
+        [Authorize]
+        [HttpPost("{postId}/comment")]
+        [ProducesResponseType(200, Type = typeof(BaseResponse))]
+        [ProducesResponseType(400, Type = typeof(BaseResponse))]
+        [ProducesResponseType(404, Type = typeof(BaseResponse))]
+        public async Task<IActionResult> CommentPost(Guid postId, CommentPostRequest request)
+        {
+            if (ModelState.IsValid)
+            {
+                BaseResponse response = await _postService.CommentPostAsync(postId, request);
+
+                if (response.IsSuccess)
+                {
+                    return StatusCode(201, response);
+                }
+
+                return StatusCode(response.StatusCode, response);
+            }
+
+            return StatusCode(500);
+        }
+
+        [Authorize]
+        [HttpPost("comment/{commentId}")]
+        [ProducesResponseType(200, Type = typeof(BaseResponse))]
+        [ProducesResponseType(400, Type = typeof(BaseResponse))]
+        [ProducesResponseType(404, Type = typeof(BaseResponse))]
+        public async Task<IActionResult> UpdateComment(Guid commentId, CommentPostRequest request)
+        {
+            if (ModelState.IsValid)
+            {
+                BaseResponse response = await _postService.UpdateCommentAsync(commentId, request);
+
+                if (response.IsSuccess)
+                {
+                    return Ok(response);
+                }
+
+                return StatusCode(response.StatusCode, response);
+            }
+
+            return StatusCode(500);
+        }
+
+        [Authorize]
+        [HttpPost("comment/{commentId}")]
+        [ProducesResponseType(200, Type = typeof(BaseResponse))]
+        [ProducesResponseType(400, Type = typeof(BaseResponse))]
+        [ProducesResponseType(404, Type = typeof(BaseResponse))]
+        public async Task<IActionResult> DeleteComment(Guid commentId)
+        {
+            if (ModelState.IsValid)
+            {
+                BaseResponse response = await _postService.DeleteCommentAsync(commentId);
+
+                if (response.IsSuccess)
+                {
+                    return StatusCode(204, response);
+                }
+
+                return StatusCode(response.StatusCode, response);
+            }
+
+            return StatusCode(500);
+        }
     }
 }
