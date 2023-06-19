@@ -1,18 +1,16 @@
-using Xunit;
+using AutoMapper;
 using FakeItEasy;
 using FluentAssertions;
+using Identity.Infrastructure.Models;
+using MyLifeApp.Application.Dtos.Requests.Profile;
+using MyLifeApp.Application.Dtos.Responses;
+using MyLifeApp.Application.Dtos.Responses.Profile;
 using MyLifeApp.Application.Interfaces.Repositories;
 using MyLifeApp.Application.Interfaces.Services;
 using MyLifeApp.Application.Services;
-using AutoMapper;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Identity.Infrastructure.Models;
 using MyLifeApp.Domain.Entities;
+using Xunit;
 using Profile = MyLifeApp.Domain.Entities.Profile;
-using MyLifeApp.Application.Dtos.Responses.Profile;
-using MyLifeApp.Application.Dtos.Requests.Profile;
-using MyLifeApp.Application.Dtos.Responses;
 
 namespace MyLifeApp.Api.Test.Services
 {
@@ -21,18 +19,14 @@ namespace MyLifeApp.Api.Test.Services
         private readonly ProfileService _profileService;
         private readonly IProfileRepository _profileRepository;
         private readonly IMapper _mapper;
-        private readonly IHttpContextAccessor _context;
-        private readonly UserManager<User> _manager;
         private readonly IAuthenticatedProfileService _authenticatedProfileService;
 
         public ProfileServiceTest()
         {
             _profileRepository = A.Fake<IProfileRepository>();
             _mapper = A.Fake<IMapper>();
-            _context = A.Fake<IHttpContextAccessor>();
-            _manager = A.Fake<UserManager<User>>();
             _authenticatedProfileService = A.Fake<IAuthenticatedProfileService>();
-            _profileService = new ProfileService(_profileRepository, _mapper, _context, _manager, _authenticatedProfileService);
+            _profileService = new ProfileService(_profileRepository, _mapper, _authenticatedProfileService);
         }
 
         [Fact]
