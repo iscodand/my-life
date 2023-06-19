@@ -1,6 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using MyLifeApp.Application.Dtos.Requests.Post;
-using MyLifeApp.Application.Dtos.Responses;
 using MyLifeApp.Application.Interfaces.Repositories;
 using MyLifeApp.Domain.Entities;
 using MyLifeApp.Infrastructure.Data.Context;
@@ -71,29 +69,27 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
 
         public async Task<PostComment> GetPostCommentAsync(Guid commentId)
         {
-            throw new NotImplementedException();
+            return await _postComments.Where(pc => pc.Id == commentId)
+                                      .Include(pc => pc.Post.Profile)
+                                      .FirstAsync();
         }
 
-        public async Task<PostComment> AddCommentPostAsync(PostComment comment)
+        public async Task<PostComment> AddPostCommentAsync(PostComment comment)
         {
             await _postComments.AddAsync(comment);
             await base.SaveAsync();
             return comment;
         }
 
-        public async Task<PostComment> UpdateCommentPostAsync(Guid commentId, PostComment comment)
+        public async Task DeletePostCommentAsync(PostComment comment)
         {
-            throw new NotImplementedException();
+            _postComments.Remove(comment);
+            await base.SaveAsync();
         }
 
-        public Task<PostComment> DeleteCommentPostAsync(Guid commentId)
+        public async Task<bool> PostCommentExistsAsync(Guid commentId)
         {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> PostCommentExistsAsync(Guid commentId)
-        {
-            throw new NotImplementedException();
+            return await _postComments.AnyAsync(pc => pc.Id == commentId);
         }
     }
 }
