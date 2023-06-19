@@ -1,19 +1,17 @@
-using Xunit;
+using AutoMapper;
 using FakeItEasy;
 using FluentAssertions;
-using MyLifeApp.Application.Services;
-using MyLifeApp.Application.Interfaces.Repositories;
-using AutoMapper;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Identity.Infrastructure.Models;
-using MyLifeApp.Application.Interfaces.Services;
-using MyLifeApp.Application.Dtos.Responses.Post;
-using MyLifeApp.Domain.Entities;
-using Profile = MyLifeApp.Domain.Entities.Profile;
-using MyLifeApp.Application.Dtos.Responses.Profile;
 using MyLifeApp.Application.Dtos.Requests.Post;
 using MyLifeApp.Application.Dtos.Responses;
+using MyLifeApp.Application.Dtos.Responses.Post;
+using MyLifeApp.Application.Dtos.Responses.Profile;
+using MyLifeApp.Application.Interfaces.Repositories;
+using MyLifeApp.Application.Interfaces.Services;
+using MyLifeApp.Application.Services;
+using MyLifeApp.Domain.Entities;
+using Xunit;
+using Profile = MyLifeApp.Domain.Entities.Profile;
 
 namespace MyLifeApp.Api.Test
 {
@@ -21,21 +19,15 @@ namespace MyLifeApp.Api.Test
     {
         private readonly IPostService _postService;
         private readonly IPostRepository _postRepository;
-        private readonly IProfileRepository _profileRepository;
         private readonly IMapper _mapper;
-        private readonly IHttpContextAccessor _context;
-        private readonly UserManager<User> _manager;
         private readonly IAuthenticatedProfileService _authenticatedProfileService;
 
         public PostServiceTest()
         {
-            _profileRepository = A.Fake<IProfileRepository>();
             _postRepository = A.Fake<IPostRepository>();
             _mapper = A.Fake<IMapper>();
-            _context = A.Fake<IHttpContextAccessor>();
-            _manager = A.Fake<UserManager<User>>();
             _authenticatedProfileService = A.Fake<IAuthenticatedProfileService>();
-            _postService = new PostService(_postRepository, _profileRepository, _mapper, _context, _manager, _authenticatedProfileService);
+            _postService = new PostService(_postRepository, _mapper, _authenticatedProfileService);
         }
 
         [Fact]
@@ -402,7 +394,7 @@ namespace MyLifeApp.Api.Test
             // Act
             var result = await _postService.LikePostAsync(post.Id);
 
-            // Assert 
+            // Assert
             result.Should().BeEquivalentTo(response);
             result.StatusCode.Should().Be(200);
             result.IsSuccess.Should().BeTrue();
@@ -572,6 +564,7 @@ namespace MyLifeApp.Api.Test
 
             var post = A.Fake<Post>();
             var postComments = A.Fake<ICollection<PostComment>>();
+            var comment = A.Fake<PostComment>();
             post.Profile = profile;
             post.PostComments = postComments;
 
@@ -587,23 +580,18 @@ namespace MyLifeApp.Api.Test
                 Comment = "Nice post!"
             };
 
-            PostComment comment = new()
-            {
-                Post = post,
-                Comment = request.Comment
-            };
-
             A.CallTo(() => _postRepository.PostExistsAsync(post.Id)).Returns(Task.FromResult(true));
             A.CallTo(() => _postRepository.GetPostDetailsAsync(post.Id)).Returns(Task.FromResult(post));
             A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(profile));
-            A.CallTo(() => _postRepository.AddCommentPostAsync(comment)).Returns(Task.FromResult(comment));
+            A.CallTo(() => _mapper.Map<PostComment>(request)).Returns(comment);
+            A.CallTo(() => _postRepository.AddPostCommentAsync(comment)).Returns(Task.FromResult(comment));
 
             // Act
             var result = await _postService.CommentPostAsync(post.Id, request);
 
             // Assert
             result.Should().BeEquivalentTo(response);
-            result.StatusCode.Should().Be(200);
+            result.StatusCode.Should().Be(201);
             result.IsSuccess.Should().BeTrue();
         }
 
@@ -622,7 +610,7 @@ namespace MyLifeApp.Api.Test
 
             CommentPostRequest request = new()
             {
-                Comment = "Inexistente post"
+                Comment = "Inexistent post"
             };
 
             A.CallTo(() => _postRepository.PostExistsAsync(inexistentPostGuid)).Returns(Task.FromResult(false));
@@ -637,7 +625,7 @@ namespace MyLifeApp.Api.Test
         }
 
         [Fact]
-        public async Task UpdateCommentAsync_ExistentAndValidPost_ReturnsSuccess()
+        public async Task UpdateCommentAsync_ExistentAndValidComment_ReturnsSuccess()
         {
             // Arrange
             var profile = A.Fake<Profile>();
@@ -645,15 +633,15 @@ namespace MyLifeApp.Api.Test
             profile.User = user;
 
             var post = A.Fake<Post>();
-            var postComments = A.Fake<ICollection<PostComment>>();
+            var comment = A.Fake<PostComment>();
             post.Profile = profile;
-            post.PostComments = postComments;
+            comment.Profile = profile;
 
             BaseResponse response = new()
             {
                 Message = "Comment successfuly updated",
                 IsSuccess = true,
-                StatusCode = 201
+                StatusCode = 200
             };
 
             CommentPostRequest request = new()
@@ -661,17 +649,60 @@ namespace MyLifeApp.Api.Test
                 Comment = "Nice post!"
             };
 
-            A.CallTo(() => _postRepository.PostExistsAsync(post.Id)).Returns(Task.FromResult(true));
-            A.CallTo(() => _postRepository.GetPostDetailsAsync(post.Id)).Returns(Task.FromResult(post));
+            A.CallTo(() => _postRepository.PostCommentExistsAsync(comment.Id)).Returns(Task.FromResult(true));
+            A.CallTo(() => _postRepository.GetPostCommentAsync(comment.Id)).Returns(Task.FromResult(comment));
             A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(profile));
+            A.CallTo(() => _mapper.Map<PostComment>(request)).Returns(comment);
 
             // Act
-            var result = await _postService.CommentPostAsync(post.Id, request);
+            var result = await _postService.UpdateCommentAsync(comment.Id, request);
 
             // Assert
             result.Should().BeEquivalentTo(response);
             result.StatusCode.Should().Be(200);
             result.IsSuccess.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task UpdateCommentAsync_UpdateAnotherUserComment_ReturnsError()
+        {
+            // Arrange
+            var profile = A.Fake<Profile>();
+            var user = A.Fake<User>();
+            profile.User = user;
+
+            var anotherProfile = A.Fake<Profile>();
+            var anotherUser = A.Fake<User>();
+            anotherProfile.User = anotherUser;
+
+            var post = A.Fake<Post>();
+            var comment = A.Fake<PostComment>();
+            comment.Profile = profile;
+            post.Profile = profile;
+
+            BaseResponse response = new()
+            {
+                Message = "Only comment author can update the comment",
+                IsSuccess = false,
+                StatusCode = 400
+            };
+
+            CommentPostRequest request = new()
+            {
+                Comment = "Nice post!"
+            };
+
+            A.CallTo(() => _postRepository.PostCommentExistsAsync(comment.Id)).Returns(Task.FromResult(true));
+            A.CallTo(() => _postRepository.GetPostCommentAsync(comment.Id)).Returns(Task.FromResult(comment));
+            A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(anotherProfile));
+
+            // Act
+            var result = await _postService.UpdateCommentAsync(comment.Id, request);
+
+            // Assert
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(400);
+            result.IsSuccess.Should().BeFalse();
         }
 
         [Fact]
@@ -690,9 +721,9 @@ namespace MyLifeApp.Api.Test
 
             BaseResponse response = new()
             {
-                Message = "Comment successfuly updated",
-                IsSuccess = true,
-                StatusCode = 201
+                Message = "Comment not found",
+                IsSuccess = false,
+                StatusCode = 404
             };
 
             CommentPostRequest request = new()
@@ -705,6 +736,7 @@ namespace MyLifeApp.Api.Test
             // Act
             var result = await _postService.UpdateCommentAsync(comment.Id, request);
 
+            // Assert
             result.Should().BeEquivalentTo(response);
             result.StatusCode.Should().Be(404);
             result.IsSuccess.Should().BeFalse();
@@ -719,22 +751,140 @@ namespace MyLifeApp.Api.Test
             profile.User = user;
 
             var post = A.Fake<Post>();
-            var postComments = A.Fake<ICollection<PostComment>>();
-            var comment = A.Fake<PostComment>();
             post.Profile = profile;
-            post.PostComments = postComments;
+
+            var comment = A.Fake<PostComment>();
+            comment.Post = post;
+            comment.Profile = profile;
 
             BaseResponse response = new()
             {
-                Message = "Comment successfuly updated",
                 IsSuccess = true,
-                StatusCode = 201
+                StatusCode = 204
             };
 
-            A.CallTo(() => _postRepository.PostExistsAsync(post.Id)).Returns(Task.FromResult(true));
-            A.CallTo(() => _postRepository.GetPostDetailsAsync(post.Id)).Returns(Task.FromResult(post));
+            A.CallTo(() => _postRepository.PostCommentExistsAsync(comment.Id)).Returns(Task.FromResult(true));
+            A.CallTo(() => _postRepository.GetPostCommentAsync(comment.Id)).Returns(Task.FromResult(comment));
             A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(profile));
-            A.CallTo(() => _postRepository.PostCommentExistsAsync(comment.Id)).Returns(Task.FromResult(true));        
+            A.CallTo(() => _postRepository.DeletePostCommentAsync(comment));
+
+            // Act
+            var result = await _postService.DeleteCommentAsync(comment.Id);
+
+            // Assert
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(204);
+            result.IsSuccess.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task DeleteCommentAsync_PostAuthorCanDeleteComment_ReturnsSuccess()
+        {
+            // Arrange
+            var profile = A.Fake<Profile>();
+            var user = A.Fake<User>();
+            profile.User = user;
+
+            var anotherProfile = A.Fake<Profile>();
+            var anotherUser = A.Fake<User>();
+            anotherProfile.User = anotherUser;
+
+            // Profile is post author
+            var post = A.Fake<Post>();
+            post.Profile = profile;
+
+            // Another Profile is comment author
+            var comment = A.Fake<PostComment>();
+            comment.Post = post;
+            comment.Profile = anotherProfile;
+
+            BaseResponse response = new()
+            {
+                IsSuccess = true,
+                StatusCode = 204
+            };
+
+            A.CallTo(() => _postRepository.PostCommentExistsAsync(comment.Id)).Returns(Task.FromResult(true));
+            A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(profile));
+            A.CallTo(() => _postRepository.GetPostCommentAsync(comment.Id)).Returns(Task.FromResult(comment));
+
+            // Act
+            var result = await _postService.DeleteCommentAsync(comment.Id);
+
+            // Assert
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(204);
+            result.IsSuccess.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task DeleteCommentAsync_DeleteAnotherUserComment_ReturnsError()
+        {
+            // Arrange
+            var profile = A.Fake<Profile>();
+            var user = A.Fake<User>();
+            profile.User = user;
+
+            var anotherProfile = A.Fake<Profile>();
+            var anotherUser = A.Fake<User>();
+            anotherProfile.User = anotherUser;
+
+            var post = A.Fake<Post>();
+            post.Profile = profile;
+
+            var comment = A.Fake<PostComment>();
+            comment.Profile = profile;
+            comment.Post = post;
+
+            BaseResponse response = new()
+            {
+                Message = "Only Comment Author or Post Author can delete the comment",
+                IsSuccess = false,
+                StatusCode = 400
+            };
+
+            A.CallTo(() => _postRepository.PostCommentExistsAsync(comment.Id)).Returns(Task.FromResult(true));
+            A.CallTo(() => _postRepository.GetPostCommentAsync(comment.Id)).Returns(Task.FromResult(comment));
+            A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(anotherProfile));
+
+            // Act
+            var result = await _postService.DeleteCommentAsync(comment.Id);
+
+            // Assert
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(400);
+            result.IsSuccess.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task DeleteCommentAsync_InexistentComment_ReturnsError()
+        {
+            // Arrange
+            var profile = A.Fake<Profile>();
+            var user = A.Fake<User>();
+            profile.User = user;
+
+            var post = A.Fake<Post>();
+            var comment = A.Fake<PostComment>();
+            post.Profile = profile;
+            comment.Profile = profile;
+
+            BaseResponse response = new()
+            {
+                Message = "Comment not found",
+                IsSuccess = false,
+                StatusCode = 404
+            };
+
+            A.CallTo(() => _postRepository.PostCommentExistsAsync(comment.Id)).Returns(Task.FromResult(false));
+
+            // Act
+            var result = await _postService.DeleteCommentAsync(comment.Id);
+
+            // Assert
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(404);
+            result.IsSuccess.Should().BeFalse();
         }
     }
 }
