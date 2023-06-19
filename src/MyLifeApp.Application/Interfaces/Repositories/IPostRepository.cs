@@ -12,9 +12,8 @@ namespace MyLifeApp.Application.Interfaces.Repositories
         public Task RemovePostLikeAsync(PostLike like);
         public Task<bool> PostAlreadyLikedAsync(Profile profile, Post post);
         public Task<PostComment> GetPostCommentAsync(Guid commentId);
-        public Task<PostComment> AddCommentPostAsync(PostComment comment);
-        public Task<PostComment> UpdateCommentPostAsync(Guid commentId, PostComment comment);
-        public Task<PostComment> DeleteCommentPostAsync(Guid commentId);
+        public Task<PostComment> AddPostCommentAsync(PostComment comment);
+        public Task DeletePostCommentAsync(PostComment comment);
         public Task<bool> PostCommentExistsAsync(Guid commentId);
     }
 }
