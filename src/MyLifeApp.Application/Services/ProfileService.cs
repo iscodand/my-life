@@ -1,7 +1,4 @@
 using AutoMapper;
-using Identity.Infrastructure.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using MyLifeApp.Application.Dtos.Requests.Profile;
 using MyLifeApp.Application.Dtos.Responses;
 using MyLifeApp.Application.Dtos.Responses.Profile;
@@ -16,20 +13,14 @@ namespace MyLifeApp.Application.Services
     {
         private readonly IProfileRepository _profileRepository;
         private readonly IMapper _mapper;
-        private readonly IHttpContextAccessor _httpContext;
-        private readonly UserManager<User> _userManager;
         private readonly IAuthenticatedProfileService _authenticatedProfileService;
 
         public ProfileService(IProfileRepository profileRepository,
                            IMapper mapper,
-                           IHttpContextAccessor httpContext,
-                           UserManager<User> userManager,
                            IAuthenticatedProfileService authenticatedProfileService)
         {
             _profileRepository = profileRepository;
             _mapper = mapper;
-            _httpContext = httpContext;
-            _userManager = userManager;
             _authenticatedProfileService = authenticatedProfileService;
         }
 
@@ -221,7 +212,7 @@ namespace MyLifeApp.Application.Services
                     StatusCode = 404
                 };
             }
-            
+
             if (!await _profileRepository.ProfileFollowerExistsAsync(profile, follower))
             {
                 return new BaseResponse()
