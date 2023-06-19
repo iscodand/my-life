@@ -1,7 +1,4 @@
 using AutoMapper;
-using Identity.Infrastructure.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using MyLifeApp.Application.Dtos.Requests.Post;
 using MyLifeApp.Application.Dtos.Responses;
 using MyLifeApp.Application.Dtos.Responses.Post;
@@ -16,24 +13,15 @@ namespace MyLifeApp.Application.Services
     public class PostService : IPostService
     {
         private readonly IPostRepository _postRepository;
-        private readonly IProfileRepository _profileRepository;
         private readonly IMapper _mapper;
-        private readonly IHttpContextAccessor _httpContext;
-        private readonly UserManager<User> _userManager;
         private readonly IAuthenticatedProfileService _authenticatedProfileService;
 
         public PostService(IPostRepository postRepository,
-                           IProfileRepository profileRepository,
                            IMapper mapper,
-                           IHttpContextAccessor httpContext,
-                           UserManager<User> userManager,
                            IAuthenticatedProfileService authenticatedProfileService)
         {
             _postRepository = postRepository;
-            _profileRepository = profileRepository;
             _mapper = mapper;
-            _httpContext = httpContext;
-            _userManager = userManager;
             _authenticatedProfileService = authenticatedProfileService;
         }
 
@@ -236,7 +224,7 @@ namespace MyLifeApp.Application.Services
             Profile authenticatedProfile = await _authenticatedProfileService.GetAuthenticatedProfile();
 
             PostLike? postToUnlike = await _postRepository.GetPostLikeAsync(authenticatedProfile, post);
-            
+
             if (!await _postRepository.PostAlreadyLikedAsync(authenticatedProfile, post))
             {
                 return new BaseResponse()
@@ -257,19 +245,102 @@ namespace MyLifeApp.Application.Services
             };
         }
 
-        public Task<BaseResponse> CommentPostAsync(Guid postId, CommentPostRequest request)
+        // ToDo => verify if post is private (as a bonus)
+        public async Task<BaseResponse> CommentPostAsync(Guid postId, CommentPostRequest request)
         {
-            throw new NotImplementedException();
+            if (!await _postRepository.PostExistsAsync(postId))
+            {
+                return new BaseResponse()
+                {
+                    Message = "Post not found",
+                    IsSuccess = false,
+                    StatusCode = 404
+                };
+            }
+
+            Post post = await _postRepository.GetPostDetailsAsync(postId);
+            Profile profile = await _authenticatedProfileService.GetAuthenticatedProfile();
+
+            PostComment comment = _mapper.Map<PostComment>(request);
+            await _postRepository.AddPostCommentAsync(comment);
+
+            return new BaseResponse()
+            {
+                Message = "Comment successfuly added",
+                IsSuccess = true,
+                StatusCode = 201
+            };
         }
 
-        public Task<BaseResponse> UpdateCommentAsync(Guid commentId, CommentPostRequest request)
+        public async Task<BaseResponse> UpdateCommentAsync(Guid commentId, CommentPostRequest request)
         {
-            throw new NotImplementedException();
+            if (!await _postRepository.PostCommentExistsAsync(commentId))
+            {
+                return new BaseResponse()
+                {
+                    Message = "Comment not found",
+                    IsSuccess = false,
+                    StatusCode = 404
+                };
+            }
+
+            PostComment comment = await _postRepository.GetPostCommentAsync(commentId);
+            Profile profile = await _authenticatedProfileService.GetAuthenticatedProfile();
+
+            if (profile != comment.Profile)
+            {
+                return new BaseResponse()
+                {
+                    Message = "Only comment author can update the comment",
+                    IsSuccess = false,
+                    StatusCode = 400
+                };
+            }
+
+            PostComment commentToUpdate = _mapper.Map(request, comment);
+            await _postRepository.SaveAsync();
+
+            return new BaseResponse()
+            {
+                Message = "Comment successfuly updated",
+                IsSuccess = true,
+                StatusCode = 200
+            };
         }
 
-        public Task<BaseResponse> DeleteCommentAsync(Guid commentId)
+        public async Task<BaseResponse> DeleteCommentAsync(Guid commentId)
         {
-            throw new NotImplementedException();
+            if (!await _postRepository.PostCommentExistsAsync(commentId))
+            {
+                return new BaseResponse()
+                {
+                    Message = "Comment not found",
+                    IsSuccess = false,
+                    StatusCode = 404
+                };
+            }
+
+            PostComment comment = await _postRepository.GetPostCommentAsync(commentId);
+            Profile profile = await _authenticatedProfileService.GetAuthenticatedProfile();
+
+            // Isco => Only Comment Author and Post Author can delete the comment
+            if (comment.Profile != profile && comment.Post.Profile != profile)
+            {
+                return new BaseResponse()
+                {
+                    Message = "Only Comment Author or Post Author can delete the comment",
+                    IsSuccess = false,
+                    StatusCode = 400
+                };
+            }
+
+            await _postRepository.DeletePostCommentAsync(comment);
+
+            return new BaseResponse()
+            {
+                StatusCode = 204,
+                IsSuccess = true
+            };
         }
     }
 }
