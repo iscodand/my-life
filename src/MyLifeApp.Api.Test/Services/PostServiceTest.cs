@@ -61,12 +61,18 @@ namespace MyLifeApp.Api.Test
         public async Task GetPostByIdAsync_ExistentPost_ReturnsSuccess()
         {
             // Arrange
-            var post = A.Fake<Post>();
             var profile = A.Fake<Profile>();
             var user = A.Fake<User>();
 
+            var post = A.Fake<Post>();
+            var postLikes = A.Fake<ICollection<PostLike>>();
+            var postComments = A.Fake<ICollection<PostComment>>();
+            var postCommentsDTO = A.Fake<ICollection<GetPostCommentsDTO>>();
+
             profile.User = user;
             post.Profile = profile;
+            post.PostLikes = postLikes;
+            post.PostComments = postComments;
 
             var postDetail = A.Fake<DetailPostResponse>();
             var profileMapper = A.Fake<GetProfileResponse>();
@@ -76,6 +82,8 @@ namespace MyLifeApp.Api.Test
                 Title = post.Title,
                 Description = post.Description,
                 Profile = profileMapper,
+                Likes = post.PostLikes.Count,
+                Comments = postCommentsDTO,
                 Message = "Success",
                 IsSuccess = true,
                 StatusCode = 200
@@ -84,6 +92,7 @@ namespace MyLifeApp.Api.Test
             A.CallTo(() => _postRepository.PostExistsAsync(post.Id)).Returns(true);
             A.CallTo(() => _postRepository.GetPostDetailsAsync(post.Id)).Returns(Task.FromResult(post));
             A.CallTo(() => _mapper.Map<DetailPostResponse>(post)).Returns(postDetail);
+            A.CallTo(() => _mapper.Map<ICollection<GetPostCommentsDTO>>(postComments)).Returns(postCommentsDTO);
             A.CallTo(() => _mapper.Map<GetProfileResponse>(profile)).Returns(profileMapper);
 
             // Act
