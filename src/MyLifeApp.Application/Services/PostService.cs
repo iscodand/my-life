@@ -57,12 +57,15 @@ namespace MyLifeApp.Application.Services
 
             GetPostsResponse postMapper = _mapper.Map<GetPostsResponse>(post);
             GetProfileResponse profileMapper = _mapper.Map<GetProfileResponse>(profile);
+            ICollection<GetPostCommentsDTO> commentsMapper = _mapper.Map<ICollection<GetPostCommentsDTO>>(post.PostComments);
 
             return new DetailPostResponse()
             {
                 Title = post.Title,
                 Description = post.Description,
                 Profile = profileMapper,
+                Likes = post.PostLikes.Count,
+                Comments = commentsMapper,
                 Message = "Success",
                 IsSuccess = true,
                 StatusCode = 200
