@@ -46,7 +46,7 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
         // ToDo => create a repository for PostLike entity to avoid code redundance 
         public async Task<PostLike> GetPostLikeAsync(Profile profile, Post post)
         {
-            return await _postLikes.FirstAsync(p => p.Profile == profile && p.Post == post);
+            return await _postLikes.FirstOrDefaultAsync(p => p.Profile == profile && p.Post == post);
         }
 
         public async Task<PostLike> AddPostLikeAsync(PostLike like)
