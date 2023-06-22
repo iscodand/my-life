@@ -1,5 +1,4 @@
 ﻿using MyLifeApp.Application.Dtos.Responses.Profile;
-using MyLifeApp.Domain.Entities;
 
 namespace MyLifeApp.Application.Dtos.Responses.Post
 {
@@ -14,7 +13,7 @@ namespace MyLifeApp.Application.Dtos.Responses.Post
 
     public class GetPostCommentsDTO
     {
-        public string? Username { get; set; }
+        public string? ProfileUserUsername { get; set; }
         public string? Comment { get; set; }
         public DateTime CreatedAt { get; set; }
     }
