@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Identity.Infrastructure.Models;
+using MyLifeApp.Application.Dtos.Requests.Post;
 using MyLifeApp.Application.Dtos.Requests.Profile;
+using MyLifeApp.Application.Dtos.Responses.Post;
 using MyLifeApp.Application.Dtos.Responses.Profile;
 using MyLifeApp.Domain.Entities;
 using Profile = MyLifeApp.Domain.Entities.Profile;
@@ -18,6 +20,11 @@ namespace MyLifeApp.Application.Mappings
             CreateMap<Profile, GetProfileResponse>();
 
             CreateMap<ProfileFollower, GetProfileResponse>();
+
+            CreateMap<CommentPostRequest, PostComment>();
+            CreateMap<PostComment, CommentPostRequest>();
+            
+            CreateMap<PostComment, GetPostCommentsDTO>();
         }
     }
 }
