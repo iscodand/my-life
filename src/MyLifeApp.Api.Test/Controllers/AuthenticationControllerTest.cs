@@ -1,7 +1,4 @@
-﻿using Xunit;
-using FluentAssertions;
-using FakeItEasy;
-using MyLifeApp.Application.Interfaces.Services;
+﻿using MyLifeApp.Application.Interfaces.Services;
 using Identity.Infrastructure.Interfaces.Services;
 using Identity.Infrastructure.DTOs.Request;
 using Identity.Infrastructure.DTOs.Response;

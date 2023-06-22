@@ -29,9 +29,8 @@ namespace MyLifeApp.Domain.Entities
         }
     }
 
-    public class ProfileAnalytics
+    public class ProfileAnalytics : BaseEntity
     {
-        public Guid Id { get; set; }
         public Profile? Profile { get; set; }
         public int FollowersCount { get; set; }
         public int FollowingCount { get; set; }

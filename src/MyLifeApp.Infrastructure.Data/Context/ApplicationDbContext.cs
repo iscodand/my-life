@@ -47,10 +47,16 @@ namespace MyLifeApp.Infrastructure.Data.Context
                 .HasForeignKey(p => p.PostId)
                 .OnDelete(DeleteBehavior.Restrict);
             builder.Entity<PostComment>()
+                .HasIndex(p => p.PostId)
+                .IsUnique(false);
+            builder.Entity<PostComment>()
                 .HasOne(p => p.Profile)
                 .WithMany(p => p.PostComments)
                 .HasForeignKey(p => p.ProfileId)
                 .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<PostComment>()
+                .HasIndex(p => p.ProfileId)
+                .IsUnique(false);
 
             // Many-to-many: PostTags Entity
             builder.Entity<PostTag>()
@@ -77,12 +83,12 @@ namespace MyLifeApp.Infrastructure.Data.Context
             base.OnModelCreating(builder);
             builder.Entity<User>(entity =>
             {
-                entity.ToTable(name: "User");
+                entity.ToTable(name: "Users");
             });
 
             builder.Entity<IdentityRole>(entity =>
             {
-                entity.ToTable(name: "Role");
+                entity.ToTable(name: "Roles");
             });
             builder.Entity<IdentityUserRole<string>>(entity =>
             {

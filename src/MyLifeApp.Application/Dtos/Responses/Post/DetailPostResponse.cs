@@ -7,9 +7,14 @@ namespace MyLifeApp.Application.Dtos.Responses.Post
         public string? Title { get; set; }
         public string? Description { get; set; }
         public GetProfileResponse? Profile { get; set; }
+        public int Likes { get; set; }
+        public ICollection<GetPostCommentsDTO>? Comments { get; set; }
+    }
 
-        // public ICollection<GetTagsResponse> Tags { get; set; }
-        // public ICollection<GetCommentsResponse> Comments { get; set; }
-        // public ICollection<GetLikesResponse> Likes { get; set; }
+    public class GetPostCommentsDTO
+    {
+        public string? ProfileUserUsername { get; set; }
+        public string? Comment { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

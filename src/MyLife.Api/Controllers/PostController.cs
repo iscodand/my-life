@@ -41,7 +41,7 @@ namespace MyLife.Api.Controllers
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
         [ProducesResponseType(404, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> GetPost(Guid postId)
+        public async Task<IActionResult> GetPost(string postId)
         {
             if (ModelState.IsValid)
             {
@@ -84,7 +84,7 @@ namespace MyLife.Api.Controllers
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
         [ProducesResponseType(404, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> Update(Guid postId, [FromBody] UpdatePostRequest request)
+        public async Task<IActionResult> Update(string postId, [FromBody] UpdatePostRequest request)
         {
             if (ModelState.IsValid)
             {
@@ -105,7 +105,7 @@ namespace MyLife.Api.Controllers
         [HttpDelete("{postId}")]
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(404, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> Delete(Guid postId)
+        public async Task<IActionResult> Delete(string postId)
         {
             if (ModelState.IsValid)
             {
@@ -127,7 +127,7 @@ namespace MyLife.Api.Controllers
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
         [ProducesResponseType(404, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> LikePost(Guid postId)
+        public async Task<IActionResult> LikePost(string postId)
         {
             if (ModelState.IsValid)
             {
@@ -149,7 +149,7 @@ namespace MyLife.Api.Controllers
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
         [ProducesResponseType(404, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> UnlikePost(Guid postId)
+        public async Task<IActionResult> UnlikePost(string postId)
         {
             if (ModelState.IsValid)
             {
@@ -171,7 +171,7 @@ namespace MyLife.Api.Controllers
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
         [ProducesResponseType(404, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> CommentPost(Guid postId, CommentPostRequest request)
+        public async Task<IActionResult> CommentPost(string postId, CommentPostRequest request)
         {
             if (ModelState.IsValid)
             {
@@ -189,11 +189,11 @@ namespace MyLife.Api.Controllers
         }
 
         [Authorize]
-        [HttpPost("comment/{commentId}")]
+        [HttpPut("comment/{commentId}")]
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
         [ProducesResponseType(404, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> UpdateComment(Guid commentId, CommentPostRequest request)
+        public async Task<IActionResult> UpdateComment(string commentId, CommentPostRequest request)
         {
             if (ModelState.IsValid)
             {
@@ -211,11 +211,11 @@ namespace MyLife.Api.Controllers
         }
 
         [Authorize]
-        [HttpPost("comment/{commentId}")]
+        [HttpDelete("comment/{commentId}")]
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
         [ProducesResponseType(404, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> DeleteComment(Guid commentId)
+        public async Task<IActionResult> DeleteComment(string commentId)
         {
             if (ModelState.IsValid)
             {

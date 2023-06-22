@@ -13,14 +13,17 @@ namespace MyLifeApp.Application.Services
     public class PostService : IPostService
     {
         private readonly IPostRepository _postRepository;
+        private readonly IPostCommentRepository _postCommentRepository;
         private readonly IMapper _mapper;
         private readonly IAuthenticatedProfileService _authenticatedProfileService;
 
         public PostService(IPostRepository postRepository,
+                           IPostCommentRepository postCommentRepository,
                            IMapper mapper,
                            IAuthenticatedProfileService authenticatedProfileService)
         {
             _postRepository = postRepository;
+            _postCommentRepository = postCommentRepository;
             _mapper = mapper;
             _authenticatedProfileService = authenticatedProfileService;
         }
@@ -40,7 +43,7 @@ namespace MyLifeApp.Application.Services
         }
 
         // TODO => add validation for private posts only for posts owners
-        public async Task<DetailPostResponse> GetPostByIdAsync(Guid postId)
+        public async Task<DetailPostResponse> GetPostByIdAsync(string postId)
         {
             if (!await _postRepository.PostExistsAsync(postId))
             {
@@ -53,16 +56,21 @@ namespace MyLifeApp.Application.Services
             }
 
             Post post = await _postRepository.GetPostDetailsAsync(postId);
+            ICollection<PostComment> postComments = await _postCommentRepository.GetAllCommentsFromPost(post.Id);
             Profile profile = post.Profile;
 
             GetPostsResponse postMapper = _mapper.Map<GetPostsResponse>(post);
             GetProfileResponse profileMapper = _mapper.Map<GetProfileResponse>(profile);
+            ICollection<GetPostCommentsDTO> commentsMapper = _mapper.Map<ICollection<GetPostCommentsDTO>>(postComments);
 
+            // ToDo => verify how to change Comments Author profile name in json response
             return new DetailPostResponse()
             {
                 Title = post.Title,
                 Description = post.Description,
                 Profile = profileMapper,
+                Likes = post.PostLikes.Count,
+                Comments = commentsMapper,
                 Message = "Success",
                 IsSuccess = true,
                 StatusCode = 200
@@ -97,7 +105,7 @@ namespace MyLifeApp.Application.Services
             };
         }
 
-        public async Task<BaseResponse> UpdatePostAsync(Guid postId, UpdatePostRequest request)
+        public async Task<BaseResponse> UpdatePostAsync(string postId, UpdatePostRequest request)
         {
             if (!await _postRepository.PostExistsAsync(postId))
             {
@@ -133,7 +141,7 @@ namespace MyLifeApp.Application.Services
             };
         }
 
-        public async Task<BaseResponse> DeletePostAsync(Guid postId)
+        public async Task<BaseResponse> DeletePostAsync(string postId)
         {
             if (!await _postRepository.PostExistsAsync(postId))
             {
@@ -167,7 +175,7 @@ namespace MyLifeApp.Application.Services
             };
         }
 
-        public async Task<BaseResponse> LikePostAsync(Guid postId)
+        public async Task<BaseResponse> LikePostAsync(string postId)
         {
             if (!await _postRepository.PostExistsAsync(postId))
             {
@@ -208,7 +216,7 @@ namespace MyLifeApp.Application.Services
             };
         }
 
-        public async Task<BaseResponse> UnlikePostAsync(Guid postId)
+        public async Task<BaseResponse> UnlikePostAsync(string postId)
         {
             if (!await _postRepository.PostExistsAsync(postId))
             {
@@ -246,7 +254,7 @@ namespace MyLifeApp.Application.Services
         }
 
         // ToDo => verify if post is private (as a bonus)
-        public async Task<BaseResponse> CommentPostAsync(Guid postId, CommentPostRequest request)
+        public async Task<BaseResponse> CommentPostAsync(string postId, CommentPostRequest request)
         {
             if (!await _postRepository.PostExistsAsync(postId))
             {
@@ -262,7 +270,10 @@ namespace MyLifeApp.Application.Services
             Profile profile = await _authenticatedProfileService.GetAuthenticatedProfile();
 
             PostComment comment = _mapper.Map<PostComment>(request);
-            await _postRepository.AddPostCommentAsync(comment);
+            comment.Profile = profile;
+            comment.Post = post;
+            
+            await _postCommentRepository.CreateAsync(comment);
 
             return new BaseResponse()
             {
@@ -272,9 +283,9 @@ namespace MyLifeApp.Application.Services
             };
         }
 
-        public async Task<BaseResponse> UpdateCommentAsync(Guid commentId, CommentPostRequest request)
+        public async Task<BaseResponse> UpdateCommentAsync(string commentId, CommentPostRequest request)
         {
-            if (!await _postRepository.PostCommentExistsAsync(commentId))
+            if (!await _postCommentRepository.PostCommentExistsAsync(commentId))
             {
                 return new BaseResponse()
                 {
@@ -284,7 +295,7 @@ namespace MyLifeApp.Application.Services
                 };
             }
 
-            PostComment comment = await _postRepository.GetPostCommentAsync(commentId);
+            PostComment comment = await _postCommentRepository.GetByIdAsync(commentId);
             Profile profile = await _authenticatedProfileService.GetAuthenticatedProfile();
 
             if (profile != comment.Profile)
@@ -298,7 +309,7 @@ namespace MyLifeApp.Application.Services
             }
 
             PostComment commentToUpdate = _mapper.Map(request, comment);
-            await _postRepository.SaveAsync();
+            await _postCommentRepository.SaveAsync();
 
             return new BaseResponse()
             {
@@ -308,9 +319,9 @@ namespace MyLifeApp.Application.Services
             };
         }
 
-        public async Task<BaseResponse> DeleteCommentAsync(Guid commentId)
+        public async Task<BaseResponse> DeleteCommentAsync(string commentId)
         {
-            if (!await _postRepository.PostCommentExistsAsync(commentId))
+            if (!await _postCommentRepository.PostCommentExistsAsync(commentId))
             {
                 return new BaseResponse()
                 {
@@ -320,7 +331,7 @@ namespace MyLifeApp.Application.Services
                 };
             }
 
-            PostComment comment = await _postRepository.GetPostCommentAsync(commentId);
+            PostComment comment = await _postCommentRepository.GetByIdAsync(commentId);
             Profile profile = await _authenticatedProfileService.GetAuthenticatedProfile();
 
             // Isco => Only Comment Author and Post Author can delete the comment
@@ -334,7 +345,7 @@ namespace MyLifeApp.Application.Services
                 };
             }
 
-            await _postRepository.DeletePostCommentAsync(comment);
+            await _postCommentRepository.DeleteAsync(comment);
 
             return new BaseResponse()
             {

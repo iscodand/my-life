@@ -1,12 +1,10 @@
-﻿using FakeItEasy;
-using Xunit;
-using FluentAssertions;
-using MyLifeApp.Application.Dtos.Requests.Post;
+﻿using MyLifeApp.Application.Dtos.Requests.Post;
 using MyLifeApp.Application.Dtos.Responses.Post;
 using MyLifeApp.Application.Dtos.Responses;
 using MyLifeApp.Application.Interfaces.Services;
 using MyLife.Api.Controllers;
 using MyLifeApp.Domain.Entities;
+using Profile = MyLifeApp.Domain.Entities.Profile;
 using Microsoft.AspNetCore.Mvc;
 using MyLifeApp.Application.Dtos.Responses.Profile;
 
@@ -64,7 +62,7 @@ namespace MyLifeApp.Api.Test.Controllers
                 IsSuccess = true
             };
 
-            A.CallTo(() => _postService.GetPostByIdAsync(A<Guid>.Ignored))
+            A.CallTo(() => _postService.GetPostByIdAsync(A<string>.Ignored))
                 .Returns(Task.FromResult(response));
 
             // Act
@@ -80,7 +78,7 @@ namespace MyLifeApp.Api.Test.Controllers
         public async Task GetPostById_InexistentPost_ReturnsNotFound()
         {
             // Arrange
-            var inexistentId = Guid.NewGuid();
+            var inexistentId = Guid.NewGuid().ToString();
 
             DetailPostResponse response = new()
             {
@@ -88,7 +86,7 @@ namespace MyLifeApp.Api.Test.Controllers
                 StatusCode = 404
             };
 
-            A.CallTo(() => _postService.GetPostByIdAsync(A<Guid>.Ignored))
+            A.CallTo(() => _postService.GetPostByIdAsync(A<string>.Ignored))
                 .Returns(Task.FromResult(response));
 
             // Act
@@ -191,7 +189,7 @@ namespace MyLifeApp.Api.Test.Controllers
         public async Task UpdatePost_InexistentPost_ReturnsBadRequest()
         {
             // Arrange
-            var inexistentId = Guid.NewGuid();
+            var inexistentId = Guid.NewGuid().ToString();
 
             UpdatePostRequest request = new()
             {
@@ -242,7 +240,7 @@ namespace MyLifeApp.Api.Test.Controllers
         public async Task DeletePost_InexistentPost_ReturnsNoContent()
         {
             // Arrange
-            var inexistentId = Guid.NewGuid();
+            var inexistentId = Guid.NewGuid().ToString();
 
             BaseResponse response = new()
             {
@@ -288,7 +286,7 @@ namespace MyLifeApp.Api.Test.Controllers
         public async Task LikePost_InexistentPost_ReturnsNotFound()
         {
             // Arrange
-            Guid inexistentPost = Guid.NewGuid();
+            string inexistentPost = Guid.NewGuid().ToString();
 
             BaseResponse response = new()
             {
@@ -359,7 +357,7 @@ namespace MyLifeApp.Api.Test.Controllers
         public async Task UnlikePost_InexistentPost_ReturnsNotFound()
         {
             // Arrange
-            Guid inexistentPost = Guid.NewGuid();
+            string inexistentPost = Guid.NewGuid().ToString();
 
             BaseResponse response = new()
             {
