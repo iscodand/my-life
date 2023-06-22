@@ -93,7 +93,7 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
-                    b.ToTable("User", (string)null);
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -120,7 +120,7 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
                         .HasDatabaseName("RoleNameIndex")
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
-                    b.ToTable("Role", (string)null);
+                    b.ToTable("Roles", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -231,25 +231,22 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("MyLifeApp.Domain.Entities.Post", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsPrivate")
                         .HasColumnType("bit");
 
-                    b.Property<Guid>("ProfileId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("ProfileId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Title")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -264,18 +261,23 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("MyLifeApp.Domain.Entities.PostAnalytics", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("CommentsCount")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("LikesCount")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("PostId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("PostId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -286,26 +288,27 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("MyLifeApp.Domain.Entities.PostComment", b =>
                 {
-                    b.Property<Guid>("PostId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("PostId")
+                        .HasColumnType("nvarchar(450)");
 
-                    b.Property<Guid>("ProfileId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("ProfileId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Comment")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("PostId", "ProfileId");
+
+                    b.HasIndex("PostId");
 
                     b.HasIndex("ProfileId");
 
@@ -314,17 +317,17 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("MyLifeApp.Domain.Entities.PostLike", b =>
                 {
-                    b.Property<Guid>("ProfileId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("ProfileId")
+                        .HasColumnType("nvarchar(450)");
 
-                    b.Property<Guid>("PostId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("PostId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -338,17 +341,16 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("MyLifeApp.Domain.Entities.PostTag", b =>
                 {
-                    b.Property<Guid>("PostId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("PostId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -361,9 +363,8 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("MyLifeApp.Domain.Entities.Profile", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Bio")
                         .HasColumnType("nvarchar(max)");
@@ -398,9 +399,11 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("MyLifeApp.Domain.Entities.ProfileAnalytics", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("FollowersCount")
                         .HasColumnType("int");
@@ -408,8 +411,11 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
                     b.Property<int>("FollowingCount")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("ProfileId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("ProfileId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -420,11 +426,11 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("MyLifeApp.Domain.Entities.ProfileFollower", b =>
                 {
-                    b.Property<Guid>("ProfileId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("ProfileId")
+                        .HasColumnType("nvarchar(450)");
 
-                    b.Property<Guid>("FollowerId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("FollowerId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("ProfileId", "FollowerId");
 
@@ -488,9 +494,7 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
                 {
                     b.HasOne("MyLifeApp.Domain.Entities.Profile", "Profile")
                         .WithMany("Posts")
-                        .HasForeignKey("ProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ProfileId");
 
                     b.Navigation("Profile");
                 });
@@ -499,9 +503,7 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
                 {
                     b.HasOne("MyLifeApp.Domain.Entities.Post", "Post")
                         .WithMany()
-                        .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PostId");
 
                     b.Navigation("Post");
                 });
