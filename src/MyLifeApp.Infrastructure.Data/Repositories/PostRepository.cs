@@ -27,7 +27,7 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
                                .ToListAsync();
         }
 
-        public async Task<Post> GetPostDetailsAsync(Guid postId)
+        public async Task<Post> GetPostDetailsAsync(string postId)
         {
             return await _posts.Where(p => p.Id == postId)
                                .Include(p => p.Profile)
@@ -37,7 +37,7 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
                                .FirstAsync();
         }
 
-        public async Task<bool> PostExistsAsync(Guid postId)
+        public async Task<bool> PostExistsAsync(string postId)
         {
             return await _posts.AnyAsync(p => p.Id == postId);
         }
@@ -65,31 +65,6 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
         public async Task<bool> PostAlreadyLikedAsync(Profile profile, Post post)
         {
             return await _postLikes.AnyAsync(p => p.Profile == profile && p.Post == post);
-        }
-
-        public async Task<PostComment> GetPostCommentAsync(Guid commentId)
-        {
-            return await _postComments.Where(pc => pc.Id == commentId)
-                                      .Include(pc => pc.Post.Profile)
-                                      .FirstAsync();
-        }
-
-        public async Task<PostComment> AddPostCommentAsync(PostComment comment)
-        {
-            await _postComments.AddAsync(comment);
-            await base.SaveAsync();
-            return comment;
-        }
-
-        public async Task DeletePostCommentAsync(PostComment comment)
-        {
-            _postComments.Remove(comment);
-            await base.SaveAsync();
-        }
-
-        public async Task<bool> PostCommentExistsAsync(Guid commentId)
-        {
-            return await _postComments.AnyAsync(pc => pc.Id == commentId);
         }
     }
 }
