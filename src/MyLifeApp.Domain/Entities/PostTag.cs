@@ -4,8 +4,8 @@ namespace MyLifeApp.Domain.Entities
 {
     public class PostTag : BaseEntity
     {
-        public Post Post { get; set; }
-        public Guid PostId { get; set; }
-        public string Name { get; set; }
+        public Post? Post { get; set; }
+        public string? PostId { get; set; }
+        public string? Name { get; set; }
     }
 }

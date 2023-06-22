@@ -1,6 +1,3 @@
-using AutoMapper;
-using FakeItEasy;
-using FluentAssertions;
 using Identity.Infrastructure.Models;
 using MyLifeApp.Application.Dtos.Requests.Post;
 using MyLifeApp.Application.Dtos.Responses;
@@ -10,7 +7,6 @@ using MyLifeApp.Application.Interfaces.Repositories;
 using MyLifeApp.Application.Interfaces.Services;
 using MyLifeApp.Application.Services;
 using MyLifeApp.Domain.Entities;
-using Xunit;
 using Profile = MyLifeApp.Domain.Entities.Profile;
 
 namespace MyLifeApp.Api.Test
@@ -19,15 +15,17 @@ namespace MyLifeApp.Api.Test
     {
         private readonly IPostService _postService;
         private readonly IPostRepository _postRepository;
+        private readonly IPostCommentRepository _postCommentRepository;
         private readonly IMapper _mapper;
         private readonly IAuthenticatedProfileService _authenticatedProfileService;
 
         public PostServiceTest()
         {
             _postRepository = A.Fake<IPostRepository>();
+            _postCommentRepository = A.Fake<IPostCommentRepository>();
             _mapper = A.Fake<IMapper>();
             _authenticatedProfileService = A.Fake<IAuthenticatedProfileService>();
-            _postService = new PostService(_postRepository, _mapper, _authenticatedProfileService);
+            _postService = new PostService(_postRepository, _postCommentRepository, _mapper, _authenticatedProfileService);
         }
 
         [Fact]
@@ -108,7 +106,7 @@ namespace MyLifeApp.Api.Test
         public async Task GetPostByIdAsync_InexistentPost_ReturnsError()
         {
             // Arrange
-            Guid inexistentPostGuid = Guid.NewGuid();
+            string inexistentPostGuid = Guid.NewGuid().ToString();
 
             DetailPostResponse response = new()
             {
@@ -209,7 +207,7 @@ namespace MyLifeApp.Api.Test
         public async Task UpdatePostAsync_InexistentPost_ReturnsError()
         {
             // Arrange
-            Guid inexistentPostGuid = Guid.NewGuid();
+            string inexistentPostGuid = Guid.NewGuid().ToString();
 
             UpdatePostRequest request = new()
             {
@@ -313,7 +311,7 @@ namespace MyLifeApp.Api.Test
         public async Task DeletePostAsync_InexistentPost_ReturnsError()
         {
             // Arrange
-            Guid inexistentPostGuid = Guid.NewGuid();
+            string inexistentPostGuid = Guid.NewGuid().ToString();
 
             BaseResponse response = new()
             {
@@ -413,7 +411,7 @@ namespace MyLifeApp.Api.Test
         public async Task LikePostAsync_InexistentPost_ReturnsError()
         {
             // Arrange
-            Guid inexistentPostGuid = Guid.NewGuid();
+            string inexistentPostGuid = Guid.NewGuid().ToString();
 
             BaseResponse response = new()
             {
@@ -508,7 +506,7 @@ namespace MyLifeApp.Api.Test
         public async Task UnlikePostAsync_InexistentPost_ReturnsError()
         {
             // Arrange
-            Guid inexistentPostGuid = Guid.NewGuid();
+            string inexistentPostGuid = Guid.NewGuid().ToString();
 
             BaseResponse response = new()
             {
@@ -593,7 +591,7 @@ namespace MyLifeApp.Api.Test
             A.CallTo(() => _postRepository.GetPostDetailsAsync(post.Id)).Returns(Task.FromResult(post));
             A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(profile));
             A.CallTo(() => _mapper.Map<PostComment>(request)).Returns(comment);
-            A.CallTo(() => _postRepository.AddPostCommentAsync(comment)).Returns(Task.FromResult(comment));
+            A.CallTo(() => _postCommentRepository.CreateAsync(comment)).Returns(Task.FromResult(comment));
 
             // Act
             var result = await _postService.CommentPostAsync(post.Id, request);
@@ -608,7 +606,7 @@ namespace MyLifeApp.Api.Test
         public async Task CommentPostAsync_InexistentPost_ReturnsError()
         {
             // Arrange
-            Guid inexistentPostGuid = Guid.NewGuid();
+            string inexistentPostGuid = Guid.NewGuid().ToString();
 
             BaseResponse response = new()
             {
@@ -658,8 +656,8 @@ namespace MyLifeApp.Api.Test
                 Comment = "Nice post!"
             };
 
-            A.CallTo(() => _postRepository.PostCommentExistsAsync(comment.Id)).Returns(Task.FromResult(true));
-            A.CallTo(() => _postRepository.GetPostCommentAsync(comment.Id)).Returns(Task.FromResult(comment));
+            A.CallTo(() => _postCommentRepository.PostCommentExistsAsync(comment.Id)).Returns(Task.FromResult(true));
+            A.CallTo(() => _postCommentRepository.GetByIdAsync(comment.Id)).Returns(Task.FromResult(comment));
             A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(profile));
             A.CallTo(() => _mapper.Map<PostComment>(request)).Returns(comment);
 
@@ -701,8 +699,8 @@ namespace MyLifeApp.Api.Test
                 Comment = "Nice post!"
             };
 
-            A.CallTo(() => _postRepository.PostCommentExistsAsync(comment.Id)).Returns(Task.FromResult(true));
-            A.CallTo(() => _postRepository.GetPostCommentAsync(comment.Id)).Returns(Task.FromResult(comment));
+            A.CallTo(() => _postCommentRepository.PostCommentExistsAsync(comment.Id)).Returns(Task.FromResult(true));
+            A.CallTo(() => _postCommentRepository.GetByIdAsync(comment.Id)).Returns(Task.FromResult(comment));
             A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(anotherProfile));
 
             // Act
@@ -740,7 +738,7 @@ namespace MyLifeApp.Api.Test
                 Comment = "Nice post!"
             };
 
-            A.CallTo(() => _postRepository.PostCommentExistsAsync(comment.Id)).Returns(Task.FromResult(false));
+            A.CallTo(() => _postCommentRepository.PostCommentExistsAsync(comment.Id)).Returns(Task.FromResult(false));
 
             // Act
             var result = await _postService.UpdateCommentAsync(comment.Id, request);
@@ -772,10 +770,10 @@ namespace MyLifeApp.Api.Test
                 StatusCode = 204
             };
 
-            A.CallTo(() => _postRepository.PostCommentExistsAsync(comment.Id)).Returns(Task.FromResult(true));
-            A.CallTo(() => _postRepository.GetPostCommentAsync(comment.Id)).Returns(Task.FromResult(comment));
+            A.CallTo(() => _postCommentRepository.PostCommentExistsAsync(comment.Id)).Returns(Task.FromResult(true));
+            A.CallTo(() => _postCommentRepository.GetByIdAsync(comment.Id)).Returns(Task.FromResult(comment));
             A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(profile));
-            A.CallTo(() => _postRepository.DeletePostCommentAsync(comment));
+            A.CallTo(() => _postCommentRepository.DeleteAsync(comment));
 
             // Act
             var result = await _postService.DeleteCommentAsync(comment.Id);
@@ -813,9 +811,9 @@ namespace MyLifeApp.Api.Test
                 StatusCode = 204
             };
 
-            A.CallTo(() => _postRepository.PostCommentExistsAsync(comment.Id)).Returns(Task.FromResult(true));
+            A.CallTo(() => _postCommentRepository.PostCommentExistsAsync(comment.Id)).Returns(Task.FromResult(true));
             A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(profile));
-            A.CallTo(() => _postRepository.GetPostCommentAsync(comment.Id)).Returns(Task.FromResult(comment));
+            A.CallTo(() => _postCommentRepository.GetByIdAsync(comment.Id)).Returns(Task.FromResult(comment));
 
             // Act
             var result = await _postService.DeleteCommentAsync(comment.Id);
@@ -852,8 +850,8 @@ namespace MyLifeApp.Api.Test
                 StatusCode = 400
             };
 
-            A.CallTo(() => _postRepository.PostCommentExistsAsync(comment.Id)).Returns(Task.FromResult(true));
-            A.CallTo(() => _postRepository.GetPostCommentAsync(comment.Id)).Returns(Task.FromResult(comment));
+            A.CallTo(() => _postCommentRepository.PostCommentExistsAsync(comment.Id)).Returns(Task.FromResult(true));
+            A.CallTo(() => _postCommentRepository.GetByIdAsync(comment.Id)).Returns(Task.FromResult(comment));
             A.CallTo(() => _authenticatedProfileService.GetAuthenticatedProfile()).Returns(Task.FromResult(anotherProfile));
 
             // Act
@@ -885,7 +883,7 @@ namespace MyLifeApp.Api.Test
                 StatusCode = 404
             };
 
-            A.CallTo(() => _postRepository.PostCommentExistsAsync(comment.Id)).Returns(Task.FromResult(false));
+            A.CallTo(() => _postCommentRepository.PostCommentExistsAsync(comment.Id)).Returns(Task.FromResult(false));
 
             // Act
             var result = await _postService.DeleteCommentAsync(comment.Id);

@@ -1,6 +1,3 @@
-using AutoMapper;
-using FakeItEasy;
-using FluentAssertions;
 using Identity.Infrastructure.Models;
 using MyLifeApp.Application.Dtos.Requests.Profile;
 using MyLifeApp.Application.Dtos.Responses;
@@ -9,7 +6,6 @@ using MyLifeApp.Application.Interfaces.Repositories;
 using MyLifeApp.Application.Interfaces.Services;
 using MyLifeApp.Application.Services;
 using MyLifeApp.Domain.Entities;
-using Xunit;
 using Profile = MyLifeApp.Domain.Entities.Profile;
 
 namespace MyLifeApp.Api.Test.Services

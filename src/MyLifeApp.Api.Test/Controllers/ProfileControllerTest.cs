@@ -1,10 +1,7 @@
-﻿using Xunit;
-using FluentAssertions;
-using FakeItEasy;
-using MyLifeApp.Application.Interfaces.Services;
+﻿using MyLifeApp.Application.Interfaces.Services;
 using MyLifeApp.Application.Dtos.Responses.Profile;
 using MyLifeApp.Application.Dtos.Responses;
-using MyLifeApp.Domain.Entities;
+using Profile = MyLifeApp.Domain.Entities.Profile;
 using MyLife.Api.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Identity.Infrastructure.Models;
