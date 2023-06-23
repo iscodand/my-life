@@ -231,8 +231,11 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("MyLifeApp.Domain.Entities.Post", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -243,8 +246,8 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
                     b.Property<bool>("IsPrivate")
                         .HasColumnType("bit");
 
-                    b.Property<string>("ProfileId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int?>("ProfileId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .HasColumnType("nvarchar(max)");
@@ -261,8 +264,11 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("MyLifeApp.Domain.Entities.PostAnalytics", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CommentsCount")
                         .HasColumnType("int");
@@ -273,8 +279,8 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
                     b.Property<int>("LikesCount")
                         .HasColumnType("int");
 
-                    b.Property<string>("PostId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int?>("PostId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -288,11 +294,11 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("MyLifeApp.Domain.Entities.PostComment", b =>
                 {
-                    b.Property<string>("PostId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("PostId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("ProfileId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("ProfileId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Comment")
                         .HasColumnType("nvarchar(max)");
@@ -300,8 +306,8 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -317,17 +323,17 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("MyLifeApp.Domain.Entities.PostLike", b =>
                 {
-                    b.Property<string>("ProfileId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("ProfileId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("PostId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("PostId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -341,14 +347,14 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("MyLifeApp.Domain.Entities.PostTag", b =>
                 {
-                    b.Property<string>("PostId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("PostId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
@@ -363,8 +369,11 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("MyLifeApp.Domain.Entities.Profile", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Bio")
                         .HasColumnType("nvarchar(max)");
@@ -399,8 +408,11 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("MyLifeApp.Domain.Entities.ProfileAnalytics", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -411,8 +423,8 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
                     b.Property<int>("FollowingCount")
                         .HasColumnType("int");
 
-                    b.Property<string>("ProfileId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int?>("ProfileId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -426,11 +438,11 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("MyLifeApp.Domain.Entities.ProfileFollower", b =>
                 {
-                    b.Property<string>("ProfileId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int?>("ProfileId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("FollowerId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int?>("FollowerId")
+                        .HasColumnType("int");
 
                     b.HasKey("ProfileId", "FollowerId");
 
