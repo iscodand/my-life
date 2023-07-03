@@ -9,7 +9,7 @@ services:
             - "5001:80"
         depends_on:
             - mssql-server
-    
+
     mssql-server:
         image: mcr.microsoft.com/mssql/server:2022-latest
         user: root
