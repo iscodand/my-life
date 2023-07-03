@@ -12,6 +12,7 @@ using MyLifeApp.Infrastructure.Data.Repositories;
 using Identity.Infrastructure.Services;
 using System.Text;
 using MyLifeApp.Application.Interfaces.Repositories;
+using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -86,7 +87,23 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
+
+// Applying Migrations
+void MigrationInitialisation(IApplicationBuilder app)
+{
+    using var serviceScope = app.ApplicationServices.CreateScope();
+    serviceScope.ServiceProvider.GetService<ApplicationDbContext>().Database.Migrate();
+}
+
+try
+{
+    MigrationInitialisation(app);
+}
+catch (Exception ex)
+{
+    Debug.WriteLine("O banco ja subiu porra: \n" + ex);
+}
 
 app.UseAuthorization();
 
