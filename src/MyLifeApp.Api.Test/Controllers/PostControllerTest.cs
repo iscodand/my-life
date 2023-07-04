@@ -13,12 +13,14 @@ namespace MyLifeApp.Api.Test.Controllers
     public class PostControllerTest
     {
         private readonly IPostService _postService;
+        private readonly ICacheService _cacheService;
         private readonly PostController _controller;
 
         public PostControllerTest()
         {
             _postService = A.Fake<IPostService>();
-            _controller = new PostController(_postService);
+            _cacheService = A.Fake<ICacheService>();
+            _controller = new PostController(_postService, _cacheService);
         }
 
         [Fact]
