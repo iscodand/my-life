@@ -8,16 +8,16 @@ namespace MyLifeApp.Infrastructure.Data.Commands
         {
             string databaseAddress = "mssql-server";
             int databasePort = 1433;
-            int timeoutInSeconds = 30;
+            int timeoutInMinutes = 1;
 
-            var startTime = DateTime.Now;
+            DateTime startTime = DateTime.Now;
 
-            while (DateTime.Now < startTime.AddSeconds(timeoutInSeconds))
+            while (DateTime.Now < startTime.AddSeconds(timeoutInMinutes))
             {
-                Console.WriteLine("Testando");
                 try
                 {
-                    using (var client = new TcpClient())
+                    Console.WriteLine("...Testing...");
+                    using (TcpClient client = new())
                     {
                         client.Connect(databaseAddress, databasePort);
 
@@ -26,17 +26,13 @@ namespace MyLifeApp.Infrastructure.Data.Commands
                             Console.WriteLine("Database is ready!");
                             return;
                         }
-
                     }
                 }
-                catch (Exception ex)
+                catch
                 {
-                    Console.WriteLine($"...Waiting 3 seconds before try again...\n\n{ex}");
+                    Console.WriteLine("Database is not ready!\n...Waiting 3 seconds before try again...");
                     Thread.Sleep(3000);
                 }
-
-                Console.WriteLine("...Waiting 3 seconds before try again...");
-                System.Threading.Thread.Sleep(3000);
             }
 
             throw new TimeoutException("Timeout exceeded. Database Problems.");
