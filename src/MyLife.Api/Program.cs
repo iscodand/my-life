@@ -81,6 +81,7 @@ builder.Services.AddAuthentication(auth =>
     };
 });
 
+// Waiting for database
 WaitForDatabase.Wait();
 
 var app = builder.Build();
