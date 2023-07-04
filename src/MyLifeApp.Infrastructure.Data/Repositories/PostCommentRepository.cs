@@ -23,14 +23,14 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             return postComment;
         }
 
-        public async Task<ICollection<PostComment>> GetAllCommentsFromPost(string postId)
+        public async Task<ICollection<PostComment>> GetAllCommentsFromPost(int postId)
         {
             return await _postComments.Where(pc => pc.PostId == postId)
                                       .Include(pc => pc.Profile.User)
                                       .ToListAsync();
         }
 
-        public async Task<bool> PostCommentExistsAsync(string commentId)
+        public async Task<bool> PostCommentExistsAsync(int commentId)
         {
             return await _postComments.AnyAsync(pc => pc.Id == commentId);
         }

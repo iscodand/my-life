@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MyLifeApp.Application.Dtos.Requests.Post;
 using MyLifeApp.Application.Dtos.Responses;
+using MyLifeApp.Application.Dtos.Responses.Post;
 using MyLifeApp.Application.Interfaces.Services;
 
 namespace MyLife.Api.Controllers
@@ -11,10 +12,12 @@ namespace MyLife.Api.Controllers
     public class PostController : Controller
     {
         private readonly IPostService _postService;
+        private readonly ICacheService _cacheService;
 
-        public PostController(IPostService postService)
+        public PostController(IPostService postService, ICacheService cacheService)
         {
             _postService = postService;
+            _cacheService = cacheService;
         }
 
         [HttpGet]
@@ -24,10 +27,20 @@ namespace MyLife.Api.Controllers
         {
             if (ModelState.IsValid)
             {
-                BaseResponse response = await _postService.GetPublicPostsAsync();
+                // Verify if have data in cache
+                GetAllPostsResponse response = await _cacheService.GetDataAsync<GetAllPostsResponse>("PublicPosts");
+                if (response != null)
+                {
+                    return Ok(response);
+                }
+
+                response = await _postService.GetPublicPostsAsync();
 
                 if (response.IsSuccess)
                 {
+                    // Set expiry time
+                    var expiryTime = DateTimeOffset.Now.AddMinutes(1);
+                    await _cacheService.SetDataAsync<GetAllPostsResponse>("PublicPosts", response, expiryTime);
                     return Ok(response);
                 }
 
@@ -41,7 +54,7 @@ namespace MyLife.Api.Controllers
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
         [ProducesResponseType(404, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> GetPost(string postId)
+        public async Task<IActionResult> GetPost(int postId)
         {
             if (ModelState.IsValid)
             {
@@ -84,7 +97,7 @@ namespace MyLife.Api.Controllers
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
         [ProducesResponseType(404, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> Update(string postId, [FromBody] UpdatePostRequest request)
+        public async Task<IActionResult> Update(int postId, [FromBody] UpdatePostRequest request)
         {
             if (ModelState.IsValid)
             {
@@ -105,7 +118,7 @@ namespace MyLife.Api.Controllers
         [HttpDelete("{postId}")]
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(404, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> Delete(string postId)
+        public async Task<IActionResult> Delete(int postId)
         {
             if (ModelState.IsValid)
             {
@@ -127,7 +140,7 @@ namespace MyLife.Api.Controllers
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
         [ProducesResponseType(404, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> LikePost(string postId)
+        public async Task<IActionResult> LikePost(int postId)
         {
             if (ModelState.IsValid)
             {
@@ -149,7 +162,7 @@ namespace MyLife.Api.Controllers
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
         [ProducesResponseType(404, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> UnlikePost(string postId)
+        public async Task<IActionResult> UnlikePost(int postId)
         {
             if (ModelState.IsValid)
             {
@@ -171,7 +184,7 @@ namespace MyLife.Api.Controllers
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
         [ProducesResponseType(404, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> CommentPost(string postId, CommentPostRequest request)
+        public async Task<IActionResult> CommentPost(int postId, CommentPostRequest request)
         {
             if (ModelState.IsValid)
             {
@@ -193,7 +206,7 @@ namespace MyLife.Api.Controllers
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
         [ProducesResponseType(404, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> UpdateComment(string commentId, CommentPostRequest request)
+        public async Task<IActionResult> UpdateComment(int commentId, CommentPostRequest request)
         {
             if (ModelState.IsValid)
             {
@@ -215,7 +228,7 @@ namespace MyLife.Api.Controllers
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
         [ProducesResponseType(404, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> DeleteComment(string commentId)
+        public async Task<IActionResult> DeleteComment(int commentId)
         {
             if (ModelState.IsValid)
             {

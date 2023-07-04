@@ -5,8 +5,8 @@ namespace MyLifeApp.Application.Interfaces.Repositories
     public interface IPostRepository : IGenericRepository<Post>
     {
         public Task<ICollection<Post>> GetPublicPostsAsync();
-        public Task<Post> GetPostDetailsAsync(string postId);
-        public Task<bool> PostExistsAsync(string postId);
+        public Task<Post> GetPostDetailsAsync(int postId);
+        public Task<bool> PostExistsAsync(int postId);
      
         // ToDo => pull apart PostLike for PostRepository
         public Task<PostLike> GetPostLikeAsync(Profile profile, Post post);
