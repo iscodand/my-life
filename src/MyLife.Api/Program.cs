@@ -12,6 +12,7 @@ using Identity.Infrastructure.Services;
 using System.Text;
 using MyLifeApp.Application.Interfaces.Repositories;
 using System.Diagnostics;
+using MyLifeApp.Infrastructure.Data.Commands;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -80,6 +81,8 @@ builder.Services.AddAuthentication(auth =>
     };
 });
 
+WaitForDatabase.Wait();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -98,14 +101,7 @@ void MigrationInitialisation(IApplicationBuilder app)
     serviceScope.ServiceProvider.GetService<ApplicationDbContext>().Database.Migrate();
 }
 
-try
-{
-    MigrationInitialisation(app);
-}
-catch (Exception ex)
-{
-    Debug.WriteLine("O banco ja subiu porra: \n" + ex);
-}
+MigrationInitialisation(app);
 
 app.UseAuthorization();
 
