@@ -3,7 +3,6 @@ using Identity.Infrastructure.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.SqlServer;
 using Microsoft.IdentityModel.Tokens;
 using MyLifeApp.Application.Interfaces.Services;
 using MyLifeApp.Application.Services;
@@ -53,6 +52,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
            .EnableSensitiveDataLogging();
 });
+
+// Configure Redis Caching
+builder.Services.AddScoped<ICacheService, CacheService>();
 
 // Identity Settings
 builder.Services.AddIdentity<User, IdentityRole>(options =>
