@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MyLifeApp.Application.Dtos.Requests.Post;
 using MyLifeApp.Application.Dtos.Responses;
+using MyLifeApp.Application.Dtos.Responses.Post;
 using MyLifeApp.Application.Interfaces.Services;
 
 namespace MyLife.Api.Controllers
@@ -11,10 +12,12 @@ namespace MyLife.Api.Controllers
     public class PostController : Controller
     {
         private readonly IPostService _postService;
+        private readonly ICacheService _cacheService;
 
-        public PostController(IPostService postService)
+        public PostController(IPostService postService, ICacheService cacheService)
         {
             _postService = postService;
+            _cacheService = cacheService;
         }
 
         [HttpGet]
@@ -24,10 +27,20 @@ namespace MyLife.Api.Controllers
         {
             if (ModelState.IsValid)
             {
-                BaseResponse response = await _postService.GetPublicPostsAsync();
+                // Verify if have data in cache
+                GetAllPostsResponse response = await _cacheService.GetDataAsync<GetAllPostsResponse>("PublicPosts");
+                if (response != null)
+                {
+                    return Ok(response);
+                }
+
+                response = await _postService.GetPublicPostsAsync();
 
                 if (response.IsSuccess)
                 {
+                    // Set expiry time
+                    var expiryTime = DateTimeOffset.Now.AddMinutes(1);
+                    await _cacheService.SetDataAsync<GetAllPostsResponse>("PublicPosts", response, expiryTime);
                     return Ok(response);
                 }
 
