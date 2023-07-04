@@ -2,6 +2,7 @@ using System.Net.Sockets;
 
 namespace MyLifeApp.Infrastructure.Data.Commands
 {
+    // TODO => maybe this should not be here
     public class WaitForDatabase
     {
         public static void Wait()
@@ -12,7 +13,7 @@ namespace MyLifeApp.Infrastructure.Data.Commands
 
             DateTime startTime = DateTime.Now;
 
-            while (DateTime.Now < startTime.AddSeconds(timeoutInMinutes))
+            while (DateTime.Now < startTime.AddMinutes(timeoutInMinutes))
             {
                 try
                 {
