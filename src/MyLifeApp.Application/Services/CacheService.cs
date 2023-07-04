@@ -14,7 +14,7 @@ namespace MyLifeApp.Application.Services
             _cacheDb = redis.GetDatabase();
         }
 
-        public async Task<T> GetData<T>(string key)
+        public async Task<T> GetDataAsync<T>(string key)
         {
             RedisValue value = await _cacheDb.StringGetAsync(key);
             if (!string.IsNullOrEmpty(value))
@@ -25,14 +25,14 @@ namespace MyLifeApp.Application.Services
             return default;
         }
 
-        public async Task<bool> SetData<T>(string key, T value, DateTimeOffset expirationTime)
+        public async Task<bool> SetDataAsync<T>(string key, T value, DateTimeOffset expirationTime)
         {
             TimeSpan expirityTime = expirationTime.DateTime.Subtract(DateTime.Now); 
 
             return await _cacheDb.StringSetAsync(key, JsonSerializer.Serialize(value), expirityTime);        
         }
 
-        public async Task<object> RemoveData(string key)
+        public async Task<object> RemoveDataAsync(string key)
         {
             bool keyExists = await _cacheDb.KeyExistsAsync(key);
 
