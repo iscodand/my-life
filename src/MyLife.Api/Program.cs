@@ -102,7 +102,16 @@ void MigrationInitialisation(IApplicationBuilder app)
     serviceScope.ServiceProvider.GetService<ApplicationDbContext>().Database.Migrate();
 }
 
-MigrationInitialisation(app);
+// Trying to apply migrations
+try
+{
+    MigrationInitialisation(app);
+}
+catch
+{
+    Console.WriteLine("Migrations already applied!");
+}
+
 
 app.UseAuthorization();
 
