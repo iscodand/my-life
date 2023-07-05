@@ -57,7 +57,7 @@ namespace MyLifeApp.Application.Services
 
             Post post = await _postRepository.GetPostDetailsAsync(postId);
             ICollection<PostComment> postComments = await _postCommentRepository.GetAllCommentsFromPost(post.Id);
-            Profile profile = post.Profile;
+            Profile? profile = post.Profile;
 
             GetPostsResponse postMapper = _mapper.Map<GetPostsResponse>(post);
             GetProfileResponse profileMapper = _mapper.Map<GetProfileResponse>(profile);
@@ -272,7 +272,7 @@ namespace MyLifeApp.Application.Services
             PostComment comment = _mapper.Map<PostComment>(request);
             comment.Profile = profile;
             comment.Post = post;
-            
+
             await _postCommentRepository.CreateAsync(comment);
 
             return new BaseResponse()
