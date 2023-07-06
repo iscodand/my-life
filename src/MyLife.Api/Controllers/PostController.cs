@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MyLifeApp.Application.Cache;
 using MyLifeApp.Application.Dtos.Requests.Post;
 using MyLifeApp.Application.Dtos.Responses;
 using MyLifeApp.Application.Dtos.Responses.Post;
@@ -23,24 +24,15 @@ namespace MyLife.Api.Controllers
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
+        [Cached(timeToLiveSeconds: 15)]
         public async Task<IActionResult> GetPublicPosts()
         {
             if (ModelState.IsValid)
             {
-                // Verify if have data in cache
-                GetAllPostsResponse response = await _cacheService.GetDataAsync<GetAllPostsResponse>("PublicPosts");
-                if (response != null)
-                {
-                    return Ok(response);
-                }
-
-                response = await _postService.GetPublicPostsAsync();
+                GetAllPostsResponse response = await _postService.GetPublicPostsAsync();
 
                 if (response.IsSuccess)
                 {
-                    // Set expiry time
-                    var expiryTime = DateTimeOffset.Now.AddMinutes(1);
-                    await _cacheService.SetDataAsync<GetAllPostsResponse>("PublicPosts", response, expiryTime);
                     return Ok(response);
                 }
 
