@@ -3,7 +3,6 @@ using Identity.Infrastructure.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.SqlServer;
 using Microsoft.IdentityModel.Tokens;
 using MyLifeApp.Application.Interfaces.Services;
 using MyLifeApp.Application.Services;
@@ -12,6 +11,8 @@ using MyLifeApp.Infrastructure.Data.Repositories;
 using Identity.Infrastructure.Services;
 using System.Text;
 using MyLifeApp.Application.Interfaces.Repositories;
+using System.Diagnostics;
+using MyLifeApp.Infrastructure.Data.Commands;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,6 +54,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
            .EnableSensitiveDataLogging();
 });
 
+// Configure Redis Caching
+builder.Services.AddScoped<ICacheService, CacheService>();
+
 // Identity Settings
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
@@ -77,6 +81,9 @@ builder.Services.AddAuthentication(auth =>
     };
 });
 
+// Waiting for database
+WaitForDatabase.Wait();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -86,7 +93,25 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
+
+// Applying Migrations
+void MigrationInitialisation(IApplicationBuilder app)
+{
+    using var serviceScope = app.ApplicationServices.CreateScope();
+    serviceScope.ServiceProvider.GetService<ApplicationDbContext>().Database.Migrate();
+}
+
+// Trying to apply migrations
+try
+{
+    MigrationInitialisation(app);
+}
+catch
+{
+    Console.WriteLine("Migrations already applied!");
+}
+
 
 app.UseAuthorization();
 

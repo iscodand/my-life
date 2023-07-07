@@ -13,12 +13,14 @@ namespace MyLifeApp.Api.Test.Controllers
     public class PostControllerTest
     {
         private readonly IPostService _postService;
+        private readonly ICacheService _cacheService;
         private readonly PostController _controller;
 
         public PostControllerTest()
         {
             _postService = A.Fake<IPostService>();
-            _controller = new PostController(_postService);
+            _cacheService = A.Fake<ICacheService>();
+            _controller = new PostController(_postService, _cacheService);
         }
 
         [Fact]
@@ -62,7 +64,7 @@ namespace MyLifeApp.Api.Test.Controllers
                 IsSuccess = true
             };
 
-            A.CallTo(() => _postService.GetPostByIdAsync(A<string>.Ignored))
+            A.CallTo(() => _postService.GetPostByIdAsync(A<int>.Ignored))
                 .Returns(Task.FromResult(response));
 
             // Act
@@ -78,19 +80,17 @@ namespace MyLifeApp.Api.Test.Controllers
         public async Task GetPostById_InexistentPost_ReturnsNotFound()
         {
             // Arrange
-            var inexistentId = Guid.NewGuid().ToString();
-
             DetailPostResponse response = new()
             {
                 IsSuccess = false,
                 StatusCode = 404
             };
 
-            A.CallTo(() => _postService.GetPostByIdAsync(A<string>.Ignored))
+            A.CallTo(() => _postService.GetPostByIdAsync(A<int>.Ignored))
                 .Returns(Task.FromResult(response));
 
             // Act
-            var result = await _controller.GetPost(inexistentId);
+            var result = await _controller.GetPost(101);
 
             // Assert
             result.Should().BeOfType<ObjectResult>()
@@ -119,7 +119,7 @@ namespace MyLifeApp.Api.Test.Controllers
                 .Returns(Task.FromResult(response));
 
             // Act
-            var result = await _controller.Create(request);
+            var result = await _controller.CreatePost(request);
 
             // Assert
             result.Should().BeOfType<ObjectResult>()
@@ -148,7 +148,7 @@ namespace MyLifeApp.Api.Test.Controllers
                 Returns(Task.FromResult(response));
 
             // Act
-            var result = await _controller.Create(request);
+            var result = await _controller.CreatePost(request);
 
             // Assert
             result.Should().BeOfType<ObjectResult>()
@@ -178,7 +178,7 @@ namespace MyLifeApp.Api.Test.Controllers
                 .Returns(Task.FromResult(response));
 
             // Act
-            var result = await _controller.Update(post.Id, request);
+            var result = await _controller.UpdatePost(post.Id, request);
 
             // Assert
             result.Should().BeOfType<OkObjectResult>()
@@ -205,11 +205,11 @@ namespace MyLifeApp.Api.Test.Controllers
                 StatusCode = 404
             };
 
-            A.CallTo(() => _postService.UpdatePostAsync(inexistentId, A<UpdatePostRequest>.Ignored))
+            A.CallTo(() => _postService.UpdatePostAsync(A<int>.Ignored, A<UpdatePostRequest>.Ignored))
                 .Returns(Task.FromResult(response));
 
             // Act
-            var result = await _controller.Update(inexistentId, request);
+            var result = await _controller.UpdatePost(101, request);
 
             // Assert
             result.Should().BeOfType<ObjectResult>()
@@ -230,7 +230,7 @@ namespace MyLifeApp.Api.Test.Controllers
             A.CallTo(() => _postService.DeletePostAsync(post.Id)).Returns(Task.FromResult(response));
 
             // Act
-            var result = await _controller.Delete(post.Id);
+            var result = await _controller.DeletePost(post.Id);
 
             // Assert
             result.Should().BeOfType<NoContentResult>();
@@ -248,10 +248,10 @@ namespace MyLifeApp.Api.Test.Controllers
                 StatusCode = 404
             };
 
-            A.CallTo(() => _postService.DeletePostAsync(inexistentId)).Returns(Task.FromResult(response));
+            A.CallTo(() => _postService.DeletePostAsync(A<int>.Ignored)).Returns(Task.FromResult(response));
 
             // Act
-            var result = await _controller.Delete(inexistentId);
+            var result = await _controller.DeletePost(101);
 
             // Assert
             result.Should().BeOfType<ObjectResult>()
@@ -286,8 +286,6 @@ namespace MyLifeApp.Api.Test.Controllers
         public async Task LikePost_InexistentPost_ReturnsNotFound()
         {
             // Arrange
-            string inexistentPost = Guid.NewGuid().ToString();
-
             BaseResponse response = new()
             {
                 Message = "Post not found.",
@@ -295,10 +293,10 @@ namespace MyLifeApp.Api.Test.Controllers
                 StatusCode = 404
             };
 
-            A.CallTo(() => _postService.LikePostAsync(inexistentPost)).Returns(Task.FromResult(response));
+            A.CallTo(() => _postService.LikePostAsync(A<int>.Ignored)).Returns(Task.FromResult(response));
 
             // Act
-            var result = await _controller.LikePost(inexistentPost);
+            var result = await _controller.LikePost(101);
 
             // Assert
             result.Should().BeOfType<ObjectResult>()
@@ -353,12 +351,10 @@ namespace MyLifeApp.Api.Test.Controllers
                 .Which.Value.Should().BeEquivalentTo(response);
         }
 
-        [Fact]
+        [Fact]  
         public async Task UnlikePost_InexistentPost_ReturnsNotFound()
         {
             // Arrange
-            string inexistentPost = Guid.NewGuid().ToString();
-
             BaseResponse response = new()
             {
                 Message = "Post not found.",
@@ -366,10 +362,10 @@ namespace MyLifeApp.Api.Test.Controllers
                 StatusCode = 404
             };
 
-            A.CallTo(() => _postService.UnlikePostAsync(inexistentPost)).Returns(Task.FromResult(response));
+            A.CallTo(() => _postService.UnlikePostAsync(A<int>.Ignored)).Returns(Task.FromResult(response));
 
             // Act
-            var result = await _controller.UnlikePost(inexistentPost);
+            var result = await _controller.UnlikePost(101);
 
             // Assert
             result.Should().BeOfType<ObjectResult>()

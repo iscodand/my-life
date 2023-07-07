@@ -106,8 +106,6 @@ namespace MyLifeApp.Api.Test
         public async Task GetPostByIdAsync_InexistentPost_ReturnsError()
         {
             // Arrange
-            string inexistentPostGuid = Guid.NewGuid().ToString();
-
             DetailPostResponse response = new()
             {
                 Message = "Post not found",
@@ -115,10 +113,10 @@ namespace MyLifeApp.Api.Test
                 StatusCode = 404
             };
 
-            A.CallTo(() => _postRepository.PostExistsAsync(inexistentPostGuid)).Returns(false);
+            A.CallTo(() => _postRepository.PostExistsAsync(A<int>.Ignored)).Returns(false);
 
             // Act
-            var result = await _postService.GetPostByIdAsync(inexistentPostGuid);
+            var result = await _postService.GetPostByIdAsync(101);
 
             result.Should().BeEquivalentTo(response);
             result.StatusCode.Should().Be(404);
@@ -207,8 +205,6 @@ namespace MyLifeApp.Api.Test
         public async Task UpdatePostAsync_InexistentPost_ReturnsError()
         {
             // Arrange
-            string inexistentPostGuid = Guid.NewGuid().ToString();
-
             UpdatePostRequest request = new()
             {
                 Title = "Testing title",
@@ -223,10 +219,10 @@ namespace MyLifeApp.Api.Test
                 StatusCode = 404
             };
 
-            A.CallTo(() => _postRepository.PostExistsAsync(inexistentPostGuid)).Returns(Task.FromResult(false));
+            A.CallTo(() => _postRepository.PostExistsAsync(A<int>.Ignored)).Returns(Task.FromResult(false));
 
             // Act
-            var result = await _postService.UpdatePostAsync(inexistentPostGuid, request);
+            var result = await _postService.UpdatePostAsync(101, request);
 
             // Assert
             result.Should().BeEquivalentTo(response);
@@ -311,8 +307,6 @@ namespace MyLifeApp.Api.Test
         public async Task DeletePostAsync_InexistentPost_ReturnsError()
         {
             // Arrange
-            string inexistentPostGuid = Guid.NewGuid().ToString();
-
             BaseResponse response = new()
             {
                 Message = "Post not found",
@@ -320,10 +314,10 @@ namespace MyLifeApp.Api.Test
                 StatusCode = 404
             };
 
-            A.CallTo(() => _postRepository.PostExistsAsync(inexistentPostGuid)).Returns(Task.FromResult(false));
+            A.CallTo(() => _postRepository.PostExistsAsync(A<int>.Ignored)).Returns(Task.FromResult(false));
 
             // Act
-            var result = await _postService.DeletePostAsync(inexistentPostGuid);
+            var result = await _postService.DeletePostAsync(101);
 
             // Assert
             result.Should().BeEquivalentTo(response);
@@ -411,8 +405,6 @@ namespace MyLifeApp.Api.Test
         public async Task LikePostAsync_InexistentPost_ReturnsError()
         {
             // Arrange
-            string inexistentPostGuid = Guid.NewGuid().ToString();
-
             BaseResponse response = new()
             {
                 Message = "Post not found",
@@ -420,10 +412,10 @@ namespace MyLifeApp.Api.Test
                 StatusCode = 404
             };
 
-            A.CallTo(() => _postRepository.PostExistsAsync(inexistentPostGuid)).Returns(Task.FromResult(false));
+            A.CallTo(() => _postRepository.PostExistsAsync(A<int>.Ignored)).Returns(Task.FromResult(false));
 
             // Act
-            var result = await _postService.LikePostAsync(inexistentPostGuid);
+            var result = await _postService.LikePostAsync(101);
 
             // Assert
             result.Should().BeEquivalentTo(response);
@@ -506,8 +498,6 @@ namespace MyLifeApp.Api.Test
         public async Task UnlikePostAsync_InexistentPost_ReturnsError()
         {
             // Arrange
-            string inexistentPostGuid = Guid.NewGuid().ToString();
-
             BaseResponse response = new()
             {
                 Message = "Post not found",
@@ -515,10 +505,10 @@ namespace MyLifeApp.Api.Test
                 StatusCode = 404
             };
 
-            A.CallTo(() => _postRepository.PostExistsAsync(inexistentPostGuid)).Returns(Task.FromResult(false));
+            A.CallTo(() => _postRepository.PostExistsAsync(A<int>.Ignored)).Returns(Task.FromResult(false));
 
             // Act
-            var result = await _postService.UnlikePostAsync(inexistentPostGuid);
+            var result = await _postService.UnlikePostAsync(101);
 
             // Assert
             result.Should().BeEquivalentTo(response);
@@ -606,8 +596,6 @@ namespace MyLifeApp.Api.Test
         public async Task CommentPostAsync_InexistentPost_ReturnsError()
         {
             // Arrange
-            string inexistentPostGuid = Guid.NewGuid().ToString();
-
             BaseResponse response = new()
             {
                 Message = "Post not found",
@@ -620,10 +608,10 @@ namespace MyLifeApp.Api.Test
                 Comment = "Inexistent post"
             };
 
-            A.CallTo(() => _postRepository.PostExistsAsync(inexistentPostGuid)).Returns(Task.FromResult(false));
+            A.CallTo(() => _postRepository.PostExistsAsync(A<int>.Ignored)).Returns(Task.FromResult(false));
 
             // Act
-            var result = await _postService.CommentPostAsync(inexistentPostGuid, request);
+            var result = await _postService.CommentPostAsync(101, request);
 
             // Assert
             result.Should().BeEquivalentTo(response);

@@ -27,7 +27,7 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
                                .ToListAsync();
         }
 
-        public async Task<Post> GetPostDetailsAsync(string postId)
+        public async Task<Post> GetPostDetailsAsync(int postId)
         {
             return await _posts.Where(p => p.Id == postId)
                                .Include(p => p.Profile)
@@ -37,7 +37,7 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
                                .FirstAsync();
         }
 
-        public async Task<bool> PostExistsAsync(string postId)
+        public async Task<bool> PostExistsAsync(int postId)
         {
             return await _posts.AnyAsync(p => p.Id == postId);
         }
