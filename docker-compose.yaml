@@ -9,6 +9,7 @@ services:
             - "5001:80"
         depends_on:
             - mssql-server
+            - redis
 
     mssql-server:
         image: mcr.microsoft.com/mssql/server:2022-latest
@@ -20,7 +21,17 @@ services:
             - ACCEPT_EULA=Y
             - SA_PASSWORD=Testing123!
         ports:
-          - "4000:1433"
+            - "4000:1433"
+
+    redis:
+        image: redis:7.2-rc2-alpine
+        container_name: redis-cache
+        restart: always
+        volumes:
+            - dev-db-cache:/data
+        ports:
+            - "6379:6379"
 
 volumes:
     dev-db-data:
+    dev-db-cache:

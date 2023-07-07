@@ -28,4 +28,4 @@ jobs:
       - name: Build
         run: dotnet build ${{ env.API_PROJECT_PATH }} --no-restore
       - name: Test
-        run: dotnet test ${{ env.TESTS_PROJECT_PATH }} --verbosity normal
+        run: dotnet test ${{ env.TESTS_PROJECT_PATH }}

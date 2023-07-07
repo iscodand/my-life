@@ -13,12 +13,14 @@ namespace MyLifeApp.Api.Test.Controllers
     public class PostControllerTest
     {
         private readonly IPostService _postService;
+        private readonly ICacheService _cacheService;
         private readonly PostController _controller;
 
         public PostControllerTest()
         {
             _postService = A.Fake<IPostService>();
-            _controller = new PostController(_postService);
+            _cacheService = A.Fake<ICacheService>();
+            _controller = new PostController(_postService, _cacheService);
         }
 
         [Fact]
@@ -117,7 +119,7 @@ namespace MyLifeApp.Api.Test.Controllers
                 .Returns(Task.FromResult(response));
 
             // Act
-            var result = await _controller.Create(request);
+            var result = await _controller.CreatePost(request);
 
             // Assert
             result.Should().BeOfType<ObjectResult>()
@@ -146,7 +148,7 @@ namespace MyLifeApp.Api.Test.Controllers
                 Returns(Task.FromResult(response));
 
             // Act
-            var result = await _controller.Create(request);
+            var result = await _controller.CreatePost(request);
 
             // Assert
             result.Should().BeOfType<ObjectResult>()
@@ -176,7 +178,7 @@ namespace MyLifeApp.Api.Test.Controllers
                 .Returns(Task.FromResult(response));
 
             // Act
-            var result = await _controller.Update(post.Id, request);
+            var result = await _controller.UpdatePost(post.Id, request);
 
             // Assert
             result.Should().BeOfType<OkObjectResult>()
@@ -207,7 +209,7 @@ namespace MyLifeApp.Api.Test.Controllers
                 .Returns(Task.FromResult(response));
 
             // Act
-            var result = await _controller.Update(101, request);
+            var result = await _controller.UpdatePost(101, request);
 
             // Assert
             result.Should().BeOfType<ObjectResult>()
@@ -228,7 +230,7 @@ namespace MyLifeApp.Api.Test.Controllers
             A.CallTo(() => _postService.DeletePostAsync(post.Id)).Returns(Task.FromResult(response));
 
             // Act
-            var result = await _controller.Delete(post.Id);
+            var result = await _controller.DeletePost(post.Id);
 
             // Assert
             result.Should().BeOfType<NoContentResult>();
@@ -249,7 +251,7 @@ namespace MyLifeApp.Api.Test.Controllers
             A.CallTo(() => _postService.DeletePostAsync(A<int>.Ignored)).Returns(Task.FromResult(response));
 
             // Act
-            var result = await _controller.Delete(101);
+            var result = await _controller.DeletePost(101);
 
             // Assert
             result.Should().BeOfType<ObjectResult>()
