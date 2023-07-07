@@ -24,23 +24,13 @@ namespace MyLifeApp.Application.Cache.Attributes
             ICacheService cacheService = context.HttpContext.RequestServices.GetRequiredService<ICacheService>();
             string requestMethod = context.HttpContext.Request.Method;
 
-            string[] methods = new string[]
-            {
-                "POST",
-                "PUT",
-                "PATCH",
-                "DELETE"
-            };
-
             string? cacheKey = Utils.GenerateCacheKeyFromRequest(context.HttpContext.Request);
             string cachedResponse = await cacheService.GetDataAsync(cacheKey);
 
-            // Verify if method is any of methods
-            if (Array.IndexOf(methods, requestMethod) != -1)
+            if (requestMethod != "GET")
             {
                 Console.WriteLine("cache removed");
                 await cacheService.RemoveDataAsync(cacheKey);
-                return;
             }
 
             if (cachedResponse != null)
