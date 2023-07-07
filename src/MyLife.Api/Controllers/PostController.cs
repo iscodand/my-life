@@ -69,7 +69,7 @@ namespace MyLife.Api.Controllers
         [ProducesResponseType(201, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
         [Cached(timeToLiveSeconds: 15)]
-        public async Task<IActionResult> Create([FromBody] CreatePostRequest request)
+        public async Task<IActionResult> CreatePost([FromBody] CreatePostRequest request)
         {
             if (ModelState.IsValid)
             {
@@ -91,7 +91,8 @@ namespace MyLife.Api.Controllers
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
         [ProducesResponseType(404, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> Update(int postId, [FromBody] UpdatePostRequest request)
+        [Cached(timeToLiveSeconds: 15)]
+        public async Task<IActionResult> UpdatePost(int postId, [FromBody] UpdatePostRequest request)
         {
             if (ModelState.IsValid)
             {
@@ -112,7 +113,8 @@ namespace MyLife.Api.Controllers
         [HttpDelete("{postId}")]
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(404, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> Delete(int postId)
+        [Cached(timeToLiveSeconds: 15)]
+        public async Task<IActionResult> DeletePost(int postId)
         {
             if (ModelState.IsValid)
             {
