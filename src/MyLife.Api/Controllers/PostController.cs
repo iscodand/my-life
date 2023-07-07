@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MyLifeApp.Application.Cache;
+using MyLifeApp.Application.Cache.Attributes;
 using MyLifeApp.Application.Dtos.Requests.Post;
 using MyLifeApp.Application.Dtos.Responses;
 using MyLifeApp.Application.Dtos.Responses.Post;
@@ -46,6 +46,7 @@ namespace MyLife.Api.Controllers
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
         [ProducesResponseType(404, Type = typeof(BaseResponse))]
+        [Cached(timeToLiveSeconds: 15)]
         public async Task<IActionResult> GetPost(int postId)
         {
             if (ModelState.IsValid)
@@ -67,6 +68,7 @@ namespace MyLife.Api.Controllers
         [HttpPost]
         [ProducesResponseType(201, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
+        [Cached(timeToLiveSeconds: 15)]
         public async Task<IActionResult> Create([FromBody] CreatePostRequest request)
         {
             if (ModelState.IsValid)
