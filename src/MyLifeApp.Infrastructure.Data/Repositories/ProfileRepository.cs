@@ -22,6 +22,7 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
         {
             return await _profiles.Where(p => p.User.NormalizedUserName == username.ToUpper().Trim())
                                   .Include(p => p.User)
+                                  .Include(p => p.Posts)
                                   .FirstOrDefaultAsync();
         }
 
