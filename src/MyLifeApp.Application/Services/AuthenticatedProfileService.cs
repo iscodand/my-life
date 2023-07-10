@@ -27,8 +27,7 @@ namespace MyLifeApp.Application.Services
         {
             ClaimsPrincipal userClaims = _context.HttpContext!.User;
             User? authenticatedUser = await _manager.GetUserAsync(userClaims);
-            ICollection<Profile> profiles = await _profileRepository.GetAllAsync();
-            Profile authenticatedProfile = profiles.First(p => p.UserId == authenticatedUser!.Id);
+            Profile authenticatedProfile = await _profileRepository.GetProfileByUsernameAsync(authenticatedUser!.UserName!);
 
             return authenticatedProfile;
         }
