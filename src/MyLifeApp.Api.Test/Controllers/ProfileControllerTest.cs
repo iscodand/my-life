@@ -6,6 +6,7 @@ using MyLife.Api.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Identity.Infrastructure.Models;
 using MyLifeApp.Application.Dtos.Requests.Profile;
+using MyLifeApp.Application.Dtos.Responses.Post;
 
 namespace MyLifeApp.Api.Test.Controllers
 {
@@ -20,11 +21,39 @@ namespace MyLifeApp.Api.Test.Controllers
             _controller = new ProfileController(_profileService);
         }
 
-        // => verify how implement this unit test
-        // [Fact]
-        // public Task GetAuthenticatedProfile_ReturnsOk()
-        // {
-        // }
+        [Fact]
+        public async Task GetAuthenticatedProfile_ReturnsOk()
+        {
+            // Arrange
+            var profile = A.Fake<Profile>();
+            var user = A.Fake<User>();
+            var posts = A.Fake<ICollection<GetPostsResponse>>();
+            profile.User = user;
+
+            DetailProfileResponse response = new()
+            {
+                Id = profile!.Id,
+                Name = profile.User?.Name,
+                Username = profile.User?.UserName,
+                Bio = profile.Bio,
+                BirthDate = profile.BirthDate,
+                IsPrivate = profile.IsPrivate,
+                Posts = posts,
+                Message = "Success",
+                IsSuccess = true
+            };
+
+            A.CallTo(() => _profileService.GetAuthenticatedProfileAsync())
+                .Returns(Task.FromResult(response));
+
+            // Act
+            var result = await _controller.GetAuthenticatedProfile();
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().BeOfType<OkObjectResult>()
+                .Which.Value.Should().BeEquivalentTo(response);
+        }
 
         [Fact]
         public async Task GetProfileByUsername_ExistentProfile_ReturnsOk()
