@@ -3,6 +3,7 @@ using Identity.Infrastructure.Interfaces.Services;
 using Identity.Infrastructure.DTOs.Request;
 using Identity.Infrastructure.DTOs.Response;
 using Microsoft.AspNetCore.Mvc;
+using MyLife.Api.Controllers;
 
 namespace MyLifeApp.Api.Test.Controllers
 {
@@ -191,7 +192,7 @@ namespace MyLifeApp.Api.Test.Controllers
 
             A.CallTo(() => _userService.RefreshTokenAsync(A<RefreshTokenRequest>.Ignored))
                 .Returns(Task.FromResult(response));
-            
+
             // Act
             var result = await _controller.RefreshToken(request);
 
