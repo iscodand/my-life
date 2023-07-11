@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
-using Identity.Infrastructure.Models;
+﻿using Identity.Infrastructure.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MyLifeApp.Domain.Entities;
 
 namespace MyLifeApp.Infrastructure.Data.Context
@@ -40,23 +40,17 @@ namespace MyLifeApp.Infrastructure.Data.Context
 
             // Many-to-many: PostComment Entity
             builder.Entity<PostComment>()
-                .HasKey(pc => new { pc.PostId, pc.ProfileId });
+                .HasKey(pc => new { pc.Id });
             builder.Entity<PostComment>()
                 .HasOne(p => p.Post)
                 .WithMany(p => p.PostComments)
                 .HasForeignKey(p => p.PostId)
                 .OnDelete(DeleteBehavior.Restrict);
             builder.Entity<PostComment>()
-                .HasIndex(p => p.PostId)
-                .IsUnique(false);
-            builder.Entity<PostComment>()
-                .HasOne(p => p.Profile)
-                .WithMany(p => p.PostComments)
-                .HasForeignKey(p => p.ProfileId)
-                .OnDelete(DeleteBehavior.Restrict);
-            builder.Entity<PostComment>()
-                .HasIndex(p => p.ProfileId)
-                .IsUnique(false);
+               .HasOne(p => p.Profile)
+               .WithMany(p => p.PostComments)
+               .HasForeignKey(p => p.ProfileId)
+               .OnDelete(DeleteBehavior.Restrict);
 
             // Many-to-many: PostTags Entity
             builder.Entity<PostTag>()

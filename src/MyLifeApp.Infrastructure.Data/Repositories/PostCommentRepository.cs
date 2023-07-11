@@ -16,13 +16,6 @@ namespace MyLifeApp.Infrastructure.Data.Repositories
             _postComments = context.Set<PostComment>();
         }
 
-        public async Task<PostComment> CreatePostCommentAsync(PostComment postComment)
-        {
-            await _context.AddAsync(postComment);
-            await _context.SaveChangesAsync();
-            return postComment;
-        }
-
         public async Task<ICollection<PostComment>> GetAllCommentsFromPost(int postId)
         {
             return await _postComments.Where(pc => pc.PostId == postId)
