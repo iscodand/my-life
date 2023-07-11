@@ -1,6 +1,7 @@
 using AutoMapper;
 using MyLifeApp.Application.Dtos.Requests.Profile;
 using MyLifeApp.Application.Dtos.Responses;
+using MyLifeApp.Application.Dtos.Responses.Post;
 using MyLifeApp.Application.Dtos.Responses.Profile;
 using MyLifeApp.Application.Interfaces.Repositories;
 using MyLifeApp.Application.Interfaces.Services;
@@ -9,6 +10,8 @@ using Profile = MyLifeApp.Domain.Entities.Profile;
 
 namespace MyLifeApp.Application.Services
 {
+    // ToDo => add all validations for private profiles
+    // ToDo => setUp ProfileAnalytics
     public class ProfileService : IProfileService
     {
         private readonly IProfileRepository _profileRepository;
@@ -47,6 +50,7 @@ namespace MyLifeApp.Application.Services
         public async Task<DetailProfileResponse> GetAuthenticatedProfileAsync()
         {
             Profile profile = await _authenticatedProfileService.GetAuthenticatedProfile();
+            ICollection<GetPostsResponse> posts = _mapper.Map<ICollection<GetPostsResponse>>(profile.Posts);
 
             return new DetailProfileResponse()
             {
@@ -56,6 +60,7 @@ namespace MyLifeApp.Application.Services
                 Bio = profile.Bio,
                 BirthDate = profile.BirthDate,
                 IsPrivate = profile.IsPrivate,
+                Posts = posts,
                 Message = "Success",
                 IsSuccess = true,
                 StatusCode = 200
@@ -75,6 +80,8 @@ namespace MyLifeApp.Application.Services
                 };
             }
 
+            ICollection<GetPostsResponse> posts = _mapper.Map<ICollection<GetPostsResponse>>(profile.Posts);
+
             return new DetailProfileResponse()
             {
                 Id = profile!.Id,
@@ -83,6 +90,7 @@ namespace MyLifeApp.Application.Services
                 Bio = profile.Bio,
                 BirthDate = profile.BirthDate,
                 IsPrivate = profile.IsPrivate,
+                Posts = posts,
                 Message = "Success",
                 IsSuccess = true,
                 StatusCode = 200
@@ -118,7 +126,7 @@ namespace MyLifeApp.Application.Services
             }
 
             ICollection<ProfileFollower> followings = await _profileRepository.GetProfileFollowingsAsync(profile);
-            ICollection<Profile> profileFollowings = followings.Select(f => f.Follower).ToList();
+            ICollection<Profile?> profileFollowings = followings.Select(f => f.Follower).ToList();
             ICollection<GetProfileResponse> profileFollowingsMapper = _mapper.Map<ICollection<GetProfileResponse>>(profileFollowings);
 
             return new GetFollowingsResponse()
@@ -145,7 +153,7 @@ namespace MyLifeApp.Application.Services
             }
 
             ICollection<ProfileFollower> followers = await _profileRepository.GetProfileFollowersAsync(profile);
-            ICollection<Profile> profileFollowers = followers.Select(f => f.Follower).ToList();
+            ICollection<Profile?> profileFollowers = followers.Select(f => f.Follower).ToList();
             ICollection<GetProfileResponse> profileFollowersMapper = _mapper.Map<ICollection<GetProfileResponse>>(profileFollowers);
 
             return new GetFollowingsResponse()

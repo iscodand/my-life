@@ -1,6 +1,7 @@
 using Identity.Infrastructure.Models;
 using MyLifeApp.Application.Dtos.Requests.Profile;
 using MyLifeApp.Application.Dtos.Responses;
+using MyLifeApp.Application.Dtos.Responses.Post;
 using MyLifeApp.Application.Dtos.Responses.Profile;
 using MyLifeApp.Application.Interfaces.Repositories;
 using MyLifeApp.Application.Interfaces.Services;
@@ -52,6 +53,7 @@ namespace MyLifeApp.Api.Test.Services
             // Arrange
             var profile = A.Fake<Profile>();
             var user = A.Fake<User>();
+            var posts = A.Fake<ICollection<GetPostsResponse>>();
             profile.User = user;
 
             DetailProfileResponse response = new()
@@ -62,6 +64,7 @@ namespace MyLifeApp.Api.Test.Services
                 Bio = profile.Bio,
                 BirthDate = profile.BirthDate,
                 IsPrivate = profile.IsPrivate,
+                Posts = posts,
                 Message = "Success",
                 IsSuccess = true,
                 StatusCode = 200
@@ -84,6 +87,7 @@ namespace MyLifeApp.Api.Test.Services
             // Arrange
             var profile = A.Fake<Profile>();
             var user = A.Fake<User>();
+            var posts = A.Fake<ICollection<GetPostsResponse>>();
             profile.User = user;
 
             DetailProfileResponse response = new()
@@ -94,6 +98,7 @@ namespace MyLifeApp.Api.Test.Services
                 Bio = profile.Bio,
                 BirthDate = profile.BirthDate,
                 IsPrivate = profile.IsPrivate,
+                Posts = posts,
                 Message = "Success",
                 IsSuccess = true,
                 StatusCode = 200

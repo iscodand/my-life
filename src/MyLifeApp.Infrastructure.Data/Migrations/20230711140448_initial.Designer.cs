@@ -12,7 +12,7 @@ using MyLifeApp.Infrastructure.Data.Context;
 namespace MyLifeApp.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230623192134_initial")]
+    [Migration("20230711140448_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -297,11 +297,11 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("MyLifeApp.Domain.Entities.PostComment", b =>
                 {
-                    b.Property<int>("PostId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<int>("ProfileId")
-                        .HasColumnType("int");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Comment")
                         .HasColumnType("nvarchar(max)");
@@ -309,13 +309,16 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Id")
+                    b.Property<int>("PostId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProfileId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("PostId", "ProfileId");
+                    b.HasKey("Id");
 
                     b.HasIndex("PostId");
 

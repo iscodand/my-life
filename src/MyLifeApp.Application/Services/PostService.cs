@@ -43,6 +43,7 @@ namespace MyLifeApp.Application.Services
         }
 
         // TODO => add validation for private posts only for posts owners
+        //         1. if post is private, then just post author followers and post author can view the post,
         public async Task<DetailPostResponse> GetPostByIdAsync(int postId)
         {
             if (!await _postRepository.PostExistsAsync(postId))
@@ -266,12 +267,15 @@ namespace MyLifeApp.Application.Services
                 };
             }
 
-            Post post = await _postRepository.GetPostDetailsAsync(postId);
+            Post post = await _postRepository.GetByIdAsync(postId);
             Profile profile = await _authenticatedProfileService.GetAuthenticatedProfile();
 
-            PostComment comment = _mapper.Map<PostComment>(request);
-            comment.Profile = profile;
-            comment.Post = post;
+            PostComment comment = new()
+            {
+                ProfileId = profile.Id,
+                PostId = post.Id,
+                Comment = request.Comment
+            };
 
             await _postCommentRepository.CreateAsync(comment);
 
