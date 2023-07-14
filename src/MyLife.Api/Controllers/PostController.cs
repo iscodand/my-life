@@ -180,7 +180,7 @@ namespace MyLife.Api.Controllers
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
         [ProducesResponseType(404, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> CommentPost(int postId, CommentPostRequest request)
+        public async Task<IActionResult> CommentPost(int postId, [FromBody] CommentPostRequest request)
         {
             if (ModelState.IsValid)
             {
@@ -202,7 +202,7 @@ namespace MyLife.Api.Controllers
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
         [ProducesResponseType(404, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> UpdateComment(int commentId, CommentPostRequest request)
+        public async Task<IActionResult> UpdateComment(int commentId, [FromBody] CommentPostRequest request)
         {
             if (ModelState.IsValid)
             {

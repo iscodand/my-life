@@ -19,7 +19,7 @@ namespace MyLife.Api.Controllers
         }
 
         [Authorize]
-        [HttpGet]
+        [HttpGet("/me")]
         [ProducesResponseType(200, Type = typeof(DetailProfileResponse))]
         [ProducesResponseType(404, Type = typeof(BaseResponse))]
         public async Task<IActionResult> GetAuthenticatedProfile()
@@ -59,10 +59,10 @@ namespace MyLife.Api.Controllers
         }
 
         [Authorize]
-        [HttpPut]
+        [HttpPut("/me")]
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
-        public async Task<IActionResult> UpdateProfile(UpdateProfileRequest profileRequest)
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest profileRequest)
         {
             if (ModelState.IsValid)
             {
