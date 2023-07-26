@@ -200,5 +200,117 @@ namespace MyLifeApp.WebApi.Test.Controllers
             result.Should().BeOfType<ObjectResult>()
                 .Which.StatusCode.Should().Be(400);
         }
+
+        [Fact]
+        public async Task UpdatePassword_ValidPasswords_ReturnsOk()
+        {
+            // Arrange
+            UpdatePasswordRequest request = new()
+            {
+                OldPassword = "Test123!",
+                NewPassword = "Test321!",
+                ConfirmNewPassword = "Test321!"
+            };
+
+            BaseResponse response = new()
+            {
+                Message = "Password successfuly updated",
+                IsSuccess = true,
+                StatusCode = 200
+            };
+
+            A.CallTo(() => _userService.UpdatePasswordAsync(request)).Returns(Task.FromResult(response));
+
+            // Act
+            var result = await _controller.UpdatePassword(request);
+
+            // Assert
+            result.Should().BeOfType<OkObjectResult>()
+                .Which.StatusCode.Should().Be(200);
+        }
+
+        [Fact]
+        public async Task UpdatePassword_IncorrectOldPassword_ReturnsBadRequest()
+        {
+            // Arrange
+            UpdatePasswordRequest request = new()
+            {
+                OldPassword = "Incorrect123!",
+                NewPassword = "NewPass123!",
+                ConfirmNewPassword = "NewPass123!",
+            };
+
+            BaseResponse response = new()
+            {
+                Message = "Incorrect old password",
+                IsSuccess = false,
+                StatusCode = 400
+            };
+
+            A.CallTo(() => _userService.UpdatePasswordAsync(request)).Returns(Task.FromResult(response));
+
+            // Act
+            var result = await _controller.UpdatePassword(request);
+
+            // Assert
+            result.Should().BeOfType<ObjectResult>()
+                .Which.StatusCode.Should().Be(400);
+        }
+
+        [Fact]
+        public async Task UpdatePassword_NewPasswordsDontMatch_ReturnsBadRequest()
+        {
+            // Arrange
+            UpdatePasswordRequest request = new()
+            {
+                OldPassword = "Test123!",
+                NewPassword = "NewPass123!",
+                ConfirmNewPassword = "Incorrect123!",
+            };
+
+            BaseResponse response = new()
+            {
+                Message = "New passwords don't match",
+                IsSuccess = false,
+                StatusCode = 400
+            };
+
+            A.CallTo(() => _userService.UpdatePasswordAsync(request)).Returns(Task.FromResult(response));
+
+            // Act
+            var result = await _controller.UpdatePassword(request);
+
+            // Assert
+            result.Should().BeOfType<ObjectResult>()
+                .Which.StatusCode.Should().Be(400);
+        }
+
+        [Fact]
+        public async Task UpdatePassword_NewPasswordEqualsOldPassword_ReturnsBadRequest()
+        {
+            // Arrange
+            UpdatePasswordRequest request = new()
+            {
+                OldPassword = "Test123!",
+                NewPassword = "Test123!",
+                ConfirmNewPassword = "Test123!",
+            };
+
+            BaseResponse response = new()
+            {
+                Message = "New password can't be equal to old password",
+                IsSuccess = false,
+                StatusCode = 400
+            };
+
+            A.CallTo(() => _userService.UpdatePasswordAsync(request)).Returns(Task.FromResult(response));
+
+            // Act
+            var result = await _controller.UpdatePassword(request);
+
+            // Assert
+            result.Should().BeOfType<ObjectResult>()
+                .Which.StatusCode.Should().Be(400);
+        }
     }
 }
