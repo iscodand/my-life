@@ -63,13 +63,33 @@ namespace MyLifeApp.WebApi.Controllers
         }
 
         [HttpPost("login/refresh")]
-        [ProducesResponseType(200, Type = typeof(LoginUserResponse))]
-        [ProducesResponseType(400, Type = typeof(LoginUserResponse))]
+        [ProducesResponseType(200, Type = typeof(RefreshTokenResponse))]
+        [ProducesResponseType(400, Type = typeof(RefreshTokenResponse))]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
         {
             if (ModelState.IsValid)
             {
                 RefreshTokenResponse response = await _userService.RefreshTokenAsync(request);
+
+                if (response.IsSuccess)
+                {
+                    return Ok(response);
+                }
+
+                return StatusCode(response.StatusCode, response);
+            }
+
+            return StatusCode(500);
+        }
+
+        [HttpPost("change-password")]
+        [ProducesResponseType(200, Type = typeof(BaseResponse))]
+        [ProducesResponseType(400, Type = typeof(BaseResponse))]
+        public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordRequest request)
+        {
+            if (ModelState.IsValid)
+            {
+                BaseResponse response = await _userService.UpdatePasswordAsync(request);
 
                 if (response.IsSuccess)
                 {

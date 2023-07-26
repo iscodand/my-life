@@ -6,22 +6,29 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 
 namespace MyLifeApp.Infrastructure.Identity.Services
 {
     public class UserService : IUserService
     {
-        public readonly ITokenService _tokenService;
-        public readonly UserManager<User> _userManager;
-        public readonly IConfiguration _configuration;
+        private readonly ITokenService _tokenService;
+        private readonly UserManager<User> _userManager;
+        private readonly IHttpContextAccessor _httpContext;
+        private readonly IConfiguration _configuration;
+        private readonly IAuthenticatedUserService _authenticatedUserService;
 
         public UserService(ITokenService tokenService,
             UserManager<User> userManager,
-            IConfiguration configuration)
+            IHttpContextAccessor httpContext,
+            IConfiguration configuration,
+            IAuthenticatedUserService authenticatedUserService)
         {
             _tokenService = tokenService;
             _userManager = userManager;
             _configuration = configuration;
+            _httpContext = httpContext;
+            _authenticatedUserService = authenticatedUserService;
         }
 
         public async Task<RegisterUserResponse> RegisterAsync(RegisterUserRequest userRequest)
@@ -160,6 +167,52 @@ namespace MyLifeApp.Infrastructure.Identity.Services
                 Message = "Tokens refreshed Successfuly",
                 AccessToken = newAccessTokenAsString,
                 RefreshToken = newRefreshToken,
+                IsSuccess = true,
+                StatusCode = 200
+            };
+        }
+
+        // todo => pay attention to refactor (see how ChangePasswordAsync from UserManager works!)
+        public async Task<BaseResponse> UpdatePasswordAsync(UpdatePasswordRequest request)
+        {
+            User? user = await _authenticatedUserService.GetAuthenticatedUserAsync();
+            bool checkOldPassword = await _userManager.CheckPasswordAsync(user, request.OldPassword);
+
+            if (!checkOldPassword)
+            {
+                return new BaseResponse()
+                {
+                    Message = "Incorrect old password",
+                    IsSuccess = false,
+                    StatusCode = 400
+                };
+            }
+
+            if (request.OldPassword == request.NewPassword)
+            {
+                return new BaseResponse()
+                {
+                    Message = "New password can't be equal to old password",
+                    IsSuccess = false,
+                    StatusCode = 400
+                };
+            }
+
+            if (request.NewPassword != request.ConfirmNewPassword)
+            {
+                return new BaseResponse()
+                {
+                    Message = "New passwords don't match",
+                    IsSuccess = false,
+                    StatusCode = 400
+                };
+            }
+
+            await _userManager.ChangePasswordAsync(user, request.OldPassword, request.NewPassword);
+
+            return new BaseResponse()
+            {
+                Message = "Password successfuly updated",
                 IsSuccess = true,
                 StatusCode = 200
             };

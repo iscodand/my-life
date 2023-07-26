@@ -13,5 +13,6 @@ namespace MyLifeApp.Infrastructure.Identity.Interfaces.Services
         public Task<RegisterUserResponse> RegisterAsync(RegisterUserRequest userRequest);
         public Task<LoginUserResponse> LoginAsync(LoginUserRequest userRequest);
         public Task<RefreshTokenResponse> RefreshTokenAsync(RefreshTokenRequest tokenRequest);
+        public Task<BaseResponse> UpdatePasswordAsync(UpdatePasswordRequest request);
     }
 }
