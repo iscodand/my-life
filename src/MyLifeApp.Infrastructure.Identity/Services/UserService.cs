@@ -176,7 +176,7 @@ namespace MyLifeApp.Infrastructure.Identity.Services
         public async Task<BaseResponse> UpdatePasswordAsync(UpdatePasswordRequest request)
         {
             User? user = await _authenticatedUserService.GetAuthenticatedUserAsync();
-            bool checkOldPassword = await _userManager.CheckPasswordAsync(user, request.OldPassword);
+            bool checkOldPassword = await _userManager.CheckPasswordAsync(user, request.OldPassword!);
 
             if (!checkOldPassword)
             {
@@ -208,7 +208,7 @@ namespace MyLifeApp.Infrastructure.Identity.Services
                 };
             }
 
-            await _userManager.ChangePasswordAsync(user, request.OldPassword, request.NewPassword);
+            await _userManager.ChangePasswordAsync(user, request.OldPassword!, request.NewPassword!);
 
             return new BaseResponse()
             {
