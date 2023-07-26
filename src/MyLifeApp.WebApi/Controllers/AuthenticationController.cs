@@ -3,6 +3,7 @@ using MyLifeApp.Infrastructure.Identity.DTOs.Response;
 using MyLifeApp.Infrastructure.Identity.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 using MyLifeApp.Application.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MyLifeApp.WebApi.Controllers
 {
@@ -82,6 +83,7 @@ namespace MyLifeApp.WebApi.Controllers
             return StatusCode(500);
         }
 
+        [Authorize]
         [HttpPost("change-password")]
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
