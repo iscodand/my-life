@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using Identity.Infrastructure.Models;
-using MyLifeApp.Application.Dtos.Requests.Post;
+﻿using MyLifeApp.Application.Dtos.Requests.Post;
 using MyLifeApp.Application.Dtos.Requests.Profile;
 using MyLifeApp.Application.Dtos.Responses.Post;
 using MyLifeApp.Application.Dtos.Responses.Profile;

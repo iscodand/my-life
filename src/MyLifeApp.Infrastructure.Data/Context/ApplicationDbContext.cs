@@ -1,4 +1,4 @@
-﻿using Identity.Infrastructure.Models;
+﻿using MyLifeApp.Infrastructure.Identity.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;

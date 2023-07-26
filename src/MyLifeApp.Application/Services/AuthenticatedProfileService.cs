@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using Identity.Infrastructure.Models;
+using MyLifeApp.Infrastructure.Identity.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using MyLifeApp.Application.Interfaces.Repositories;

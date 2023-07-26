@@ -2,9 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyLifeApp.Infrastructure.Data.Context;
 
 #nullable disable
@@ -25,7 +23,7 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Identity.Infrastructure.Models.User", b =>
+            modelBuilder.Entity("MyLifeApp.Infrastructure.Identity.Models.User", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -468,7 +466,7 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("Identity.Infrastructure.Models.User", null)
+                    b.HasOne("MyLifeApp.Infrastructure.Identity.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -477,7 +475,7 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("Identity.Infrastructure.Models.User", null)
+                    b.HasOne("MyLifeApp.Infrastructure.Identity.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -492,7 +490,7 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Identity.Infrastructure.Models.User", null)
+                    b.HasOne("MyLifeApp.Infrastructure.Identity.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -501,7 +499,7 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("Identity.Infrastructure.Models.User", null)
+                    b.HasOne("MyLifeApp.Infrastructure.Identity.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -577,7 +575,7 @@ namespace MyLifeApp.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("MyLifeApp.Domain.Entities.Profile", b =>
                 {
-                    b.HasOne("Identity.Infrastructure.Models.User", "User")
+                    b.HasOne("MyLifeApp.Infrastructure.Identity.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
 
