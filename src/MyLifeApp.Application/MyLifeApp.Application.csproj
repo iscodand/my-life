@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Identity.Infrastructure\Identity.Infrastructure.csproj" />
+    <ProjectReference Include="..\MyLifeApp.Infrastructure.Identity\MyLifeApp.Infrastructure.Identity.csproj" />
     <ProjectReference Include="..\MyLifeApp.Domain\MyLifeApp.Domain.csproj" />
   </ItemGroup>
 
