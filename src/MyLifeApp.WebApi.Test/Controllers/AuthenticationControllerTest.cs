@@ -4,6 +4,7 @@ using MyLifeApp.Infrastructure.Identity.DTOs.Request;
 using MyLifeApp.Infrastructure.Identity.DTOs.Response;
 using Microsoft.AspNetCore.Mvc;
 using MyLifeApp.WebApi.Controllers;
+using MyLifeApp.Infrastructure.Identity.Models;
 
 namespace MyLifeApp.WebApi.Test.Controllers
 {
@@ -307,6 +308,114 @@ namespace MyLifeApp.WebApi.Test.Controllers
 
             // Act
             var result = await _controller.UpdatePassword(request);
+
+            // Assert
+            result.Should().BeOfType<ObjectResult>()
+                .Which.StatusCode.Should().Be(400);
+        }
+
+        [Fact]
+        public async Task ForgetPassword_ValidAndExistentEmail_ReturnsOk()
+        {
+            // Arrange
+            User user = A.Fake<User>();
+
+            ForgetPasswordRequest request = new()
+            {
+                Email = user.Email
+            };
+
+            BaseResponse response = new()
+            {
+                Message = "Check your e-mail and follow instructions to recover your password",
+                IsSuccess = true,
+                StatusCode = 200
+            };
+
+            A.CallTo(() => _userService.ForgetPasswordAsync(request)).Returns(Task.FromResult(response));
+
+            // Act
+            var result = await _controller.ForgetPassword(request);
+
+            // Assert
+            result.Should().BeOfType<OkObjectResult>()
+                .Which.StatusCode.Should().Be(200);
+        }
+
+        [Fact]
+        public async Task ForgetPassword_InexistentEmail_ReturnsBadRequest()
+        {
+            // Arrange
+            ForgetPasswordRequest request = new()
+            {
+                Email = "inexistent@email.com"
+            };
+
+            BaseResponse response = new()
+            {
+                Message = "E-mail not found",
+                IsSuccess = false,
+                StatusCode = 400
+            };
+
+            A.CallTo(() => _userService.ForgetPasswordAsync(request)).Returns(Task.FromResult(response));
+
+            // Act
+            var result = await _controller.ForgetPassword(request);
+
+            // Assert
+            result.Should().BeOfType<ObjectResult>()
+                .Which.StatusCode.Should().Be(400);
+        }
+
+        [Fact]
+        public async Task ResetPasswordAsync_ValidRequest_ReturnsOk()
+        {
+            // Arrange
+            ResetPasswordRequest request = new()
+            {
+                NewPassword = "NewPass123!",
+                ConfirmNewPassword = "NewPass123!"
+            };
+
+            BaseResponse response = new()
+            {
+                Message = "Password successfuly updated",
+                IsSuccess = true,
+                StatusCode = 200
+            };
+
+            A.CallTo(() => _userService.ResetPasswordAsync(request)).Returns(Task.FromResult(response));
+
+            // Act
+            var result = await _controller.ResetPassword(request);
+
+            // Assert
+            result.Should().BeOfType<OkObjectResult>()
+                .Which.StatusCode.Should().Be(200);
+        }
+
+        [Fact]
+        public async Task ResetPassword_InvalidRequest_ReturnsBadRequest()
+        {
+            // Arrange
+            ResetPasswordRequest request = new()
+            {
+                NewPassword = "NewPass123!",
+                ConfirmNewPassword = "DifferentPass123!"
+            };
+
+            BaseResponse response = new()
+            {
+                Message = "Passwords don't match",
+                IsSuccess = false,
+                StatusCode = 400
+            };
+
+            A.CallTo(() => _userService.ResetPasswordAsync(request)).Returns(Task.FromResult(response));
+
+            // Act
+            var result = await _controller.ResetPassword(request);
 
             // Assert
             result.Should().BeOfType<ObjectResult>()
