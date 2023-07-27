@@ -12,6 +12,7 @@ using MyLifeApp.Infrastructure.Data.Commands;
 using MyLifeApp.Infrastructure.Identity.Interfaces.Services;
 using MyLifeApp.Infrastructure.Identity.Models;
 using MyLifeApp.Infrastructure.Identity.Services;
+using MyLifeApp.Infrastructure.Shared.Services.Email;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,6 +41,8 @@ builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<IAuthenticatedProfileService, AuthenticatedProfileService>();
 
+builder.Services.AddScoped<IEmailService, EmailService>();
+
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -50,7 +53,7 @@ builder.Services.AddSwaggerGen();
 // Configure Database Context
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+    options.UseSqlServer(builder.Configuration.GetConnectionString("TestConnection"))
            .EnableSensitiveDataLogging();
 });
 
@@ -111,7 +114,6 @@ catch
 {
     Console.WriteLine("Migrations already applied!");
 }
-
 
 app.UseAuthorization();
 
