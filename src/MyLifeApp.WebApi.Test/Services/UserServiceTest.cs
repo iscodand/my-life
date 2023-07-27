@@ -6,6 +6,7 @@ using MyLifeApp.Infrastructure.Identity.DTOs.Request;
 using MyLifeApp.Infrastructure.Identity.Interfaces.Services;
 using MyLifeApp.Infrastructure.Identity.Models;
 using MyLifeApp.Infrastructure.Identity.Services;
+using MyLifeApp.Infrastructure.Shared.Services.Email;
 
 namespace MyLifeApp.WebApi.Test.Services
 {
@@ -17,6 +18,7 @@ namespace MyLifeApp.WebApi.Test.Services
         private readonly IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContext;
         private readonly IAuthenticatedUserService _authenticatedUserService;
+        private readonly IEmailService _mailService;
 
         public UserServiceTest()
         {
@@ -25,7 +27,8 @@ namespace MyLifeApp.WebApi.Test.Services
             _configuration = A.Fake<IConfiguration>();
             _httpContext = A.Fake<IHttpContextAccessor>();
             _authenticatedUserService = A.Fake<IAuthenticatedUserService>();
-            _userService = new UserService(_tokenService, _userManager, _httpContext, _configuration, _authenticatedUserService);
+            _mailService = A.Fake<IEmailService>();
+            _userService = new UserService(_tokenService, _userManager, _httpContext, _configuration, _authenticatedUserService, _mailService);
         }
 
         [Fact]
@@ -160,6 +163,87 @@ namespace MyLifeApp.WebApi.Test.Services
             result.Should().BeEquivalentTo(response);
             result.StatusCode.Should().Be(400);
             result.IsSuccess.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task ForgetPasswordAsync_ValidEmail_ReturnsOk()
+        {
+            // Arrange
+            User user = A.Fake<User>();
+            string fakeToken = "token";
+
+            ForgetPasswordRequest request = new()
+            {
+                Email = user.Email
+            };
+
+            BaseResponse response = new()
+            {
+                Message = "Check your e-mail and follow instructions to recover your password",
+                IsSuccess = true,
+                StatusCode = 200
+            };
+
+            A.CallTo(() => _userManager.FindByEmailAsync(user.Email)).Returns(Task.FromResult(user));
+            A.CallTo(() => _userManager.GeneratePasswordResetTokenAsync(user)).Returns(Task.FromResult(fakeToken));
+
+            // Act
+            var result = await _userService.ForgetPasswordAsync(request);
+
+            // Assert
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(200);
+            result.IsSuccess.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task ForgetPasswordAsync_InexistentEmail_ReturnsBadRequest()
+        {
+            // Arrange
+            string inexistentEmail = "inexistent@email.com";
+            User inexistentUser = null;
+
+            ForgetPasswordRequest request = new()
+            {
+                Email = inexistentEmail
+            };
+
+            BaseResponse response = new()
+            {
+                Message = "E-mail not found",
+                IsSuccess = false,
+                StatusCode = 400
+            };
+
+            A.CallTo(() => _userManager.FindByEmailAsync(inexistentEmail)).Returns(Task.FromResult(inexistentUser));
+
+            // Act
+            var result = await _userService.ForgetPasswordAsync(request);
+
+            // Assert
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(400);
+            result.IsSuccess.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task ResetPasswrdAsync_ValidRequest_ReturnsOk()
+        {
+            // Arrange
+            User user = A.Fake<User>();
+            string token = "fakeToken";
+
+            ResetPasswordRequest request = new()
+            {
+                Email = user.Email,
+                Token = token,
+                NewPassword = "NewPass123!",
+                ConfirmNewPassword = "NewPass123!"
+            };
+
+            // Act
+
+            // Assert
         }
     }
 }
