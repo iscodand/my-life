@@ -7,6 +7,9 @@ using Microsoft.Extensions.Configuration;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
+using System.Text;
+using Microsoft.AspNetCore.WebUtilities;
+using MyLifeApp.Infrastructure.Shared.Services.Email;
 
 namespace MyLifeApp.Infrastructure.Identity.Services
 {
@@ -17,18 +20,21 @@ namespace MyLifeApp.Infrastructure.Identity.Services
         private readonly IHttpContextAccessor _httpContext;
         private readonly IConfiguration _configuration;
         private readonly IAuthenticatedUserService _authenticatedUserService;
+        private readonly IEmailService _mailService;
 
         public UserService(ITokenService tokenService,
             UserManager<User> userManager,
             IHttpContextAccessor httpContext,
             IConfiguration configuration,
-            IAuthenticatedUserService authenticatedUserService)
+            IAuthenticatedUserService authenticatedUserService,
+            IEmailService mailService)
         {
             _tokenService = tokenService;
             _userManager = userManager;
             _configuration = configuration;
             _httpContext = httpContext;
             _authenticatedUserService = authenticatedUserService;
+            _mailService = mailService;
         }
 
         public async Task<RegisterUserResponse> RegisterAsync(RegisterUserRequest userRequest)
@@ -172,7 +178,9 @@ namespace MyLifeApp.Infrastructure.Identity.Services
             };
         }
 
-        // todo => pay attention to refactor (see how ChangePasswordAsync from UserManager works!)
+        // todo => 
+        // 1° pay attention to refactor to improve performance (see how ChangePasswordAsync from UserManager works!)
+        // 2° pull apart this from here (verify implementation into ProfileService)
         public async Task<BaseResponse> UpdatePasswordAsync(UpdatePasswordRequest request)
         {
             User? user = await _authenticatedUserService.GetAuthenticatedUserAsync();
@@ -216,6 +224,67 @@ namespace MyLifeApp.Infrastructure.Identity.Services
                 IsSuccess = true,
                 StatusCode = 200
             };
+        }
+
+        public async Task<BaseResponse> ForgetPasswordAsync(ForgetPasswordRequest request)
+        {
+            // 1° verify if user exists
+            User user = await _userManager.FindByEmailAsync(request.Email);
+
+            if (user == null)
+            {
+                return new BaseResponse()
+                {
+                    Message = "E-mail not found",
+                    IsSuccess = false,
+                    StatusCode = 400
+                };
+            }
+
+            // 2° generate token
+            string token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            // 3° encode token
+            byte[] encodedToken = Encoding.UTF8.GetBytes(token);
+            string validToken = WebEncoders.Base64UrlEncode(encodedToken);
+
+            // 4° build url
+            HostString urlDomain = _httpContext.HttpContext!.Request.Host;
+            string url = $"http://{urlDomain}/api/v1/reset-password?email={user.Email}&token={validToken}";
+
+            // 5° send mail
+            // refactor this shit
+            string mailBody = $"<h1>Hello! Recover your password here: </h1>" +
+                $"<p>Please, confirm yout e-mail by: <a href='{url}'>Clicking here</a><p>";
+
+            SendMailRequest sendMailRequest = new()
+            {
+                To = user.Email!,
+                Body = mailBody,
+                Subject = "Reset Password - MyLife"
+            };
+
+            await _mailService.SendMailAsync(sendMailRequest);
+
+            return new BaseResponse()
+            {
+                Message = "Check your e-mail and follow instructions to recover your password",
+                IsSuccess = true,
+                StatusCode = 200
+            };
+        }
+
+        public Task<BaseResponse> ResetPasswordAsync(ResetPasswordRequest request)
+        {
+            // 1° try to get user by email
+
+            // 2° Validate password (with old and compare)
+
+            // 3° try to decode token
+
+            // 4° make the password change
+
+            throw new NotImplementedException();
         }
     }
 }
