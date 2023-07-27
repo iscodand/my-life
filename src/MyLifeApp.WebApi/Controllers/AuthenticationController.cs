@@ -83,8 +83,9 @@ namespace MyLifeApp.WebApi.Controllers
             return StatusCode(500);
         }
 
+        // refactor => put this in ProfileController!
         [Authorize]
-        [HttpPost("change-password")]
+        [HttpPost("update-password")]
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
         public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordRequest request)
@@ -92,6 +93,46 @@ namespace MyLifeApp.WebApi.Controllers
             if (ModelState.IsValid)
             {
                 BaseResponse response = await _userService.UpdatePasswordAsync(request);
+
+                if (response.IsSuccess)
+                {
+                    return Ok(response);
+                }
+
+                return StatusCode(response.StatusCode, response);
+            }
+
+            return StatusCode(500);
+        }
+
+        [HttpPost("forget-passwrd")]
+        [ProducesResponseType(200, Type = typeof(BaseResponse))]
+        [ProducesResponseType(400, Type = typeof(BaseResponse))]
+        public async Task<IActionResult> ForgetPassword([FromBody] ForgetPasswordRequest request)
+        {
+            if (ModelState.IsValid)
+            {
+                BaseResponse response = await _userService.ForgetPasswordAsync(request);
+
+                if (response.IsSuccess)
+                {
+                    return Ok(response);
+                }
+
+                return StatusCode(response.StatusCode, response);
+            }
+
+            return StatusCode(500);
+        }
+
+        [HttpPost("reset-password")]
+        [ProducesResponseType(200, Type = typeof(BaseResponse))]
+        [ProducesResponseType(400, Type = typeof(BaseResponse))]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+        {
+            if (ModelState.IsValid)
+            {
+                BaseResponse response = await _userService.ResetPasswordAsync(request);
 
                 if (response.IsSuccess)
                 {
