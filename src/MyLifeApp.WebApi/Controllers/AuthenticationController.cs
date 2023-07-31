@@ -3,6 +3,7 @@ using MyLifeApp.Infrastructure.Identity.DTOs.Response;
 using MyLifeApp.Infrastructure.Identity.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 using MyLifeApp.Application.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MyLifeApp.WebApi.Controllers
 {
@@ -10,12 +11,12 @@ namespace MyLifeApp.WebApi.Controllers
     [ApiController]
     public class AuthenticationController : Controller
     {
-        public readonly IUserService _userService;
+        public readonly IAuthenticationService _authenticationService;
         public readonly IProfileService _profileService;
 
-        public AuthenticationController(IUserService userService, IProfileService profileService)
+        public AuthenticationController(IAuthenticationService userService, IProfileService profileService)
         {
-            _userService = userService;
+            _authenticationService = userService;
             _profileService = profileService;
         }
 
@@ -26,7 +27,7 @@ namespace MyLifeApp.WebApi.Controllers
         {
             if (ModelState.IsValid)
             {
-                RegisterUserResponse response = await _userService.RegisterAsync(user);
+                RegisterUserResponse response = await _authenticationService.RegisterAsync(user);
 
                 if (response.IsSuccess)
                 {
@@ -49,7 +50,7 @@ namespace MyLifeApp.WebApi.Controllers
         {
             if (ModelState.IsValid)
             {
-                LoginUserResponse response = await _userService.LoginAsync(user);
+                LoginUserResponse response = await _authenticationService.LoginAsync(user);
 
                 if (response.IsSuccess)
                 {
@@ -63,13 +64,75 @@ namespace MyLifeApp.WebApi.Controllers
         }
 
         [HttpPost("login/refresh")]
-        [ProducesResponseType(200, Type = typeof(LoginUserResponse))]
-        [ProducesResponseType(400, Type = typeof(LoginUserResponse))]
+        [ProducesResponseType(200, Type = typeof(RefreshTokenResponse))]
+        [ProducesResponseType(400, Type = typeof(RefreshTokenResponse))]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
         {
             if (ModelState.IsValid)
             {
-                RefreshTokenResponse response = await _userService.RefreshTokenAsync(request);
+                RefreshTokenResponse response = await _authenticationService.RefreshTokenAsync(request);
+
+                if (response.IsSuccess)
+                {
+                    return Ok(response);
+                }
+
+                return StatusCode(response.StatusCode, response);
+            }
+
+            return StatusCode(500);
+        }
+
+        // refactor => put this in ProfileController!
+        [Authorize]
+        [HttpPost("update-password")]
+        [ProducesResponseType(200, Type = typeof(BaseResponse))]
+        [ProducesResponseType(400, Type = typeof(BaseResponse))]
+        public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordRequest request)
+        {
+            if (ModelState.IsValid)
+            {
+                BaseResponse response = await _authenticationService.UpdatePasswordAsync(request);
+
+                if (response.IsSuccess)
+                {
+                    return Ok(response);
+                }
+
+                return StatusCode(response.StatusCode, response);
+            }
+
+            return StatusCode(500);
+        }
+
+        [HttpPost("forget-password")]
+        [ProducesResponseType(200, Type = typeof(BaseResponse))]
+        [ProducesResponseType(400, Type = typeof(BaseResponse))]
+        public async Task<IActionResult> ForgetPassword([FromBody] ForgetPasswordRequest request)
+        {
+            if (ModelState.IsValid)
+            {
+                BaseResponse response = await _authenticationService.ForgetPasswordAsync(request);
+
+                if (response.IsSuccess)
+                {
+                    return Ok(response);
+                }
+
+                return StatusCode(response.StatusCode, response);
+            }
+
+            return StatusCode(500);
+        }
+
+        [HttpPost("reset-password")]
+        [ProducesResponseType(200, Type = typeof(BaseResponse))]
+        [ProducesResponseType(400, Type = typeof(BaseResponse))]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+        {
+            if (ModelState.IsValid)
+            {
+                BaseResponse response = await _authenticationService.ResetPasswordAsync(request);
 
                 if (response.IsSuccess)
                 {

@@ -1,5 +1,4 @@
 using System.Text;
-using System.Diagnostics;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +12,7 @@ using MyLifeApp.Infrastructure.Data.Commands;
 using MyLifeApp.Infrastructure.Identity.Interfaces.Services;
 using MyLifeApp.Infrastructure.Identity.Models;
 using MyLifeApp.Infrastructure.Identity.Services;
+using MyLifeApp.Infrastructure.Shared.Services.Email;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,7 +30,8 @@ builder.Services.AddControllers().AddNewtonsoftJson(options =>
 
 // Dependency Injection
 builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddScoped<IAuthenticatedUserService, AuthenticatedUserService>();
 
 builder.Services.AddScoped<IPostRepository, PostRepository>();
 builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
@@ -39,6 +40,8 @@ builder.Services.AddScoped<IPostCommentRepository, PostCommentRepository>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<IAuthenticatedProfileService, AuthenticatedProfileService>();
+
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -111,7 +114,6 @@ catch
 {
     Console.WriteLine("Migrations already applied!");
 }
-
 
 app.UseAuthorization();
 

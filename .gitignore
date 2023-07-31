@@ -4,8 +4,8 @@
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
 # Project
-src/MyLifeApp.WebApi/appsettings.json
-src/MyLifeApp.WebApi/appsettings.Development.json
+*.env
+*/MyLifeApp.Infrastructure.Shared/Services/Email/EmailSettings.cs
 
 # User-specific files
 *.rsuser
