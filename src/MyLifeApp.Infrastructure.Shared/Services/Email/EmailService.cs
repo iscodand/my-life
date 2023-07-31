@@ -9,7 +9,9 @@ namespace MyLifeApp.Infrastructure.Shared.Services.Email
         {
             MailMessage mailMessage = new();
             SmtpClient smtp = new();
-            EmailSettings settings = new();
+
+            // also change this to EmailSettings to work!
+            EmailSettingsTemplate settings = new();
 
             try
             {
