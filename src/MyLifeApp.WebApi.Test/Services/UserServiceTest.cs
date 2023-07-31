@@ -54,6 +54,7 @@ namespace MyLifeApp.WebApi.Test.Services
             A.CallTo(() => _authenticatedUserService.GetAuthenticatedUserAsync()).Returns(Task.FromResult(user));
             A.CallTo(() => _userManager.CheckPasswordAsync(user, request.OldPassword))
                 .Returns(Task.FromResult(true));
+
             A.CallTo(() => _userManager.ChangePasswordAsync(user, request.OldPassword, request.NewPassword))
                 .Returns(Task.FromResult(IdentityResult.Success));
 
@@ -227,7 +228,75 @@ namespace MyLifeApp.WebApi.Test.Services
         }
 
         [Fact]
-        public async Task ResetPasswrdAsync_ValidRequest_ReturnsOk()
+        public async Task ResetPasswordAsync_ValidRequest_ShouldReturnSuccessResponse()
+        {
+            // Arrange
+            User user = A.Fake<User>();
+
+            var request = new ResetPasswordRequest
+            {
+                Email = user.Email,
+                Token = "valid_token",
+                NewPassword = "newPassword123",
+                ConfirmNewPassword = "newPassword123"
+            };
+
+            BaseResponse response = new()
+            {
+                Message = "Password Successfuly Reseted",
+                IsSuccess = true,
+                StatusCode = 200
+            };
+
+            A.CallTo(() => _userManager.FindByEmailAsync(request.Email!)).Returns(user);
+            A.CallTo(() => _userManager.CheckPasswordAsync(user, request.NewPassword)).Returns(false);
+            A.CallTo(() => _userManager.ResetPasswordAsync(user, A<string>._, request.NewPassword)).Returns(IdentityResult.Success);
+
+            // Act
+            var result = await _userService.ResetPasswordAsync(request);
+
+            // Assert
+            result.Should().BeEquivalentTo(response);
+            result.IsSuccess.Should().BeTrue();
+            result.StatusCode.Should().Be(200);
+        }
+
+        [Fact]
+        public async Task ResetPasswordAsync_InexistentEmail_ReturnsBadRequest()
+        {
+            // Arrange
+            string fakeEmail = "teste@email.com";
+            string token = "fakeToken";
+            User user = null;
+
+            ResetPasswordRequest request = new()
+            {
+                Email = fakeEmail,
+                Token = token,
+                NewPassword = "NewPass123!",
+                ConfirmNewPassword = "NewPass123!"
+            };
+
+            BaseResponse response = new()
+            {
+                Message = "E-mail not found",
+                IsSuccess = false,
+                StatusCode = 400
+            };
+
+            A.CallTo(() => _userManager.FindByEmailAsync(fakeEmail)).Returns(Task.FromResult(user));
+
+            // Act
+            var result = await _userService.ResetPasswordAsync(request);
+
+            // Assert
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(400);
+            result.IsSuccess.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task ResetPasswordAsync_DifferentPasswords_ReturnsBadRequest()
         {
             // Arrange
             User user = A.Fake<User>();
@@ -238,12 +307,96 @@ namespace MyLifeApp.WebApi.Test.Services
                 Email = user.Email,
                 Token = token,
                 NewPassword = "NewPass123!",
+                ConfirmNewPassword = "DifferentPass123!"
+            };
+
+            BaseResponse response = new()
+            {
+                Message = "New passwords don't match",
+                IsSuccess = false,
+                StatusCode = 400
+            };
+
+            A.CallTo(() => _userManager.FindByEmailAsync(user.Email)).Returns(Task.FromResult(user));
+
+            // Act
+            var result = await _userService.ResetPasswordAsync(request);
+
+            // Assert
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(400);
+            result.IsSuccess.Should().BeFalse();
+        }
+
+        // todo => verify how implement this unit test (yeah, I know how to implement this validation)
+        [Fact]
+        public async Task ResetPasswordAsync_NewPasswordEqualsToOldPassword_ReturnsBadRequest()
+        {
+            // Arrange
+            User user = A.Fake<User>();
+            string token = "fakeToken";
+
+            ResetPasswordRequest request = new()
+            {
+                Email = user.Email,
+                Token = token,
+                NewPassword = "OldPass123!",
+                ConfirmNewPassword = "OldPass123!"
+            };
+
+            BaseResponse response = new()
+            {
+                Message = "New password can't be equal to old password",
+                IsSuccess = false,
+                StatusCode = 400
+            };
+
+            A.CallTo(() => _userManager.FindByEmailAsync(user.Email)).Returns(Task.FromResult(user));
+            A.CallTo(() => _userManager.CheckPasswordAsync(user, request.NewPassword))
+                .Returns(Task.FromResult(true));
+
+            // Act
+            var result = await _userService.ResetPasswordAsync(request);
+
+            // Assert
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(400);
+            result.IsSuccess.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task ResetPasswordAsync_InvalidToken_ReturnsBadRequest()
+        {
+            // Arrange
+            User user = A.Fake<User>();
+            string invalidToken = "invalidToken";
+
+            ResetPasswordRequest request = new()
+            {
+                Email = user.Email,
+                Token = invalidToken,
+                NewPassword = "NewPass123!",
                 ConfirmNewPassword = "NewPass123!"
             };
 
+            BaseResponse response = new()
+            {
+                Message = "Ops! Invalid token. Send a new email for reset your password",
+                IsSuccess = false,
+                StatusCode = 400
+            };
+
+            A.CallTo(() => _userManager.FindByEmailAsync(user.Email)).Returns(Task.FromResult(user));
+            A.CallTo(() => _userManager.ResetPasswordAsync(user, invalidToken, request.NewPassword))
+                .Returns(Task.FromResult(IdentityResult.Failed()));
+
             // Act
+            var result = await _userService.ResetPasswordAsync(request);
 
             // Assert
+            result.Should().BeEquivalentTo(response);
+            result.StatusCode.Should().Be(400);
+            result.IsSuccess.Should().BeFalse();
         }
     }
 }
