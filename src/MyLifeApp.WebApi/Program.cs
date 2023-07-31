@@ -53,7 +53,7 @@ builder.Services.AddSwaggerGen();
 // Configure Database Context
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("TestConnection"))
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
            .EnableSensitiveDataLogging();
 });
 
