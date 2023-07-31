@@ -12,8 +12,8 @@ on:
 jobs:
   build:
     env:
-      TESTS_PROJECT_PATH: ./src/MyLifeApp.Api.Test/MyLifeApp.Api.Test.csproj
-      API_PROJECT_PATH: ./src/MyLife.Api/MyLife.Api.csproj
+      TESTS_PROJECT_PATH: ./src/MyLifeApp.WebApi.Test/MyLifeApp.WebApi.Test.csproj
+      API_PROJECT_PATH: ./src/MyLifeApp.WebApi/MyLifeApp.WebApi.csproj
 
     runs-on: ubuntu-latest
 

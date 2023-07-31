@@ -10,6 +10,7 @@
     <ProjectReference Include="..\MyLifeApp.Application\MyLifeApp.Application.csproj" />
     <ProjectReference Include="..\MyLifeApp.Domain\MyLifeApp.Domain.csproj" />
     <ProjectReference Include="..\MyLifeApp.Infrastructure.Data\MyLifeApp.Infrastructure.Data.csproj" />
+    <ProjectReference Include="..\MyLifeApp.Infrastructure.Shared\MyLifeApp.Infrastructure.Shared.csproj" />
   </ItemGroup>
 
 </Project>

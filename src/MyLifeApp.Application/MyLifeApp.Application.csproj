@@ -17,8 +17,9 @@
     <PackageReference Include="StackExchange.Redis" Version="2.6.116" />
   </ItemGroup>
 
+  <!-- verify if Infrastructure.Identity must be here -->
   <ItemGroup>
-    <ProjectReference Include="..\Identity.Infrastructure\Identity.Infrastructure.csproj" />
+    <ProjectReference Include="..\MyLifeApp.Infrastructure.Identity\MyLifeApp.Infrastructure.Identity.csproj" />
     <ProjectReference Include="..\MyLifeApp.Domain\MyLifeApp.Domain.csproj" />
   </ItemGroup>
 

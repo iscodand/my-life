@@ -1,4 +1,4 @@
-﻿using Identity.Infrastructure.Models;
+﻿using MyLifeApp.Infrastructure.Identity.Models;
 using MyLifeApp.Domain.Common;
 using System.ComponentModel.DataAnnotations.Schema;
 
