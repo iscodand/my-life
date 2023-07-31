@@ -178,7 +178,7 @@ namespace MyLifeApp.Infrastructure.Identity.Services
             };
         }
 
-        // todo => 
+        // todo =>
         // 1° pay attention to refactor to improve performance (see how ChangePasswordAsync from UserManager works!)
         // 2° pull apart this from here (verify implementation into ProfileService)
         public async Task<BaseResponse> UpdatePasswordAsync(UpdatePasswordRequest request)
@@ -229,7 +229,7 @@ namespace MyLifeApp.Infrastructure.Identity.Services
         public async Task<BaseResponse> ForgetPasswordAsync(ForgetPasswordRequest request)
         {
             // 1° verify if user exists
-            User user = await _userManager.FindByEmailAsync(request.Email);
+            User? user = await _userManager.FindByEmailAsync(request.Email);
 
             if (user == null)
             {
@@ -274,17 +274,67 @@ namespace MyLifeApp.Infrastructure.Identity.Services
             };
         }
 
-        public Task<BaseResponse> ResetPasswordAsync(ResetPasswordRequest request)
+        public async Task<BaseResponse> ResetPasswordAsync(ResetPasswordRequest request)
         {
             // 1° try to get user by email
+            User? user = await _userManager.FindByEmailAsync(request.Email!);
+
+            if (user == null)
+            {
+                return new BaseResponse()
+                {
+                    Message = "E-mail not found",
+                    IsSuccess = false,
+                    StatusCode = 400
+                };
+            }
 
             // 2° Validate password (with old and compare)
+            bool verifyOldPassword = await _userManager.CheckPasswordAsync(user, request.NewPassword!);
 
-            // 3° try to decode token
+            if (verifyOldPassword)
+            {
+                return new BaseResponse()
+                {
+                    Message = "New password can't be equal to old password",
+                    IsSuccess = false,
+                    StatusCode = 400
+                };
+            }
+
+            if (request.NewPassword != request.ConfirmNewPassword)
+            {
+                return new BaseResponse()
+                {
+                    Message = "New passwords don't match",
+                    IsSuccess = false,
+                    StatusCode = 400
+                };
+            }
+
+            // 3° decode token
+            byte[] decodedToken = WebEncoders.Base64UrlDecode(request.Token!);
+            string normalToken = Encoding.UTF8.GetString(decodedToken);
 
             // 4° make the password change
+            IdentityResult resetPassword = await _userManager.ResetPasswordAsync(user, normalToken, request.NewPassword!);
 
-            throw new NotImplementedException();
+            if (!resetPassword.Succeeded)
+            {
+                return new BaseResponse()
+                {
+                    Message = "Ops! Invalid token. Send a new email for reset your password",
+                    IsSuccess = false,
+                    StatusCode = 400
+                };
+            }
+
+            return new BaseResponse()
+            {
+                Message = "Password Successfuly Reseted",
+                IsSuccess = true,
+                StatusCode = 200
+            };
         }
     }
 }
