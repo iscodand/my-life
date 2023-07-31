@@ -12,14 +12,14 @@ namespace MyLifeApp.WebApi.Test.Controllers
     {
 
         private readonly AuthenticationController _controller;
-        private readonly IUserService _userService;
+        private readonly IAuthenticationService _authenticationService;
         private readonly IProfileService _profileService;
 
         public AuthenticationControllerTest()
         {
-            _userService = A.Fake<IUserService>();
+            _authenticationService = A.Fake<IAuthenticationService>();
             _profileService = A.Fake<IProfileService>();
-            _controller = new AuthenticationController(_userService, _profileService);
+            _controller = new AuthenticationController(_authenticationService, _profileService);
         }
 
         [Fact]
@@ -42,7 +42,7 @@ namespace MyLifeApp.WebApi.Test.Controllers
                 Message = "User successfully created"
             };
 
-            A.CallTo(() => _userService.RegisterAsync(A<RegisterUserRequest>.Ignored))
+            A.CallTo(() => _authenticationService.RegisterAsync(A<RegisterUserRequest>.Ignored))
                 .Returns(Task.FromResult(response));
             A.CallTo(() => _profileService.CreateProfileAsync(A<string>.Ignored))
                 .Returns(response.IsSuccess.Equals(true));
@@ -75,7 +75,7 @@ namespace MyLifeApp.WebApi.Test.Controllers
                 StatusCode = 400
             };
 
-            A.CallTo(() => _userService.RegisterAsync(A<RegisterUserRequest>.Ignored))
+            A.CallTo(() => _authenticationService.RegisterAsync(A<RegisterUserRequest>.Ignored))
                 .Returns(Task.FromResult(response));
             A.CallTo(() => _profileService.CreateProfileAsync(A<string>.Ignored))
                 .Returns(Task.FromResult(response.IsSuccess.Equals(false)));
@@ -106,7 +106,7 @@ namespace MyLifeApp.WebApi.Test.Controllers
                 IsSuccess = true
             };
 
-            A.CallTo(() => _userService.LoginAsync(A<LoginUserRequest>.Ignored))
+            A.CallTo(() => _authenticationService.LoginAsync(A<LoginUserRequest>.Ignored))
                 .Returns(Task.FromResult(response));
 
             // Act
@@ -134,7 +134,7 @@ namespace MyLifeApp.WebApi.Test.Controllers
                 StatusCode = 400
             };
 
-            A.CallTo(() => _userService.LoginAsync(A<LoginUserRequest>.Ignored))
+            A.CallTo(() => _authenticationService.LoginAsync(A<LoginUserRequest>.Ignored))
                 .Returns(Task.FromResult(response));
 
             // Act
@@ -163,7 +163,7 @@ namespace MyLifeApp.WebApi.Test.Controllers
                 IsSuccess = true,
             };
 
-            A.CallTo(() => _userService.RefreshTokenAsync(A<RefreshTokenRequest>.Ignored))
+            A.CallTo(() => _authenticationService.RefreshTokenAsync(A<RefreshTokenRequest>.Ignored))
                 .Returns(Task.FromResult(response));
 
             // Act
@@ -191,7 +191,7 @@ namespace MyLifeApp.WebApi.Test.Controllers
                 StatusCode = 400
             };
 
-            A.CallTo(() => _userService.RefreshTokenAsync(A<RefreshTokenRequest>.Ignored))
+            A.CallTo(() => _authenticationService.RefreshTokenAsync(A<RefreshTokenRequest>.Ignored))
                 .Returns(Task.FromResult(response));
 
             // Act
@@ -220,7 +220,7 @@ namespace MyLifeApp.WebApi.Test.Controllers
                 StatusCode = 200
             };
 
-            A.CallTo(() => _userService.UpdatePasswordAsync(request)).Returns(Task.FromResult(response));
+            A.CallTo(() => _authenticationService.UpdatePasswordAsync(request)).Returns(Task.FromResult(response));
 
             // Act
             var result = await _controller.UpdatePassword(request);
@@ -248,7 +248,7 @@ namespace MyLifeApp.WebApi.Test.Controllers
                 StatusCode = 400
             };
 
-            A.CallTo(() => _userService.UpdatePasswordAsync(request)).Returns(Task.FromResult(response));
+            A.CallTo(() => _authenticationService.UpdatePasswordAsync(request)).Returns(Task.FromResult(response));
 
             // Act
             var result = await _controller.UpdatePassword(request);
@@ -276,7 +276,7 @@ namespace MyLifeApp.WebApi.Test.Controllers
                 StatusCode = 400
             };
 
-            A.CallTo(() => _userService.UpdatePasswordAsync(request)).Returns(Task.FromResult(response));
+            A.CallTo(() => _authenticationService.UpdatePasswordAsync(request)).Returns(Task.FromResult(response));
 
             // Act
             var result = await _controller.UpdatePassword(request);
@@ -304,7 +304,7 @@ namespace MyLifeApp.WebApi.Test.Controllers
                 StatusCode = 400
             };
 
-            A.CallTo(() => _userService.UpdatePasswordAsync(request)).Returns(Task.FromResult(response));
+            A.CallTo(() => _authenticationService.UpdatePasswordAsync(request)).Returns(Task.FromResult(response));
 
             // Act
             var result = await _controller.UpdatePassword(request);
@@ -332,7 +332,7 @@ namespace MyLifeApp.WebApi.Test.Controllers
                 StatusCode = 200
             };
 
-            A.CallTo(() => _userService.ForgetPasswordAsync(request)).Returns(Task.FromResult(response));
+            A.CallTo(() => _authenticationService.ForgetPasswordAsync(request)).Returns(Task.FromResult(response));
 
             // Act
             var result = await _controller.ForgetPassword(request);
@@ -358,7 +358,7 @@ namespace MyLifeApp.WebApi.Test.Controllers
                 StatusCode = 400
             };
 
-            A.CallTo(() => _userService.ForgetPasswordAsync(request)).Returns(Task.FromResult(response));
+            A.CallTo(() => _authenticationService.ForgetPasswordAsync(request)).Returns(Task.FromResult(response));
 
             // Act
             var result = await _controller.ForgetPassword(request);
@@ -385,7 +385,7 @@ namespace MyLifeApp.WebApi.Test.Controllers
                 StatusCode = 200
             };
 
-            A.CallTo(() => _userService.ResetPasswordAsync(request)).Returns(Task.FromResult(response));
+            A.CallTo(() => _authenticationService.ResetPasswordAsync(request)).Returns(Task.FromResult(response));
 
             // Act
             var result = await _controller.ResetPassword(request);
@@ -412,7 +412,7 @@ namespace MyLifeApp.WebApi.Test.Controllers
                 StatusCode = 400
             };
 
-            A.CallTo(() => _userService.ResetPasswordAsync(request)).Returns(Task.FromResult(response));
+            A.CallTo(() => _authenticationService.ResetPasswordAsync(request)).Returns(Task.FromResult(response));
 
             // Act
             var result = await _controller.ResetPassword(request);

@@ -11,12 +11,12 @@ namespace MyLifeApp.WebApi.Controllers
     [ApiController]
     public class AuthenticationController : Controller
     {
-        public readonly IUserService _userService;
+        public readonly IAuthenticationService _authenticationService;
         public readonly IProfileService _profileService;
 
-        public AuthenticationController(IUserService userService, IProfileService profileService)
+        public AuthenticationController(IAuthenticationService userService, IProfileService profileService)
         {
-            _userService = userService;
+            _authenticationService = userService;
             _profileService = profileService;
         }
 
@@ -27,7 +27,7 @@ namespace MyLifeApp.WebApi.Controllers
         {
             if (ModelState.IsValid)
             {
-                RegisterUserResponse response = await _userService.RegisterAsync(user);
+                RegisterUserResponse response = await _authenticationService.RegisterAsync(user);
 
                 if (response.IsSuccess)
                 {
@@ -50,7 +50,7 @@ namespace MyLifeApp.WebApi.Controllers
         {
             if (ModelState.IsValid)
             {
-                LoginUserResponse response = await _userService.LoginAsync(user);
+                LoginUserResponse response = await _authenticationService.LoginAsync(user);
 
                 if (response.IsSuccess)
                 {
@@ -70,7 +70,7 @@ namespace MyLifeApp.WebApi.Controllers
         {
             if (ModelState.IsValid)
             {
-                RefreshTokenResponse response = await _userService.RefreshTokenAsync(request);
+                RefreshTokenResponse response = await _authenticationService.RefreshTokenAsync(request);
 
                 if (response.IsSuccess)
                 {
@@ -92,7 +92,7 @@ namespace MyLifeApp.WebApi.Controllers
         {
             if (ModelState.IsValid)
             {
-                BaseResponse response = await _userService.UpdatePasswordAsync(request);
+                BaseResponse response = await _authenticationService.UpdatePasswordAsync(request);
 
                 if (response.IsSuccess)
                 {
@@ -112,7 +112,7 @@ namespace MyLifeApp.WebApi.Controllers
         {
             if (ModelState.IsValid)
             {
-                BaseResponse response = await _userService.ForgetPasswordAsync(request);
+                BaseResponse response = await _authenticationService.ForgetPasswordAsync(request);
 
                 if (response.IsSuccess)
                 {
@@ -132,7 +132,7 @@ namespace MyLifeApp.WebApi.Controllers
         {
             if (ModelState.IsValid)
             {
-                BaseResponse response = await _userService.ResetPasswordAsync(request);
+                BaseResponse response = await _authenticationService.ResetPasswordAsync(request);
 
                 if (response.IsSuccess)
                 {

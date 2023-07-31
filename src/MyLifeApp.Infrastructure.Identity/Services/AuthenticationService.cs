@@ -13,7 +13,7 @@ using MyLifeApp.Infrastructure.Shared.Services.Email;
 
 namespace MyLifeApp.Infrastructure.Identity.Services
 {
-    public class UserService : IUserService
+    public class AuthenticationService : IAuthenticationService
     {
         private readonly ITokenService _tokenService;
         private readonly UserManager<User> _userManager;
@@ -22,7 +22,7 @@ namespace MyLifeApp.Infrastructure.Identity.Services
         private readonly IAuthenticatedUserService _authenticatedUserService;
         private readonly IEmailService _mailService;
 
-        public UserService(ITokenService tokenService,
+        public AuthenticationService(ITokenService tokenService,
             UserManager<User> userManager,
             IHttpContextAccessor httpContext,
             IConfiguration configuration,

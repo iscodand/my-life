@@ -12,9 +12,9 @@ namespace MyLifeApp.WebApi.Test.Services
 {
     public class UserServiceTest
     {
-        private readonly UserService _userService;
+        private readonly IAuthenticationService _userService;
         private readonly ITokenService _tokenService;
-        private readonly UserManager<User> _userManager;
+        private readonly UserManager<User> _authenticaitonService;
         private readonly IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContext;
         private readonly IAuthenticatedUserService _authenticatedUserService;
@@ -23,12 +23,12 @@ namespace MyLifeApp.WebApi.Test.Services
         public UserServiceTest()
         {
             _tokenService = A.Fake<ITokenService>();
-            _userManager = A.Fake<UserManager<User>>();
+            _authenticaitonService = A.Fake<UserManager<User>>();
             _configuration = A.Fake<IConfiguration>();
             _httpContext = A.Fake<IHttpContextAccessor>();
             _authenticatedUserService = A.Fake<IAuthenticatedUserService>();
             _mailService = A.Fake<IEmailService>();
-            _userService = new UserService(_tokenService, _userManager, _httpContext, _configuration, _authenticatedUserService, _mailService);
+            _userService = new AuthenticationService(_tokenService, _authenticaitonService, _httpContext, _configuration, _authenticatedUserService, _mailService);
         }
 
         [Fact]
@@ -52,10 +52,10 @@ namespace MyLifeApp.WebApi.Test.Services
             };
 
             A.CallTo(() => _authenticatedUserService.GetAuthenticatedUserAsync()).Returns(Task.FromResult(user));
-            A.CallTo(() => _userManager.CheckPasswordAsync(user, request.OldPassword))
+            A.CallTo(() => _authenticaitonService.CheckPasswordAsync(user, request.OldPassword))
                 .Returns(Task.FromResult(true));
 
-            A.CallTo(() => _userManager.ChangePasswordAsync(user, request.OldPassword, request.NewPassword))
+            A.CallTo(() => _authenticaitonService.ChangePasswordAsync(user, request.OldPassword, request.NewPassword))
                 .Returns(Task.FromResult(IdentityResult.Success));
 
             // Act
@@ -88,7 +88,7 @@ namespace MyLifeApp.WebApi.Test.Services
             };
 
             A.CallTo(() => _authenticatedUserService.GetAuthenticatedUserAsync()).Returns(Task.FromResult(user));
-            A.CallTo(() => _userManager.CheckPasswordAsync(user, request.NewPassword))
+            A.CallTo(() => _authenticaitonService.CheckPasswordAsync(user, request.NewPassword))
                 .Returns(Task.FromResult(false));
 
             // Act
@@ -121,7 +121,7 @@ namespace MyLifeApp.WebApi.Test.Services
             };
 
             A.CallTo(() => _authenticatedUserService.GetAuthenticatedUserAsync()).Returns(Task.FromResult(user));
-            A.CallTo(() => _userManager.CheckPasswordAsync(user, request.OldPassword))
+            A.CallTo(() => _authenticaitonService.CheckPasswordAsync(user, request.OldPassword))
                 .Returns(Task.FromResult(true));
 
             // Act
@@ -154,7 +154,7 @@ namespace MyLifeApp.WebApi.Test.Services
             };
 
             A.CallTo(() => _authenticatedUserService.GetAuthenticatedUserAsync()).Returns(Task.FromResult(user));
-            A.CallTo(() => _userManager.CheckPasswordAsync(user, request.OldPassword))
+            A.CallTo(() => _authenticaitonService.CheckPasswordAsync(user, request.OldPassword))
                 .Returns(Task.FromResult(true));
 
             // Act
@@ -185,8 +185,8 @@ namespace MyLifeApp.WebApi.Test.Services
                 StatusCode = 200
             };
 
-            A.CallTo(() => _userManager.FindByEmailAsync(user.Email)).Returns(Task.FromResult(user));
-            A.CallTo(() => _userManager.GeneratePasswordResetTokenAsync(user)).Returns(Task.FromResult(fakeToken));
+            A.CallTo(() => _authenticaitonService.FindByEmailAsync(user.Email)).Returns(Task.FromResult(user));
+            A.CallTo(() => _authenticaitonService.GeneratePasswordResetTokenAsync(user)).Returns(Task.FromResult(fakeToken));
 
             // Act
             var result = await _userService.ForgetPasswordAsync(request);
@@ -216,7 +216,7 @@ namespace MyLifeApp.WebApi.Test.Services
                 StatusCode = 400
             };
 
-            A.CallTo(() => _userManager.FindByEmailAsync(inexistentEmail)).Returns(Task.FromResult(inexistentUser));
+            A.CallTo(() => _authenticaitonService.FindByEmailAsync(inexistentEmail)).Returns(Task.FromResult(inexistentUser));
 
             // Act
             var result = await _userService.ForgetPasswordAsync(request);
@@ -248,9 +248,9 @@ namespace MyLifeApp.WebApi.Test.Services
                 StatusCode = 200
             };
 
-            A.CallTo(() => _userManager.FindByEmailAsync(request.Email!)).Returns(user);
-            A.CallTo(() => _userManager.CheckPasswordAsync(user, request.NewPassword)).Returns(false);
-            A.CallTo(() => _userManager.ResetPasswordAsync(user, A<string>._, request.NewPassword)).Returns(IdentityResult.Success);
+            A.CallTo(() => _authenticaitonService.FindByEmailAsync(request.Email!)).Returns(user);
+            A.CallTo(() => _authenticaitonService.CheckPasswordAsync(user, request.NewPassword)).Returns(false);
+            A.CallTo(() => _authenticaitonService.ResetPasswordAsync(user, A<string>._, request.NewPassword)).Returns(IdentityResult.Success);
 
             // Act
             var result = await _userService.ResetPasswordAsync(request);
@@ -284,7 +284,7 @@ namespace MyLifeApp.WebApi.Test.Services
                 StatusCode = 400
             };
 
-            A.CallTo(() => _userManager.FindByEmailAsync(fakeEmail)).Returns(Task.FromResult(user));
+            A.CallTo(() => _authenticaitonService.FindByEmailAsync(fakeEmail)).Returns(Task.FromResult(user));
 
             // Act
             var result = await _userService.ResetPasswordAsync(request);
@@ -317,7 +317,7 @@ namespace MyLifeApp.WebApi.Test.Services
                 StatusCode = 400
             };
 
-            A.CallTo(() => _userManager.FindByEmailAsync(user.Email)).Returns(Task.FromResult(user));
+            A.CallTo(() => _authenticaitonService.FindByEmailAsync(user.Email)).Returns(Task.FromResult(user));
 
             // Act
             var result = await _userService.ResetPasswordAsync(request);
@@ -351,8 +351,8 @@ namespace MyLifeApp.WebApi.Test.Services
                 StatusCode = 400
             };
 
-            A.CallTo(() => _userManager.FindByEmailAsync(user.Email)).Returns(Task.FromResult(user));
-            A.CallTo(() => _userManager.CheckPasswordAsync(user, request.NewPassword))
+            A.CallTo(() => _authenticaitonService.FindByEmailAsync(user.Email)).Returns(Task.FromResult(user));
+            A.CallTo(() => _authenticaitonService.CheckPasswordAsync(user, request.NewPassword))
                 .Returns(Task.FromResult(true));
 
             // Act
@@ -386,8 +386,8 @@ namespace MyLifeApp.WebApi.Test.Services
                 StatusCode = 400
             };
 
-            A.CallTo(() => _userManager.FindByEmailAsync(user.Email)).Returns(Task.FromResult(user));
-            A.CallTo(() => _userManager.ResetPasswordAsync(user, invalidToken, request.NewPassword))
+            A.CallTo(() => _authenticaitonService.FindByEmailAsync(user.Email)).Returns(Task.FromResult(user));
+            A.CallTo(() => _authenticaitonService.ResetPasswordAsync(user, invalidToken, request.NewPassword))
                 .Returns(Task.FromResult(IdentityResult.Failed()));
 
             // Act
