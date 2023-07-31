@@ -105,7 +105,7 @@ namespace MyLifeApp.WebApi.Controllers
             return StatusCode(500);
         }
 
-        [HttpPost("forget-passwrd")]
+        [HttpPost("forget-password")]
         [ProducesResponseType(200, Type = typeof(BaseResponse))]
         [ProducesResponseType(400, Type = typeof(BaseResponse))]
         public async Task<IActionResult> ForgetPassword([FromBody] ForgetPasswordRequest request)
