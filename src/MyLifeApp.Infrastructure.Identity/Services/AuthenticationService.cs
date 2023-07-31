@@ -228,7 +228,6 @@ namespace MyLifeApp.Infrastructure.Identity.Services
 
         public async Task<BaseResponse> ForgetPasswordAsync(ForgetPasswordRequest request)
         {
-            // 1° verify if user exists
             User? user = await _userManager.FindByEmailAsync(request.Email);
 
             if (user == null)
@@ -241,19 +240,14 @@ namespace MyLifeApp.Infrastructure.Identity.Services
                 };
             }
 
-            // 2° generate token
             string token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
-            // 3° encode token
             byte[] encodedToken = Encoding.UTF8.GetBytes(token);
             string validToken = WebEncoders.Base64UrlEncode(encodedToken);
 
-            // 4° build url
             HostString urlDomain = _httpContext.HttpContext!.Request.Host;
             string url = $"http://{urlDomain}/api/v1/reset-password?email={user.Email}&token={validToken}";
 
-            // 5° send mail
-            // refactor this shit
             string mailBody = $"<h1>Hello! Recover your password here: </h1>" +
                 $"<p>Please, confirm yout e-mail by: <a href='{url}'>Clicking here</a><p>";
 
@@ -276,7 +270,6 @@ namespace MyLifeApp.Infrastructure.Identity.Services
 
         public async Task<BaseResponse> ResetPasswordAsync(ResetPasswordRequest request)
         {
-            // 1° try to get user by email
             User? user = await _userManager.FindByEmailAsync(request.Email!);
 
             if (user == null)
@@ -289,7 +282,6 @@ namespace MyLifeApp.Infrastructure.Identity.Services
                 };
             }
 
-            // 2° Validate password (with old and compare)
             bool verifyOldPassword = await _userManager.CheckPasswordAsync(user, request.NewPassword!);
 
             if (verifyOldPassword)
@@ -312,11 +304,9 @@ namespace MyLifeApp.Infrastructure.Identity.Services
                 };
             }
 
-            // 3° decode token
             byte[] decodedToken = WebEncoders.Base64UrlDecode(request.Token!);
             string normalToken = Encoding.UTF8.GetString(decodedToken);
 
-            // 4° make the password change
             IdentityResult resetPassword = await _userManager.ResetPasswordAsync(user, normalToken, request.NewPassword!);
 
             if (!resetPassword.Succeeded)
